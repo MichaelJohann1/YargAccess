@@ -94,11 +94,21 @@ namespace YargAccess
                 else if (it.Kind == Kind.Remove && it.Btn != null)
                 {
                     string path = _idx >= 2 && _items[_idx - 2].Kind == Kind.Folder ? _items[_idx - 2].Label.Replace("Folder, ", "") : "";
-                    it.Btn.onClick.Invoke();
-                    _idx = Math.Max(0, _idx - 3);
-                    MenuAnnouncer.SayShown(path == "No Folder" || path == ""
-                        ? "Removed the empty folder."
-                        : "Removed folder " + path + ". Scan Songs to update the library.");
+                    var btn = it.Btn;
+                    int at = _idx;
+                    Action remove = () =>
+                    {
+                        btn.onClick.Invoke();
+                        _idx = Math.Max(0, at - 3);
+                        MenuAnnouncer.SayShown(path == "No Folder" || path == ""
+                            ? "Removed the empty folder."
+                            : "Removed folder " + path + ". Scan Songs to update the library.");
+                    };
+                    // A folder with a path set asks first; the songs on disk are never deleted either way.
+                    if (path == "No Folder" || path == "") remove();
+                    else EntryActions.Confirm("Remove Folder", "Remove " + path + " from YARG's song folders? "
+                        + "Its songs leave the library after the next scan. The files stay on disk, and Add New Folder brings it back.",
+                        "Remove", remove);
                 }
                 else if (it.Kind == Kind.Folder) MenuAnnouncer.Say(it.Label);
             }

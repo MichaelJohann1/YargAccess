@@ -571,7 +571,7 @@ namespace YargAccess
                 .Page("Getting songs",
                     "YARG comes with no songs, and its menus are silent until you have some, because the menu music comes from your songs. "
                     + "The YARG Access launcher gets them for you: its DLC tab has YARG's official setlists, and its Download songs through Chorus tab finds single songs made by players. "
-                    + "Songs you already have go in a folder of your own: in YARG's Settings, on the Songs tab, move up from the first setting to reach Add New Folder, then choose Scan Songs.")
+                    + "Songs you already have go in a folder of your own, which you add in YARG's Settings. The Songs and Folders tutorial explains how.")
                 .Page("Moving around",
                     "These pages name the buttons of the {device}, the last thing you pressed. To hear the buttons of another keyboard, controller or guitar, use that device to move back to this page. "
                     + "{move} move. {ok} selects. {back} goes back. {tabs} switch tabs. {adjust} change a value, such as a slider or a list. "
@@ -587,6 +587,28 @@ namespace YargAccess
                     "Beat ticks play a soft tick on every beat and a stronger one on the first beat of each bar, so you can keep time. "
                     + "{pause} pauses the song. YARG's most important pop-ups, Star Power Ready, Full Combo and New High Score, are spoken; Speech During Songs on the YargAccess tab in Settings can speak all of them, or none. "
                     + "Settings is on the main menu; {tabs} reach its YargAccess tab."));
+
+            list.Add(new Tutorial { Name = "Songs and Folders" }
+                .Page("Song folders",
+                    "YARG looks for songs in the song folders listed in its Settings, on the Songs tab, and in any folder inside them. "
+                    + "The folder controls sit above the first setting: from the first setting, move up. "
+                    + "First come Add New Folder, Scan Songs, and Errors Found when YARG could not read some songs. Below them, each song folder has three items: its path, Browse, and Remove folder.")
+                .Page("Adding a folder",
+                    "Choose Add New Folder. A new row is added with no folder chosen yet, and Browse on that row is selected. "
+                    + "Choose Browse to open the Windows folder picker, which your screen reader reads. Pick the folder that holds your songs and choose Select Folder. "
+                    + "Then choose Scan Songs.")
+                .Page("Scanning",
+                    "YARG only finds new or changed songs when it scans. Choose Scan Songs after adding a folder, after copying songs into one, or after the launcher downloads a song while YARG is open. "
+                    + "YARG also scans each time it starts. A long scan says Scanning songs, and at the end you hear how many songs are in the library.")
+                .Page("Removing a folder",
+                    "Remove folder takes a folder off the list. A folder with a path asks first; choose Remove to confirm, or Cancel. "
+                    + "Nothing is deleted from your computer: the songs simply leave the library at the next scan. To get them back, add the folder again and scan.")
+                .Page("The launcher or the game",
+                    "The YARG Access launcher and YARG both put songs in the library, in different ways. "
+                    + "DLC setlists from the launcher's DLC tab go in the launcher's content folder, where YARG finds them on its own. They are not in the song folders list, and removing a song folder never removes them. "
+                    + "Songs from the launcher's Chorus tab are saved in its Chorus folder, which the launcher adds to YARG's song folders whenever it is missing from them, as long as YARG is closed while you download. You can change that folder, or turn the adding off, on the launcher's Settings tab. "
+                    + "If you remove the Chorus folder in YARG, its songs leave the library; the next download through the launcher adds it back, or you can add it yourself. "
+                    + "Add New Folder in YARG is for songs you already have anywhere else, such as songs from Clone Hero or ones you copied from a friend."));
 
             list.Add(new Tutorial { Name = "How These Games Work" }
                 .Page("Profiles and game modes",

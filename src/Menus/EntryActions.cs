@@ -235,7 +235,7 @@ namespace YargAccess
 
         // ---- Confirmation ----
 
-        static void Confirm(string title, string text, string button, Action yes)
+        internal static void Confirm(string title, string text, string button, Action yes)
         {
             var dm = DialogManager.Instance;
             if (dm == null) return;
