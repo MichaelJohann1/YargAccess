@@ -148,7 +148,7 @@ namespace YargAccess
             var item = _batchItem;
             if (!string.IsNullOrEmpty(item))
             {
-                if (!string.IsNullOrEmpty(_batchTab)) item = _batchTab + " tab, " + item;
+                if (!string.IsNullOrEmpty(_batchTab)) item = Loc.F("{0} tab", _batchTab) + ", " + item;
                 if (!string.IsNullOrEmpty(Menu.CurrentName) && Menu.CurrentName != _lastMenu) item = MenuPrefix() + item;
                 _lastMenu = Menu.CurrentName;
                 parts.Add(item);
@@ -248,12 +248,12 @@ namespace YargAccess
             var parts = new List<string>();
             foreach (var line in says) if (line != item) parts.Add(line);
             string last = item;
-            if (!string.IsNullOrEmpty(tab) && !string.IsNullOrEmpty(last)) last = tab + " tab, " + last;
+            if (!string.IsNullOrEmpty(tab) && !string.IsNullOrEmpty(last)) last = Loc.F("{0} tab", tab) + ", " + last;
             if (!string.IsNullOrEmpty(last)) parts.Add(last);
             if (parts.Count == 0) return;
 
             var text = JoinSentences(parts);
-            if (!string.IsNullOrEmpty(Menu.CurrentName) && Menu.CurrentName != _lastMenu && !text.StartsWith(Menu.CurrentName + " menu"))
+            if (!string.IsNullOrEmpty(Menu.CurrentName) && Menu.CurrentName != _lastMenu && !text.StartsWith(Menu.Heading))
                 text = MenuPrefix() + text;
             _lastMenu = Menu.CurrentName;
             Speech.Say(text, true);
@@ -262,7 +262,7 @@ namespace YargAccess
         static string MenuPrefix()
         {
             var intro = Menu.CurrentName == "Music Library" ? ListMenuAnnouncer.LibraryHeader() : "";
-            return Menu.CurrentName + " menu, " + (string.IsNullOrEmpty(intro) ? "" : intro + ". ");
+            return Menu.Heading + ", " + (string.IsNullOrEmpty(intro) ? "" : intro + ". ");
         }
 
         public static void ForceMenuPrefixNext() { _lastMenu = "\0"; }

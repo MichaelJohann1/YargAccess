@@ -53,7 +53,7 @@ namespace YargAccess
         {
             if (!Build()) return;
             int n = Cards().Count;
-            if (n <= 1) { MenuAnnouncer.SayShown("Only one player"); return; }
+            if (n <= 1) { MenuAnnouncer.SayShown(Loc.T("Only one player")); return; }
             _card = Mathf.Clamp(_card + dir, 0, n - 1);
             _idx = 0;
             Rebuild();
@@ -76,13 +76,13 @@ namespace YargAccess
                 var song = Tmp(Menu, "_songTitle");
                 var artist = Tmp(Menu, "_artistName");
                 if (!string.IsNullOrEmpty(song))
-                    head.Add(string.IsNullOrEmpty(artist) ? song : song + ", by " + artist);
+                    head.Add(string.IsNullOrEmpty(artist) ? song : Loc.F("{0}, by {1}", song, artist));
                 var band = Tmp(Menu, "_bandScore");
-                if (!string.IsNullOrEmpty(band)) head.Add("band score " + band);
+                if (!string.IsNullOrEmpty(band)) head.Add(Loc.F("band score {0}", band));
                 var repeat = ListenRepeatScores.ScoreLine();
                 if (!string.IsNullOrEmpty(repeat)) head.Add(repeat);
                 if (_lines.Count > 0) head.Add(_lines[0]);
-                head.Add(Keys.UpDown + " for the stats, " + Keys.Ok + " to continue.");
+                head.Add(Loc.F("{0} for the stats, {1} to continue.", Keys.UpDown, Keys.Ok));
                 return string.Join(". ", head.ToArray());
             }
             catch (Exception ex) { ModLog.Warn("ScoreScreenNavigator.OpenLine", ex); return ""; }
@@ -93,7 +93,7 @@ namespace YargAccess
             if (_idx < 0 || _idx >= _lines.Count) return;
             var cards = Cards();
             var pos = Keys.Pos(_idx, _lines.Count);
-            if (cards.Count > 1) pos += ", player " + (_card + 1) + " of " + cards.Count;
+            if (cards.Count > 1) pos += Loc.F(", player {0} of {1}", _card + 1, cards.Count);
             MenuAnnouncer.Focused(_lines[_idx] + pos);
         }
 
@@ -121,30 +121,43 @@ namespace YargAccess
             if (!string.IsNullOrEmpty(stars)) who.Add(stars);
             if (who.Count > 0) _lines.Add(string.Join(", ", who.ToArray()));
 
-            Row("Score", Tmp(card, "_score"));
-            Row("Accuracy", Tmp(card, "_accuracyPercent"));
-            Row("Notes hit", Slashed(Tmp(card, "_notesHit")));
+            Row(Loc.T("Score"), Tmp(card, "_score"));
+            Row(Loc.T("Accuracy"), Tmp(card, "_accuracyPercent"));
+            Row(Loc.T("Notes hit"), Slashed(Tmp(card, "_notesHit")));
             var missed = Tmp(card, "_notesMissed");
-            Row("Notes missed", missed != null ? missed.TrimStart('-', '−') : null);
-            Row("Best streak", Tmp(card, "_maxStreak"));
-            Row("Star power phrases", Slashed(Tmp(card, "_starpowerPhrases")));
-            Row("Star power activations", Tmp(card, "_starPowerActivations"));
-            Row("Time in star power", Tmp(card, "_timeInStarPower"));
-            Row("Average multiplier", Tmp(card, "_averageMultiplier"));
-            Row("Band bonus", Tmp(card, "_bandBonusScore"));
-            Row("Average offset", Tmp(card, "_averageOffset"));
+            Row(Loc.T("Notes missed"), missed != null ? missed.TrimStart('-', '−') : null);
+            Row(Loc.T("Best streak"), Tmp(card, "_maxStreak"));
+            Row(Loc.T("Star power phrases"), Slashed(Tmp(card, "_starpowerPhrases")));
+            Row(Loc.T("Star power activations"), Tmp(card, "_starPowerActivations"));
+            Row(Loc.T("Time in star power"), Tmp(card, "_timeInStarPower"));
+            Row(Loc.T("Average multiplier"), Tmp(card, "_averageMultiplier"));
+            Row(Loc.T("Band bonus"), Tmp(card, "_bandBonusScore"));
+            Row(Loc.T("Average offset"), Tmp(card, "_averageOffset"));
 
             foreach (var f in card.GetType().GetFields(BF | BindingFlags.DeclaredOnly))
             {
                 if (!typeof(TMP_Text).IsAssignableFrom(f.FieldType)) continue;
                 var val = Clean(f.GetValue(card) as TMP_Text);
                 if (string.IsNullOrEmpty(val)) continue;
-                Row(Sentence(Describer.PrettifyName(f.Name.TrimStart('_'))), val);
+                Row(FieldLabel(f.Name), val);
             }
 
             _idx = Mathf.Clamp(_idx, 0, Mathf.Max(0, _lines.Count - 1));
             _built = true;
             return _lines.Count > 0;
+        }
+
+        // The instrument cards' own rows, named from their field.
+        static string FieldLabel(string field)
+        {
+            switch (field)
+            {
+                case "_overstrums": return Loc.T("Overstrums");
+                case "_hoposStrummed": return Loc.T("Hopos strummed");
+                case "_ghostInputs": return Loc.T("Ghost inputs");
+                case "_overhits": return Loc.T("Overhits");
+            }
+            return Sentence(Describer.PrettifyName(field.TrimStart('_')));
         }
 
         static string Sentence(string s)
@@ -155,7 +168,7 @@ namespace YargAccess
 
         static void Row(string label, string value)
         {
-            if (!string.IsNullOrEmpty(value)) _lines.Add(label + ", " + value);
+            if (!string.IsNullOrEmpty(value)) _lines.Add(Loc.F("{0}, {1}", label, value));
         }
 
         static void Add(List<string> list, string s)
@@ -165,7 +178,7 @@ namespace YargAccess
 
         static string Slashed(string s)
         {
-            return string.IsNullOrEmpty(s) ? s : s.Replace(" / ", " of ").Replace("/", " of ");
+            return string.IsNullOrEmpty(s) ? s : s.Replace(" / ", Loc.T(" of ")).Replace("/", Loc.T(" of "));
         }
 
         static string Stars(Component card)
@@ -187,10 +200,10 @@ namespace YargAccess
                 Sprite kind = null;
                 foreach (var img in arr)
                     if (img != null && img.sprite != null && img.sprite != empty) { lit++; kind = img.sprite; }
-                if (lit == 0) return "0 stars";
-                if (kind != null && kind == brutal) return lit + " brutal stars";
-                if (kind != null && kind == gold) return lit + " gold stars";
-                return lit == 1 ? "1 star" : lit + " stars";
+                if (lit == 0) return Loc.T("0 stars");
+                if (kind != null && kind == brutal) return Loc.F("{0} brutal stars", lit);
+                if (kind != null && kind == gold) return Loc.F("{0} gold stars", lit);
+                return lit == 1 ? Loc.T("1 star") : Loc.F("{0} stars", lit);
             }
             catch { return ""; }
         }

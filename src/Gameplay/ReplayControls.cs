@@ -129,10 +129,10 @@ namespace YargAccess
         {
             var rc = Controller; var gm = GameplayContext.Manager;
             if (rc == null || gm == null) return;
-            if (!gm.Paused) { rc.SetPaused(true); Silence(); Speech.Say("Paused, " + Clock(gm.SongTime), true); return; }
-            if (AtEnd(gm)) { Speech.Say("The replay has ended. Seek back first, or open the replay menu.", true); return; }
+            if (!gm.Paused) { rc.SetPaused(true); Silence(); Speech.Say(Loc.F("Paused, {0}", Clock(gm.SongTime)), true); return; }
+            if (AtEnd(gm)) { Speech.Say(Loc.T("The replay has ended. Seek back first, or open the replay menu."), true); return; }
             rc.SetPaused(false);
-            Speech.Say("Playing", true);
+            Speech.Say(Loc.T("Playing"), true);
         }
 
         static bool AtEnd(GameManager gm) => gm.SongTime >= gm.SongLength - 0.05;
@@ -149,14 +149,14 @@ namespace YargAccess
             var rc = Controller; var gm = GameplayContext.Manager;
             if (rc == null || gm == null) return;
             if (_setTime == null) _setTime = typeof(ReplayController).GetMethod("SetReplayTime", BF);
-            if (_setTime == null) { Speech.Say("Seeking is not available in this YARG version.", true); return; }
+            if (_setTime == null) { Speech.Say(Loc.T("Seeking is not available in this YARG version."), true); return; }
             // Just short of the end: at the end YARG stops the replay (EndSong) and it can't be resumed.
             t = Math.Max(0, Math.Min(t, gm.SongLength - 1.0));
             Silence();
             Audio.CuePlayer.ReplaySeeking = true;
             try { _setTime.Invoke(rc, new object[] { t }); }
             finally { Audio.CuePlayer.ReplaySeeking = false; }
-            Speech.Say(Clock(t) + (gm.Paused ? ", paused" : ""), true);
+            Speech.Say(gm.Paused ? Loc.F("{0}, paused", Clock(t)) : Clock(t), true);
         }
 
         static void Speed(float by)
@@ -164,23 +164,23 @@ namespace YargAccess
             var rc = Controller; var gm = GameplayContext.Manager;
             if (rc == null || gm == null) return;
             float target = (float) Math.Round((gm.SongSpeed + by) * 10f) / 10f;
-            if (target < 0.1f || target > 4f) { Speech.Say("Speed " + Pct(gm.SongSpeed) + ", the limit", true); return; }
+            if (target < 0.1f || target > 4f) { Speech.Say(Loc.F("Speed {0}, the limit", Pct(gm.SongSpeed)), true); return; }
             Silence();
             // AdjustSpeed seeks to the current time too (ReplayController.SetSpeed reseeks).
             Audio.CuePlayer.ReplaySeeking = true;
             try { rc.AdjustSpeed(target - gm.SongSpeed); }
             finally { Audio.CuePlayer.ReplaySeeking = false; }
-            Speech.Say("Speed " + Pct(gm.SongSpeed), true);
+            Speech.Say(Loc.F("Speed {0}", Pct(gm.SongSpeed)), true);
         }
 
-        static string Pct(float s) => Math.Round(s * 100f) + " percent";
+        static string Pct(float s) => Loc.F("{0} percent", Math.Round(s * 100f));
 
         static void Status()
         {
             var gm = GameplayContext.Manager;
             if (gm == null) return;
-            string state = AtEnd(gm) ? "Ended" : gm.Paused ? "Paused" : "Playing";
-            Speech.Say(state + ", " + Clock(Math.Min(gm.SongTime, gm.SongLength)) + " of " + Clock(gm.SongLength) + ", speed " + Pct(gm.SongSpeed), true);
+            string state = AtEnd(gm) ? Loc.T("Ended") : gm.Paused ? Loc.T("Paused") : Loc.T("Playing");
+            Speech.Say(Loc.F("{0}, {1} of {2}, speed {3}", state, Clock(Math.Min(gm.SongTime, gm.SongLength)), Clock(gm.SongLength), Pct(gm.SongSpeed)), true);
         }
 
         public static void OpenMenu()
@@ -201,11 +201,11 @@ namespace YargAccess
             switch (device)
             {
                 case ContextHelp.Device.Gamepad:
-                    return "Replay keys. A, play or pause. D-pad Left and Right, 5 seconds back and forward. LB and RB, 30 seconds. X, back to the start. D-pad Up and Down, speed. Y, where you are. B or Start, the replay menu, with Back To Library.";
+                    return Loc.T("Replay keys. A, play or pause. D-pad Left and Right, 5 seconds back and forward. LB and RB, 30 seconds. X, back to the start. D-pad Up and Down, speed. Y, where you are. B or Start, the replay menu, with Back To Library.");
                 case ContextHelp.Device.Guitar:
-                    return "Replay keys. Green, play or pause. Yellow and Blue, 5 seconds back and forward. Strum up and down, speed. Orange, where you are. Red or Start, the replay menu, with Back To Library.";
+                    return Loc.T("Replay keys. Green, play or pause. Yellow and Blue, 5 seconds back and forward. Strum up and down, speed. Orange, where you are. Red or Start, the replay menu, with Back To Library.");
                 default:
-                    return "Replay keys. Space, play or pause. Left and Right, 5 seconds back and forward. Page Up and Page Down, 30 seconds. Home, back to the start. Up and Down, speed. F2, where you are. Escape or Backspace, the replay menu, with Back To Library.";
+                    return Loc.T("Replay keys. Space, play or pause. Left and Right, 5 seconds back and forward. Page Up and Page Down, 30 seconds. Home, back to the start. Up and Down, speed. F2, where you are. Escape or Backspace, the replay menu, with Back To Library.");
             }
         }
 

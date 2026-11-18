@@ -4,6 +4,8 @@ obj/
 src/bin/
 src/obj/
 dist/
+# Side builds into their own folders (dotnet build -p:IntermediateOutputPath=..\obj-<name>\)
+obj-*/
 *.user
 .vs/
 

@@ -33,9 +33,9 @@ namespace YargAccess
             if (GuidedPractice.Active) return;
             string how;
             if (Keys.Current == Keys.Device.Keyboard && !_keyboardProfile)
-                how = "On the computer keyboard: Z S X D C and on along the bottom two rows for the lower keys, Q 2 W 3 E and on along the top two rows for the upper ones";
-            else how = _subscribed.Count > 0 ? "Use your profile's keys" : "Use the computer keyboard: Z S X D C and on for the lower keys, Q 2 W 3 E and on for the upper ones";
-            Captions.SayIn("Practice The Buttons", () => IsOpen, "Try the keys. Press a key to hear its sound in a song and its name. " + how + ". " + Keys.Finish + " to finish.", true);
+                how = Loc.T("On the computer keyboard: Z S X D C and on along the bottom two rows for the lower keys, Q 2 W 3 E and on along the top two rows for the upper ones");
+            else how = _subscribed.Count > 0 ? Loc.T("Use your profile's keys") : Loc.T("Use the computer keyboard: Z S X D C and on for the lower keys, Q 2 W 3 E and on for the upper ones");
+            Captions.SayIn(Loc.T("Practice The Buttons"), () => IsOpen, Loc.F("Try the keys. Press a key to hear its sound in a song and its name. {0}. {1} to finish.", how, Keys.Finish), true);
         }
 
         public static void Close()
@@ -45,7 +45,7 @@ namespace YargAccess
             Unsubscribe();
             _inputs.Clear();
             _midiNotes.Clear();
-            Tutorials.TestClosed("Done trying the keys.");
+            Tutorials.TestClosed(Loc.T("Done trying the keys."));
         }
 
         static readonly GameInputProcessed Handler = (ref GameInput input) => { if (IsOpen) _inputs.Enqueue(input); };
@@ -150,8 +150,8 @@ namespace YargAccess
 
         static void StarPower()
         {
-            if (GuidedPractice.Pressed("sp", "star power")) return;
-            Captions.SayIn("Practice The Buttons", () => IsOpen, "Star power", true);
+            if (GuidedPractice.Pressed("sp", Loc.T("star power"))) return;
+            Captions.SayIn(Loc.T("Practice The Buttons"), () => IsOpen, Loc.T("Star power"), true);
         }
 
         static void Press(int key)
@@ -162,9 +162,9 @@ namespace YargAccess
             if (!_toldLayout)
             {
                 _toldLayout = true;
-                name += ". 25 keys, from low C on the left to high C on the right; each plays its own pitch";
+                name = Loc.F("{0}. 25 keys, from low C on the left to high C on the right; each plays its own pitch", name);
             }
-            Captions.SayIn("Practice The Buttons", () => IsOpen, name, true);
+            Captions.SayIn(Loc.T("Practice The Buttons"), () => IsOpen, name, true);
         }
     }
 }

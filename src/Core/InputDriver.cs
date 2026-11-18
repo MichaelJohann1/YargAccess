@@ -209,7 +209,7 @@ namespace YargAccess
 
         internal static string LeftRightHint()
         {
-            return Keys.LeftRight + " change it";
+            return Loc.F("{0} change it", Keys.LeftRight);
         }
 
         static void PollGamepad(bool paused)
@@ -621,7 +621,7 @@ namespace YargAccess
             }
             if (ListMenuActive())
             {
-                if (!HasConnectedProfile() && SongSelected()) { MenuAnnouncer.SayShown("Connect a profile first. Profiles is on the main menu."); return; }
+                if (!HasConnectedProfile() && SongSelected()) { MenuAnnouncer.SayShown(Loc.T("Connect a profile first. Profiles is on the main menu.")); return; }
                 YargInput.Invoke("Green");
                 return;
             }
@@ -705,7 +705,7 @@ namespace YargAccess
             if (!hold && HistoryNavigator.Colour(action)) return;
             if ((action == "Yellow" || action == "Blue" || action == "Orange") && !HasConnectedProfile())
             {
-                MenuAnnouncer.SayShown("Connect a profile first.");
+                MenuAnnouncer.SayShown(Loc.T("Connect a profile first."));
                 return;
             }
             var name = ContextHelp.ActionName(action, hold);
@@ -790,7 +790,7 @@ namespace YargAccess
                 if (!string.IsNullOrEmpty(t)) return t;
             }
             catch { }
-            return "text box";
+            return Loc.T("text box");
         }
 
         static bool TextFieldFocused()
@@ -870,7 +870,7 @@ namespace YargAccess
             MenuAnnouncer.DiscardBatch();
 
             var sel = tabs.SelectedBehaviour;
-            var name = sel != null ? Describer.GetLabel(sel.gameObject) : ("Tab " + (nv + 1));
+            var name = sel != null ? Describer.GetLabel(sel.gameObject) : Loc.F("Tab {0}", nv + 1);
             var msg = name + Keys.Pos(nv, count);
             var g = NavigationGroup.CurrentNavigationGroup;
             var presets = PresetsNavigator.IsActive ? PresetsNavigator.EntryText() : null;

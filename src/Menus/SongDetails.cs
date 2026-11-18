@@ -18,7 +18,7 @@ namespace YargAccess
         public static string Head(SongViewType view)
         {
             if (view == null || view.SongEntry == null) return "";
-            try { return Stars(view) + ", " + (PlaylistContainer.FavoritesPlaylist.ContainsSong(view.SongEntry) ? "favorite" : "not favorite"); }
+            try { return Stars(view) + ", " + (PlaylistContainer.FavoritesPlaylist.ContainsSong(view.SongEntry) ? Loc.T("favorite") : Loc.T("not favorite")); }
             catch (Exception ex) { ModLog.Warn("SongDetails.Head", ex); return ""; }
         }
 
@@ -31,24 +31,24 @@ namespace YargAccess
                 parts.Add(Stars(view));
                 var repeat = ListenRepeatScores.ForSong(view.SongEntry);
                 if (repeat != null) parts.Add(repeat);
-                parts.Add(PlaylistContainer.FavoritesPlaylist.ContainsSong(view.SongEntry) ? "favorite" : "not favorite");
+                parts.Add(PlaylistContainer.FavoritesPlaylist.ContainsSong(view.SongEntry) ? Loc.T("favorite") : Loc.T("not favorite"));
                 var e = view.SongEntry;
                 string inst = Instruments(e);
                 if (inst.Length > 0) parts.Add(inst);
-                Add(parts, "album", Str(e.Album));
+                Add(parts, Loc.T("album {0}"), Str(e.Album));
                 string year = e.ParsedYear;
                 if (!string.IsNullOrEmpty(e.YearSecondary)) year += " (" + e.YearSecondary + ")";
-                Add(parts, "year", year);
+                Add(parts, Loc.T("year {0}"), year);
                 string genre = Str(e.Genre);
                 if (genre.Length > 0) genre = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(genre);
                 string sub = Str(e.Subgenre);
                 if (sub.Length > 0) genre = genre.Length > 0 ? genre + ", " + sub : sub;
-                Add(parts, "genre", genre);
-                parts.Add("length " + Length(e.SongLengthMilliseconds));
-                Add(parts, "charter", Str(e.Charter));
+                Add(parts, Loc.T("genre {0}"), genre);
+                parts.Add(Loc.F("length {0}", Length(e.SongLengthMilliseconds)));
+                Add(parts, Loc.T("charter {0}"), Str(e.Charter));
                 string source = "";
                 try { source = SongSources.SourceToGameName(e.Source); } catch { }
-                Add(parts, "source", TextUtil.Clean(source));
+                Add(parts, Loc.T("source {0}"), TextUtil.Clean(source));
                 parts.Add(Rating(e.SongRating));
             }
             catch (Exception ex) { ModLog.Warn("SongDetails", ex); }
@@ -63,11 +63,14 @@ namespace YargAccess
             return sb.ToString();
         }
 
-        const string InstrumentsLead = "Instruments.";
+        static string InstrumentsLead => Loc.T("Instruments.");
 
-        static void Add(List<string> parts, string name, string value)
+        // format: a translated line with {0} for the value.
+        static void Add(List<string> parts, string format, string value)
         {
-            if (!string.IsNullOrEmpty(value)) parts.Add(name + " " + value);
+            if (string.IsNullOrEmpty(value)) return;
+            try { parts.Add(string.Format(format, value)); }
+            catch (FormatException) { parts.Add(format + " " + value); }
         }
 
         static string Str(object sortString)
@@ -87,7 +90,7 @@ namespace YargAccess
         static string OtherInstrument(SongEntry e)
         {
             string title, body;
-            return Elsewhere(e, out title, out body) ? title + "; " + body : "not played";
+            return Elsewhere(e, out title, out body) ? title + "; " + body : Loc.T("not played");
         }
 
         public static bool Elsewhere(SongViewType view, out string title, out string body)
@@ -114,17 +117,17 @@ namespace YargAccess
                 if (r != null && (best == null || r.Score > best.Score)) best = r;
             }
             if (best == null) return false;
-            title = "not played on " + Playability.InstrumentName(current);
+            title = Loc.F("not played on {0}", Playability.InstrumentName(current));
             body = Playability.InstrumentName(best.Instrument) + ", " + Describe(best.Stars, best.Score, best.Difficulty, best.GetPercent(), best.IsFc);
             return true;
         }
 
         static string Describe(StarAmount stars, int score, Difficulty difficulty, float pct, bool fc)
         {
-            string s = StarText(stars) + ", best score " + score.ToString("N0", CultureInfo.CurrentCulture) + " on " + difficulty;
+            string s = Loc.F("{0}, best score {1} on {2}", StarText(stars), score.ToString("N0", CultureInfo.CurrentCulture), DifficultyName(difficulty));
             if (pct <= 1.0001f) pct *= 100f;
             s += ", " + Math.Floor(pct) + "%";
-            if (fc) s += ", full combo";
+            if (fc) s += Loc.T(", full combo");
             return s;
         }
 
@@ -133,15 +136,15 @@ namespace YargAccess
             string s;
             switch (stars)
             {
-                case StarAmount.Star1: s = "1 star"; break;
-                case StarAmount.Star2: s = "2 stars"; break;
-                case StarAmount.Star3: s = "3 stars"; break;
-                case StarAmount.Star4: s = "4 stars"; break;
-                case StarAmount.Star5: s = "5 stars"; break;
-                case StarAmount.StarGold: s = "gold stars"; break;
-                case StarAmount.StarSilver: s = "silver stars"; break;
-                case StarAmount.StarBrutal: s = "brutal stars"; break;
-                default: s = "no stars"; break;
+                case StarAmount.Star1: s = Loc.T("1 star"); break;
+                case StarAmount.Star2: s = Loc.T("2 stars"); break;
+                case StarAmount.Star3: s = Loc.T("3 stars"); break;
+                case StarAmount.Star4: s = Loc.T("4 stars"); break;
+                case StarAmount.Star5: s = Loc.T("5 stars"); break;
+                case StarAmount.StarGold: s = Loc.T("gold stars"); break;
+                case StarAmount.StarSilver: s = Loc.T("silver stars"); break;
+                case StarAmount.StarBrutal: s = Loc.T("brutal stars"); break;
+                default: s = Loc.T("no stars"); break;
             }
             return s;
         }
@@ -149,33 +152,47 @@ namespace YargAccess
         static string Instruments(SongEntry e)
         {
             var list = new List<string>();
-            Part(list, e, Instrument.FiveFretGuitar, "guitar");
-            Part(list, e, Instrument.FiveFretBass, "bass");
-            if (e.HasInstrument(Instrument.FiveLaneDrums)) Part(list, e, Instrument.FiveLaneDrums, "five-lane drums");
-            else if (e.HasInstrument(Instrument.ProDrums)) Part(list, e, Instrument.ProDrums, "pro drums");
-            else Part(list, e, Instrument.FourLaneDrums, "drums");
-            Part(list, e, Instrument.Keys, "keys");
+            Part(list, e, Instrument.FiveFretGuitar, Loc.T("guitar"));
+            Part(list, e, Instrument.FiveFretBass, Loc.T("bass"));
+            if (e.HasInstrument(Instrument.FiveLaneDrums)) Part(list, e, Instrument.FiveLaneDrums, Loc.T("five-lane drums"));
+            else if (e.HasInstrument(Instrument.ProDrums)) Part(list, e, Instrument.ProDrums, Loc.T("pro drums"));
+            else Part(list, e, Instrument.FourLaneDrums, Loc.T("drums"));
+            Part(list, e, Instrument.Keys, Loc.T("keys"));
             bool harmonyOnly = !e.HasInstrument(Instrument.Vocals) && e.HasInstrument(Instrument.Harmony);
             int voices = e.VocalsCount;
-            string vocals = voices >= 3 ? voices + "-part harmonies" : voices == 2 ? "2-part vocals" : "vocals";
+            string vocals = voices >= 3 ? Loc.F("{0}-part harmonies", voices) : voices == 2 ? Loc.T("2-part vocals") : Loc.T("vocals");
             Part(list, e, harmonyOnly ? Instrument.Harmony : Instrument.Vocals, vocals);
             if (e.HasInstrument(Instrument.ProGuitar_17Fret) || e.HasInstrument(Instrument.ProGuitar_22Fret))
-                Part(list, e, e[Instrument.ProGuitar_17Fret].Intensity == -1 && e.HasInstrument(Instrument.ProGuitar_22Fret) ? Instrument.ProGuitar_22Fret : Instrument.ProGuitar_17Fret, "pro guitar");
-            else Part(list, e, Instrument.FiveFretCoopGuitar, "co-op guitar");
+                Part(list, e, e[Instrument.ProGuitar_17Fret].Intensity == -1 && e.HasInstrument(Instrument.ProGuitar_22Fret) ? Instrument.ProGuitar_22Fret : Instrument.ProGuitar_17Fret, Loc.T("pro guitar"));
+            else Part(list, e, Instrument.FiveFretCoopGuitar, Loc.T("co-op guitar"));
             if (e.HasInstrument(Instrument.ProBass_17Fret) || e.HasInstrument(Instrument.ProBass_22Fret))
-                Part(list, e, e[Instrument.ProBass_17Fret].Intensity == -1 && e.HasInstrument(Instrument.ProBass_22Fret) ? Instrument.ProBass_22Fret : Instrument.ProBass_17Fret, "pro bass");
-            else Part(list, e, Instrument.FiveFretRhythm, "rhythm");
-            Part(list, e, Instrument.EliteDrums, "elite drums");
-            Part(list, e, Instrument.ProKeys, "pro keys");
-            Part(list, e, Instrument.Band, "band");
+                Part(list, e, e[Instrument.ProBass_17Fret].Intensity == -1 && e.HasInstrument(Instrument.ProBass_22Fret) ? Instrument.ProBass_22Fret : Instrument.ProBass_17Fret, Loc.T("pro bass"));
+            else Part(list, e, Instrument.FiveFretRhythm, Loc.T("rhythm"));
+            Part(list, e, Instrument.EliteDrums, Loc.T("elite drums"));
+            Part(list, e, Instrument.ProKeys, Loc.T("pro keys"));
+            Part(list, e, Instrument.Band, Loc.T("band"));
             return list.Count == 0 ? "" : InstrumentsLead + " " + string.Join(". ", list.ToArray()) + ".";
+        }
+
+        internal static string DifficultyName(Difficulty d)
+        {
+            switch (d)
+            {
+                case Difficulty.Beginner: return Loc.T("Beginner");
+                case Difficulty.Easy: return Loc.T("Easy");
+                case Difficulty.Medium: return Loc.T("Medium");
+                case Difficulty.Hard: return Loc.T("Hard");
+                case Difficulty.Expert: return Loc.T("Expert");
+                case Difficulty.ExpertPlus: return Loc.T("ExpertPlus");
+            }
+            return d.ToString();
         }
 
         static void Part(List<string> list, SongEntry e, Instrument inst, string name)
         {
             var v = e[inst];
             if (v.SubTracks == 0) return;
-            list.Add(v.Intensity < 0 ? name + " unrated" : name + " " + v.Intensity);
+            list.Add(v.Intensity < 0 ? Loc.F("{0} unrated", name) : name + " " + v.Intensity);
         }
 
         static string Length(long ms)
@@ -188,11 +205,11 @@ namespace YargAccess
         {
             switch (r)
             {
-                case SongRating.Family_Friendly: return "rated family friendly";
-                case SongRating.Supervision_Recommended: return "rated supervision recommended";
-                case SongRating.Mature: return "rated mature";
-                case SongRating.Sensitive_Content: return "rated sensitive content";
-                default: return "not rated";
+                case SongRating.Family_Friendly: return Loc.T("rated family friendly");
+                case SongRating.Supervision_Recommended: return Loc.T("rated supervision recommended");
+                case SongRating.Mature: return Loc.T("rated mature");
+                case SongRating.Sensitive_Content: return Loc.T("rated sensitive content");
+                default: return Loc.T("not rated");
             }
         }
     }

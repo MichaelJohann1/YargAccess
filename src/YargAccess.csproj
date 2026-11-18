@@ -51,8 +51,14 @@
     <Reference Include="PlasticBand"><HintPath>$(ManagedDir)\PlasticBand.dll</HintPath><Private>false</Private></Reference>
 
     <!-- Game code + engine package -->
+    <Reference Include="Newtonsoft.Json"><HintPath>$(ManagedDir)\Newtonsoft.Json.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="Assembly-CSharp"><HintPath>$(ManagedDir)\Assembly-CSharp.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="Assembly-CSharp-firstpass" Condition="Exists('$(ManagedDir)\Assembly-CSharp-firstpass.dll')"><HintPath>$(ManagedDir)\Assembly-CSharp-firstpass.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="YARG.Core.Package" Condition="Exists('$(ManagedDir)\YARG.Core.Package.dll')"><HintPath>$(ManagedDir)\YARG.Core.Package.dll</HintPath><Private>false</Private></Reference>
+  </ItemGroup>
+
+  <!-- Translations of the mod's text, one per YARG language (Core/Loc.cs). -->
+  <ItemGroup>
+    <EmbeddedResource Include="Lang\*.json" LogicalName="YargAccess.Lang.%(Filename).json" />
   </ItemGroup>
 </Project>

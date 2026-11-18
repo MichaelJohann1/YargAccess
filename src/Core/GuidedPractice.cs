@@ -102,17 +102,17 @@ namespace YargAccess
             string how;
             switch (mode)
             {
-                case "drums": how = "hit it as soon as you hear it."; break;
-                case "vocals": how = "sing it or press its button."; break;
-                default: how = "play it when the hit bar sound ends."; break;
+                case "drums": how = Loc.T("hit it as soon as you hear it."); break;
+                case "vocals": how = Loc.T("sing it or press its button."); break;
+                default: how = Loc.T("play it when the hit bar sound ends."); break;
             }
-            string intro = "Each kind of note plays twice: first played right, with the hit sound, then for you: " + how + " ";
+            string intro = Loc.F("Each kind of note plays twice: first played right, with the hit sound, then for you: {0}", how) + " ";
             if (_lr && mode == "vocals")
-                intro += "With Listen and Repeat on, the percussion note comes as a call: after the listen sound the knock plays, and when the your-turn sound ends you play it back. ";
+                intro += Loc.T("With Listen and Repeat on, the percussion note comes as a call: after the listen sound the knock plays, and when the your-turn sound ends you play it back.") + " ";
             else if (_lr)
-                intro = "This practice teaches Listen and Repeat, the play style set on the YargAccess tab. After the listen sound each kind of note plays as a call; "
-                    + "when the your-turn sound ends, play it back. Each plays twice: first played right, with the hit sound, then for you. ";
-            Say(device + intro + Keys.Finish + " stops.");
+                intro = Loc.T("This practice teaches Listen and Repeat, the play style set on the YargAccess tab. After the listen sound each kind of note plays as a call; "
+                    + "when the your-turn sound ends, play it back. Each plays twice: first played right, with the hit sound, then for you.") + " ";
+            Say(device + intro + Loc.F("{0} stops.", Keys.Finish));
             int serial = _serial;
             AfterSpeech(0.1f, () => { if (serial == _serial) Ask(0); });
         }
@@ -309,7 +309,7 @@ namespace YargAccess
             _armed = false;
             int serial = ++_serial;
             if (s.Hit != null) s.Hit();
-            string text = "Right.";
+            string text = Loc.T("Right.");
             Later(0.15f, () => { if (serial == _serial) Say(text); });
             AfterSpeech(0.25f, () => { if (serial == _serial) Ask(_index + 1); });
         }
@@ -320,7 +320,7 @@ namespace YargAccess
             int serial = ++_serial;
             CueBank.Play(_mode == "fivefret" ? "overstrum" : "miss", 0.7f);
             bool demo = ++_fails >= 2;
-            Later(0.25f, () => { if (serial == _serial) Say("That was " + name + ". " + s.Prompt + (string.IsNullOrEmpty(s.Hint) ? "" : " " + s.Hint) + Again(demo)); });
+            Later(0.25f, () => { if (serial == _serial) Say(Loc.F("That was {0}.", name) + " " + s.Prompt + (string.IsNullOrEmpty(s.Hint) ? "" : " " + s.Hint) + Again(demo)); });
             AfterSpeech(0.35f, () => { if (serial == _serial) Retry(s, serial, demo); }, SoundGap);
         }
 
@@ -341,9 +341,9 @@ namespace YargAccess
             CueBank.Play("miss", 0.7f);
             bool demo = ++_fails >= 2;
             bool part = double.IsNaN(off) && s.All != null && _got.Count > 0 && _got.Count < s.All.Length;
-            string why = part ? "only part of it was played. Play them all together."
-                : double.IsNaN(off) ? "you didn't play it." : Secs(off) + ". " + Advice(s, off < 0);
-            Later(0.25f, () => { if (serial == _serial) Say("Missed: " + why + Again(demo)); });
+            string why = part ? Loc.T("only part of it was played. Play them all together.")
+                : double.IsNaN(off) ? Loc.T("you didn't play it.") : Secs(off) + ". " + Advice(s, off < 0);
+            Later(0.25f, () => { if (serial == _serial) Say(Loc.F("Missed: {0}", why) + Again(demo)); });
             AfterSpeech(0.35f, () => { if (serial == _serial) Retry(s, serial, demo); }, SoundGap);
         }
 
@@ -405,16 +405,16 @@ namespace YargAccess
             if (ok)
             {
                 if (s.Hit != null) s.Hit();
-                Later(0.15f, () => { if (serial == _serial) Say("Right, " + total + " hits."); });
+                Later(0.15f, () => { if (serial == _serial) Say(Loc.F("Right, {0} hits.", total)); });
                 AfterSpeech(0.25f, () => { if (serial == _serial) Ask(_index + 1); });
                 return;
             }
             CueBank.Play("miss", 0.7f);
             bool demo = ++_fails >= 2;
-            string why = total == 0 ? "you didn't play it."
-                : total < need ? total + (total == 1 ? " hit is" : " hits are") + " too few. Keep hitting fast until it stops."
-                : "use both pads, one after the other.";
-            Later(0.25f, () => { if (serial == _serial) Say("Missed: " + why + Again(demo)); });
+            string why = total == 0 ? Loc.T("you didn't play it.")
+                : total < need ? (total == 1 ? Loc.F("{0} hit is too few. Keep hitting fast until it stops.", total) : Loc.F("{0} hits are too few. Keep hitting fast until it stops.", total))
+                : Loc.T("use both pads, one after the other.");
+            Later(0.25f, () => { if (serial == _serial) Say(Loc.F("Missed: {0}", why) + Again(demo)); });
             AfterSpeech(0.35f, () => { if (serial == _serial) Retry(s, serial, demo); }, SoundGap);
         }
 
@@ -436,24 +436,24 @@ namespace YargAccess
                 Later((float) len, () => { if (serial == _serial) StopHolds(); });
             };
             s.Hit = () => { foreach (var p in pads) CueBank.PlayDrumHit(DrumSound.SoundOf(p, five), DrumSound.PanOf(p, five), 0.9f); };
-            string back = _lr ? " With Listen and Repeat on it plays first; then play it back as fast for as long." : "";
+            string back = _lr ? " " + Loc.T("With Listen and Repeat on it plays first; then play it back as fast for as long.") : "";
             if (swell)
             {
-                s.Prompt = "Hit the " + names[pads[0]] + " and the " + names[pads[1]] + " in turn, fast, until it stops.";
-                s.Text = "A swell: two pads' sounds alternating fast. Hit the two pads one after the other, fast, for as long as it sounds; the exact timing does not matter." + back + " " + s.Prompt;
-                if (kb) s.Hint = "On the keyboard, press " + DrumKeys[pads[0]] + " and " + DrumKeys[pads[1]] + " in turn.";
+                s.Prompt = Loc.F("Hit the {0} and the {1} in turn, fast, until it stops.", DrumButtonTest.Said(five, pads[0]), DrumButtonTest.Said(five, pads[1]));
+                s.Text = Loc.T("A swell: two pads' sounds alternating fast. Hit the two pads one after the other, fast, for as long as it sounds; the exact timing does not matter.") + back + " " + s.Prompt;
+                if (kb) s.Hint = Loc.F("On the keyboard, press {0} and {1} in turn.", DrumKeys[pads[0]], DrumKeys[pads[1]]);
             }
             else
             {
-                s.Prompt = "Hit the " + names[pads[0]] + " fast until it stops.";
-                s.Text = "A roll: one pad's sound repeating fast. Keep hitting that pad, fast and steady, for as long as it sounds; the exact timing does not matter. "
-                    + "Rolls and swells are on Expert, and on Hard in some songs." + back + " " + s.Prompt;
-                s.Hint = kb ? "On the keyboard, press " + DrumKeys[pads[0]] + " again and again." : DrumDeviceHint(pads, five);
+                s.Prompt = Loc.F("Hit the {0} fast until it stops.", DrumButtonTest.Said(five, pads[0]));
+                s.Text = Loc.T("A roll: one pad's sound repeating fast. Keep hitting that pad, fast and steady, for as long as it sounds; the exact timing does not matter. "
+                    + "Rolls and swells are on Expert, and on Hard in some songs.") + back + " " + s.Prompt;
+                s.Hint = kb ? Loc.F("On the keyboard, press {0} again and again.", DrumKeys[pads[0]]) : DrumDeviceHint(pads, five);
             }
             return s;
         }
 
-        static string Again(bool demo) => demo ? " Listen to it played right, then try again." : " Again.";
+        static string Again(bool demo) => " " + (demo ? Loc.T("Listen to it played right, then try again.") : Loc.T("Again."));
 
         static void Retry(Step s, int serial, bool demo)
         {
@@ -468,14 +468,16 @@ namespace YargAccess
             // Just past a pass limit, never read the limit itself ("0.1 seconds late" for a miss).
             foreach (double limit in new[] { HitWindow, PatternWindow, 0.3, 0.6 })
                 if (Math.Abs(a - limit) < 1e-6 && abs > limit) a += 0.05;
-            return a.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture) + (a == 1 ? " second " : " seconds ") + (off < 0 ? "early" : "late");
+            string n = a.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+            if (off < 0) return a == 1 ? Loc.F("{0} second early", n) : Loc.F("{0} seconds early", n);
+            return a == 1 ? Loc.F("{0} second late", n) : Loc.F("{0} seconds late", n);
         }
 
         static string Advice(Step s, bool early)
         {
-            if (s.Call || s.Pattern) return "Play as the your-turn sound ends.";
-            if (early) return s.Riser ? "Wait for the hit bar sound to end." : "Play right after the sound.";
-            return s.Riser ? "Play as the hit bar sound ends." : "Play as soon as you hear it.";
+            if (s.Call || s.Pattern) return Loc.T("Play as the your-turn sound ends.");
+            if (early) return s.Riser ? Loc.T("Wait for the hit bar sound to end.") : Loc.T("Play right after the sound.");
+            return s.Riser ? Loc.T("Play as the hit bar sound ends.") : Loc.T("Play as soon as you hear it.");
         }
 
         // The call: the listen swell ends as the pattern starts, the your-turn swell ends where the answer starts.
@@ -560,11 +562,10 @@ namespace YargAccess
             CueBank.Play(wrong != null && _mode == "fivefret" ? "overstrum" : "miss", 0.7f);
             bool demo = ++_fails >= 2;
             int k = Math.Min(_pk, s.Tokens.Length - 1);
-            string note = "note " + (k + 1) + ", " + s.Names[k];
-            string why = wrong != null ? "Note " + (k + 1) + " was " + wrong + ", not " + s.Names[k] + "."
-                : !double.IsNaN(off) ? char.ToUpperInvariant(note[0]) + note.Substring(1) + ", was " + Secs(off) + "."
-                : "You didn't play " + note + ".";
-            Later(0.25f, () => { if (serial == _serial) Say("Missed. " + why + (demo ? " Listen to it played right: " + s.Prompt + (string.IsNullOrEmpty(s.Hint) ? "" : " " + s.Hint) : " Again.")); });
+            string why = wrong != null ? Loc.F("Note {0} was {1}, not {2}.", k + 1, wrong, s.Names[k])
+                : !double.IsNaN(off) ? Loc.F("Note {0}, {1}, was {2}.", k + 1, s.Names[k], Secs(off))
+                : Loc.F("You didn't play note {0}, {1}.", k + 1, s.Names[k]);
+            Later(0.25f, () => { if (serial == _serial) Say(Loc.T("Missed.") + " " + why + " " + (demo ? Loc.F("Listen to it played right: {0}", s.Prompt + (string.IsNullOrEmpty(s.Hint) ? "" : " " + s.Hint)) : Loc.T("Again."))); });
             AfterSpeech(0.35f, () => { if (serial == _serial) Retry(s, serial, demo); }, SoundGap);
         }
 
@@ -582,9 +583,9 @@ namespace YargAccess
                 Prompt = prompt + ".",
                 Click = _mode == "fivefret" || _mode == "prokeys",
                 Text = first
-                    ? "Now a whole pattern, as in a song. After the listen sound it plays: " + prompt
-                      + ". When the your-turn sound ends, play it back in the same rhythm. First it plays right, with the hit sounds."
-                    : "Another pattern: " + prompt + "."
+                    ? Loc.F("Now a whole pattern, as in a song. After the listen sound it plays: {0}"
+                      + ". When the your-turn sound ends, play it back in the same rhythm. First it plays right, with the hit sounds.", prompt)
+                    : Loc.F("Another pattern: {0}.", prompt)
             };
         }
 
@@ -593,7 +594,7 @@ namespace YargAccess
         static float _melStart, _lastSweep;
         static readonly List<KeyValuePair<float, float>> _samples = new List<KeyValuePair<float, float>>();
 
-        static readonly string[] NoteNames = { "C", "C sharp", "D", "E flat", "E", "F", "F sharp", "G", "A flat", "A", "B flat", "B" };
+        static readonly string[] NoteNames = { Loc.T("C"), Loc.T("C sharp"), Loc.T("D"), Loc.T("E flat"), Loc.T("E"), Loc.T("F"), Loc.T("F sharp"), Loc.T("G"), Loc.T("A flat"), Loc.T("A"), Loc.T("B flat"), Loc.T("B") };
         static string NoteName(int midi) => NoteNames[((midi % 12) + 12) % 12];
 
         static float PitchDiff(float sung, int target)
@@ -614,8 +615,8 @@ namespace YargAccess
                 Lens = Array.ConvertAll(lens, l => l * 0.6 - 0.05),
                 Listen = !mic,
                 Hit = () => CueBank.PlayHit(3, 0.8f),
-                Prompt = "Sing " + string.Join(", ", names) + ".",
-                Text = text + (mic ? " First it plays as it should be sung, then you sing it with the Pitch Guide tones." : " Listen; with a microphone you would sing it.")
+                Prompt = Loc.F("Sing {0}.", string.Join(", ", names)),
+                Text = text + " " + (mic ? Loc.T("First it plays as it should be sung, then you sing it with the Pitch Guide tones.") : Loc.T("Listen; with a microphone you would sing it."))
             };
         }
 
@@ -706,23 +707,23 @@ namespace YargAccess
                 double late = float.IsNaN(firstOn) ? 0 : firstOn - a;
                 if (ok && late <= (i == 0 ? 0.6 : 0.3)) { good++; continue; }
                 if (first != null) continue;
-                string name = "Note " + (i + 1) + ", " + NoteName(s.Melody[i]) + ",";
-                if (heard < 3) first = name + " wasn't heard.";
+                string name = NoteName(s.Melody[i]);
+                if (heard < 3) first = Loc.F("Note {0}, {1}, wasn't heard.", i + 1, name);
                 // Silent until the pitch came: late. Singing the wrong pitch first is a pitch miss, said below.
-                else if (!float.IsNaN(firstOn) && before < 3 && late > (i == 0 ? 0.6 : 0.3)) first = name + " came in " + Secs(late) + ".";
-                else first = name + " was too " + (sum / heard > 0 ? "high" : "low") + ".";
+                else if (!float.IsNaN(firstOn) && before < 3 && late > (i == 0 ? 0.6 : 0.3)) first = Loc.F("Note {0}, {1}, came in {2}.", i + 1, name, Secs(late));
+                else first = sum / heard > 0 ? Loc.F("Note {0}, {1}, was too high.", i + 1, name) : Loc.F("Note {0}, {1}, was too low.", i + 1, name);
             }
             if (good == n)
             {
                 s.Hit();
-                Later(0.15f, () => { if (serial == _serial) Say("Right, all " + n + " notes on pitch."); });
+                Later(0.15f, () => { if (serial == _serial) Say(Loc.F("Right, all {0} notes on pitch.", n)); });
                 AfterSpeech(0.25f, () => { if (serial == _serial) Ask(_index + 1); });
                 return;
             }
             CueBank.Play("miss", 0.7f);
             bool demo = ++_fails >= 2;
-            string text = (good == 0 && _samples.Count == 0 ? "I didn't hear you sing. " : "You sang " + good + " of " + n + " on pitch. " + first + " ")
-                + (demo ? "Listen to it sung right, then try again." : "Again.");
+            string text = (good == 0 && _samples.Count == 0 ? Loc.T("I didn't hear you sing.") + " " : Loc.F("You sang {0} of {1} on pitch.", good, n) + " " + first + " ")
+                + (demo ? Loc.T("Listen to it sung right, then try again.") : Loc.T("Again."));
             Later(0.25f, () => { if (serial == _serial) Say(text); });
             AfterSpeech(0.35f, () => { if (serial == _serial) Retry(s, serial, demo); }, SoundGap);
         }
@@ -730,8 +731,8 @@ namespace YargAccess
         static void Speeds()
         {
             int serial = _serial;
-            Say(SpeedText() + " Songs can also change speed partway through, and harder difficulties add more notes. "
-                + "Practice on the main menu can slow any song down while you learn it. That is the end of the practice.");
+            Say(SpeedText() + " " + Loc.T("Songs can also change speed partway through, and harder difficulties add more notes. "
+                + "Practice on the main menu can slow any song down while you learn it. That is the end of the practice."));
             AfterSpeech(0.1f, () =>
             {
                 if (serial != _serial) return;
@@ -743,24 +744,24 @@ namespace YargAccess
         static string SpeedText()
         {
             if (_lr && _mode != "vocals")
-                return "Songs move at different speeds, counted in beats a minute, from about 60 to over 200. A call keeps the song's rhythm and plays a few beats before your turn, "
-                    + "so in a slow song its notes are spread out and in a fast song they come close together. Call Length on the YargAccess tab sets how many notes a call has: 2, 4 or 8."
-                    + (_mode != "drums" ? " A click marks each note of your turn." : "");
-            string lead = _mode == "drums" ? "Drums Look-ahead" : "Look-ahead";
+                return Loc.T("Songs move at different speeds, counted in beats a minute, from about 60 to over 200. A call keeps the song's rhythm and plays a few beats before your turn, "
+                    + "so in a slow song its notes are spread out and in a fast song they come close together. Call Length on the YargAccess tab sets how many notes a call has: 2, 4 or 8.")
+                    + (_mode != "drums" ? " " + Loc.T("A click marks each note of your turn.") : "");
+            string lead = _mode == "drums" ? Loc.T("Drums Look-ahead") : Loc.T("Look-ahead");
             switch (_mode)
             {
                 case "vocals":
-                    return "Songs move at different speeds, counted in beats a minute. In a slow song each pitch has time to settle; "
-                        + "in a fast one the pitches change quickly and the Pitch Guide tones come close together.";
+                    return Loc.T("Songs move at different speeds, counted in beats a minute. In a slow song each pitch has time to settle; "
+                        + "in a fast one the pitches change quickly and the Pitch Guide tones come close together.");
                 case "drums":
-                    return "Songs move at different speeds, counted in beats a minute, from about 60 to over 200. Each sound always comes the same time before its note, the "
-                        + lead + ". In a slow song there is a gap after each note before the next sound; in a fast song the next sound can come before you have hit the last note, "
-                        + "so keep a steady beat and play the notes in the order you heard them.";
+                    return Loc.F("Songs move at different speeds, counted in beats a minute, from about 60 to over 200. Each sound always comes the same time before its note, the "
+                        + "{0}. In a slow song there is a gap after each note before the next sound; in a fast song the next sound can come before you have hit the last note, "
+                        + "so keep a steady beat and play the notes in the order you heard them.", lead);
                 default:
-                    return "Songs move at different speeds, counted in beats a minute, from about 60 to over 200. Each sound always comes the same time before its note, the "
-                        + lead + ". In a slow song there is a gap after each note before the next sound; in a fast song the next sound can come before you have played the last note, "
-                        + "so keep a steady beat and play the notes in the order you heard them."
-                        + " When notes are far apart the hit bar sound rises to each one; when they are close, it becomes a click on each note.";
+                    return Loc.F("Songs move at different speeds, counted in beats a minute, from about 60 to over 200. Each sound always comes the same time before its note, the "
+                        + "{0}. In a slow song there is a gap after each note before the next sound; in a fast song the next sound can come before you have played the last note, "
+                        + "so keep a steady beat and play the notes in the order you heard them.", lead)
+                        + " " + Loc.T("When notes are far apart the hit bar sound rises to each one; when they are close, it becomes a click on each note.");
             }
         }
 
@@ -787,13 +788,21 @@ namespace YargAccess
         static string Join(List<string> names)
         {
             if (names.Count <= 1) return names.Count == 1 ? names[0] : "";
-            return string.Join(", ", names.GetRange(0, names.Count - 1).ToArray()) + " and " + names[names.Count - 1];
+            return Loc.F("{0} and {1}", string.Join(", ", names.GetRange(0, names.Count - 1).ToArray()), names[names.Count - 1]);
+        }
+
+        // "A and B and C", one key per pair so the word order can change.
+        static string And(IEnumerable<string> names)
+        {
+            string all = null;
+            foreach (var n in names) all = all == null ? n : Loc.F("{0} and {1}", all, n);
+            return all ?? "";
         }
 
         // Button names on the practice device, from the tutorial profile's binds (user, 2026-11-13).
         static string Btn(GameMode gm, int action) => PracticeDevices.ButtonName(gm, action);
 
-        static string OnDevice(string text) => text == null || PracticeDevices.DeviceKind == null ? null : "On your " + PracticeDevices.DeviceKind + ", " + text;
+        static string OnDevice(string text) => text == null || PracticeDevices.DeviceKind == null ? null : Loc.F("On your {0}, {1}", PracticeDevices.DeviceKind, text);
 
         static string AllOf(List<string> names) => names.Contains(null) ? null : Join(names);
 
@@ -805,41 +814,41 @@ namespace YargAccess
         {
             if (PracticeDevices.Device == null) return null;
             string strum = Strum5;
-            if (frets.Length == 0) return strum == null ? null : OnDevice("press " + strum + " with no fret held.");
+            if (frets.Length == 0) return strum == null ? null : OnDevice(Loc.F("press {0} with no fret held.", strum));
             int top = frets[frets.Length - 1];
             if (frets.Length > 1)
             {
                 var names = new List<string>();
                 foreach (var f in frets) names.Add(Fret5(f));
                 string all = AllOf(names);
-                return all == null || strum == null ? null : OnDevice("hold " + all + " and press " + strum + ".");
+                return all == null || strum == null ? null : OnDevice(Loc.F("hold {0} and press {1}.", all, strum));
             }
             string c = Fret5(top);
             if (c == null) return null;
             switch (kind)
             {
                 case CueBank.Kind.HammerOn:
-                    return Fret5(top - 1) == null ? null : OnDevice("hold " + Fret5(top - 1) + " and press " + c + ".");
+                    return Fret5(top - 1) == null ? null : OnDevice(Loc.F("hold {0} and press {1}.", Fret5(top - 1), c));
                 case CueBank.Kind.PullOff:
-                    return Fret5(top + 1) == null ? null : OnDevice("hold " + c + " and " + Fret5(top + 1) + ", then let go of " + Fret5(top + 1) + ".");
+                    return Fret5(top + 1) == null ? null : OnDevice(Loc.F("hold {0} and {1}, then let go of {1}.", c, Fret5(top + 1)));
                 case CueBank.Kind.Tap:
-                    return OnDevice("press " + c + ".");
+                    return OnDevice(Loc.F("press {0}.", c));
                 default:
-                    return strum == null ? null : OnDevice("hold " + c + " and press " + strum + ".");
+                    return strum == null ? null : OnDevice(Loc.F("hold {0} and press {1}.", c, strum));
             }
         }
 
         static string StarHint(GameMode gm, int action)
         {
             var b = Btn(gm, action);
-            return b == null ? null : OnDevice("press " + b + ".");
+            return b == null ? null : OnDevice(Loc.F("press {0}.", b));
         }
 
         // A device with no button for it (a MIDI keyboard has no star power bind): the computer keyboard still works.
-        static string KeyboardStill(string key) => PracticeDevices.Device == null ? null : "On the computer keyboard, press " + key + ".";
+        static string KeyboardStill(string key) => PracticeDevices.Device == null ? null : Loc.F("On the computer keyboard, press {0}.", key);
 
-        static readonly string[] Frets = { "Open", "Green", "Red", "Yellow", "Blue", "Orange" };
-        static readonly string[] Places = { "in the centre", "far left", "on the left", "in the centre", "on the right", "far right" };
+        static readonly string[] Frets = { Loc.T("Open"), Loc.T("Green"), Loc.T("Red"), Loc.T("Yellow"), Loc.T("Blue"), Loc.T("Orange") };
+        static readonly string[] Places = { Loc.T("in the centre"), Loc.T("far left"), Loc.T("on the left"), Loc.T("in the centre"), Loc.T("on the right"), Loc.T("far right") };
 
         static Step FretStep(int[] frets, CueBank.Kind kind, bool held, bool star, bool kb, double lead)
         {
@@ -871,45 +880,45 @@ namespace YargAccess
             s.Any = !strum && !open ? new[] { "fret:" + top + "|" + token } : new[] { token };
             if (open)
             {
-                s.Prompt = "Strum with no fret held.";
-                s.Text = "An open note, the low sound in the centre. " + s.Prompt;
-                s.Hint = kb ? "On the keyboard, press Down with no number held." : dh;
+                s.Prompt = Loc.T("Strum with no fret held.");
+                s.Text = Loc.T("An open note, the low sound in the centre.") + " " + s.Prompt;
+                s.Hint = kb ? Loc.T("On the keyboard, press Down with no number held.") : dh;
                 return s;
             }
             if (chord)
             {
-                s.Prompt = "Hold " + Join(names) + " and strum once.";
-                s.Text = "A chord: " + Join(names) + " together, with the chord rake. " + s.Prompt;
-                s.Hint = kb ? "On the keyboard, hold " + string.Join(" and ", digits.ToArray()) + " and press Down." : dh;
+                s.Prompt = Loc.F("Hold {0} and strum once.", Join(names));
+                s.Text = Loc.F("A chord: {0} together, with the chord rake.", Join(names)) + " " + s.Prompt;
+                s.Hint = kb ? Loc.F("On the keyboard, hold {0} and press Down.", And(digits)) : dh;
                 return s;
             }
             string c = Frets[top];
             switch (kind)
             {
                 case CueBank.Kind.HammerOn:
-                    s.Prompt = "Hold " + Frets[top - 1] + ", then press " + c + " without strumming.";
-                    s.Text = "A hammer-on to " + c + ": the note slides up into place. It comes right after a lower note you hit: keep that fret down and press " + c + ", with no strum. " + s.Prompt;
+                    s.Prompt = Loc.F("Hold {0}, then press {1} without strumming.", Frets[top - 1], c);
+                    s.Text = Loc.F("A hammer-on to {0}: the note slides up into place. It comes right after a lower note you hit: keep that fret down and press {0}, with no strum.", c) + " " + s.Prompt;
                     break;
                 case CueBank.Kind.PullOff:
                     s.Any = new[] { "lift:" + top };
-                    s.Prompt = "Hold " + c + " and " + Frets[top + 1] + ", then lift " + Frets[top + 1] + " without strumming.";
-                    s.Text = "A pull-off to " + c + ": the note slides down. It comes right after a higher note you hit: with " + c + " already held, lift the higher fret, with no strum. " + s.Prompt;
+                    s.Prompt = Loc.F("Hold {0} and {1}, then lift {1} without strumming.", c, Frets[top + 1]);
+                    s.Text = Loc.F("A pull-off to {0}: the note slides down. It comes right after a higher note you hit: with {0} already held, lift the higher fret, with no strum.", c) + " " + s.Prompt;
                     break;
                 case CueBank.Kind.Tap:
-                    s.Prompt = "Press " + c + " with no strum.";
-                    s.Text = "A tap note on " + c + ": two wooden knocks. " + s.Prompt;
+                    s.Prompt = Loc.F("Press {0} with no strum.", c);
+                    s.Text = Loc.F("A tap note on {0}: two wooden knocks.", c) + " " + s.Prompt;
                     break;
                 default:
-                    s.Prompt = "Hold " + c + " and strum.";
-                    s.Text = c + " note, " + Places[top] + ". " + s.Prompt;
+                    s.Prompt = Loc.F("Hold {0} and strum.", c);
+                    s.Text = Loc.F("{0} note, {1}.", c, Places[top]) + " " + s.Prompt;
                     break;
             }
-            if (held) s.Text = "A held note on " + c + ": its tone lasts, then the Let go chimes play. "
-                + (_lr ? "When you play it back, hold the fret as long as the tone lasted. " : "In a song keep the fret down until the chimes. ") + s.Prompt;
-            if (star) s.Text = "A star power note on " + c + ": the sparkle marks it. Hit every note of a star power phrase to fill the star power bar. " + s.Prompt;
-            if (kind == CueBank.Kind.HammerOn) s.Hint = kb ? "On the keyboard, hold " + (top - 1) + " and press " + top + "." : dh;
-            else if (kind == CueBank.Kind.PullOff) s.Hint = kb ? "On the keyboard, hold " + top + " and " + (top + 1) + ", then let go of " + (top + 1) + "." : dh;
-            else s.Hint = kb ? (strum ? "On the keyboard, hold " + top + " and press Down." : "On the keyboard, press " + top + ".") : dh;
+            if (held) s.Text = Loc.F("A held note on {0}: its tone lasts, then the Let go chimes play.", c) + " "
+                + (_lr ? Loc.T("When you play it back, hold the fret as long as the tone lasted.") : Loc.T("In a song keep the fret down until the chimes.")) + " " + s.Prompt;
+            if (star) s.Text = Loc.F("A star power note on {0}: the sparkle marks it. Hit every note of a star power phrase to fill the star power bar.", c) + " " + s.Prompt;
+            if (kind == CueBank.Kind.HammerOn) s.Hint = kb ? Loc.F("On the keyboard, hold {0} and press {1}.", top - 1, top) : dh;
+            else if (kind == CueBank.Kind.PullOff) s.Hint = kb ? Loc.F("On the keyboard, hold {0} and {1}, then let go of {1}.", top, top + 1) : dh;
+            else s.Hint = kb ? (strum ? Loc.F("On the keyboard, hold {0} and press Down.", top) : Loc.F("On the keyboard, press {0}.", top)) : dh;
             return s;
         }
 
@@ -926,7 +935,7 @@ namespace YargAccess
             _steps.Add(FretStep(new[] { 4 }, CueBank.Kind.Tap, false, false, kb, lead));
             _steps.Add(FretStep(new[] { 1 }, strum, true, false, kb, lead));
             _steps.Add(FretStep(new[] { 3 }, strum, false, true, kb, lead));
-            _steps.Add(StarStep(kb ? "On the keyboard, press Backspace." : StarHint(GameMode.FiveFretGuitar, 9) ?? KeyboardStill("Backspace")));
+            _steps.Add(StarStep(kb ? Loc.T("On the keyboard, press Backspace.") : StarHint(GameMode.FiveFretGuitar, 9) ?? KeyboardStill(Loc.T("Backspace"))));
             if (!ModSettings.ListenAndRepeat) return;
             _steps.Add(FretPattern(new[] { 0.0, 1, 2, 3 }, new[] { 1, 2, 3, 2 }, true, kb));
             _steps.Add(FretPattern(new[] { 0.0, 1, 1.5, 3 }, new[] { 1, 1, 3, 4 }, false, kb));
@@ -936,13 +945,13 @@ namespace YargAccess
         {
             var s = PatternStep(beats, Array.ConvertAll(frets, f => "strum:" + f), Array.ConvertAll(frets, f => Frets[f]),
                 i => CueBank.PlayNote(frets[i], CueBank.Kind.Strum), i => CueBank.PlayHit(frets[i], 0.8f), first);
-            if (kb) s.Hint = "On the keyboard: " + string.Join(", ", Array.ConvertAll(frets, f => f.ToString())) + ", each with Down.";
+            if (kb) s.Hint = Loc.F("On the keyboard: {0}, each with Down.", string.Join(", ", Array.ConvertAll(frets, f => f.ToString())));
             else
             {
                 var names = new List<string>(Array.ConvertAll(frets, f => Fret5(f)));
                 string strum = Strum5;
                 if (PracticeDevices.Device != null && !names.Contains(null) && strum != null)
-                    s.Hint = OnDevice(string.Join(", ", names.ToArray()) + ", each with " + strum + ".");
+                    s.Hint = OnDevice(Loc.F("{0}, each with {1}.", string.Join(", ", names.ToArray()), strum));
             }
             return s;
         }
@@ -956,15 +965,15 @@ namespace YargAccess
                 Sound = () => CueBank.Play("spready", 0.8f),
                 Hit = () => CueBank.Play("yarg_spdeploy", 0.8f),
                 Any = new[] { "sp" },
-                Prompt = "Press your star power button.",
-                Text = "This sparkle means star power is ready: the bar is half full or more. Press your star power button to turn it on and double your points.",
+                Prompt = Loc.T("Press your star power button."),
+                Text = Loc.T("This sparkle means star power is ready: the bar is half full or more. Press your star power button to turn it on and double your points."),
                 Hint = hint
             };
         }
 
-        static readonly string[] DrumKeys = { "Space", "Z", "X", "C", "V", "S", "D", "F" };
-        static readonly string[] FourPlaces = { "the centre", "left", "centre left", "centre right", "right", "centre left", "centre right", "right" };
-        static readonly string[] FivePlaces = { "the centre", "far left", "left", "the centre", "right", "far right" };
+        static readonly string[] DrumKeys = { Loc.T("Space"), "Z", "X", "C", "V", "S", "D", "F" };
+        static readonly string[] FourPlaces = { Loc.T("the centre"), Loc.T("left"), Loc.T("centre left"), Loc.T("centre right"), Loc.T("right"), Loc.T("centre left"), Loc.T("centre right"), Loc.T("right") };
+        static readonly string[] FivePlaces = { Loc.T("the centre"), Loc.T("far left"), Loc.T("left"), Loc.T("the centre"), Loc.T("right"), Loc.T("far right") };
 
         static Step DrumStep(int[] pads, float vol, bool five, bool kb, string text)
         {
@@ -978,24 +987,26 @@ namespace YargAccess
             var keys = new List<string>();
             foreach (var p in pads)
             {
-                padNames.Add(p == 0 ? "the kick" : "the " + names[p]);
+                padNames.Add(p == 0 ? Loc.T("the kick") : Loc.F("the {0}", DrumButtonTest.Said(five, p)));
                 keys.Add(DrumKeys[Math.Min(p, DrumKeys.Length - 1)]);
             }
             if (pads.Length == 1)
             {
                 int p = pads[0];
                 s.Any = new[] { "pad:" + p };
-                s.Prompt = p == 0 ? "Press the kick pedal." : "Hit the " + names[p] + ".";
-                s.Text = text ?? (p == 0 ? "The kick, the low sound in the centre. " : "The " + names[p] + ", " + places[p]
-                    + (names[p].EndsWith("cymbal") ? ": its lane's note an octave up, with a shimmer. " : ". ")) + s.Prompt;
+                s.Prompt = p == 0 ? Loc.T("Press the kick pedal.") : Loc.F("Hit the {0}.", DrumButtonTest.Said(five, p));
+                // names[] stays English for the cymbal check; it is translated where spoken.
+                s.Text = text ?? ((p == 0 ? Loc.T("The kick, the low sound in the centre.")
+                    : names[p].EndsWith("cymbal") ? Loc.F("The {0}, {1}: its lane's note an octave up, with a shimmer.", DrumButtonTest.Said(five, p), places[p])
+                    : Loc.F("The {0}, {1}.", DrumButtonTest.Said(five, p), places[p])) + " ") + s.Prompt;
             }
             else
             {
                 s.All = Array.ConvertAll(pads, p => "pad:" + p);
-                s.Prompt = "Hit " + Join(padNames) + " together.";
-                s.Text = (text ?? "Two at once sound together. ") + s.Prompt;
+                s.Prompt = Loc.F("Hit {0} together.", Join(padNames));
+                s.Text = (text ?? Loc.T("Two at once sound together.") + " ") + s.Prompt;
             }
-            s.Hint = kb ? "On the keyboard, press " + string.Join(" and ", keys.ToArray()) + "." : DrumDeviceHint(pads, five);
+            s.Hint = kb ? Loc.F("On the keyboard, press {0}.", And(keys)) : DrumDeviceHint(pads, five);
             return s;
         }
 
@@ -1011,7 +1022,10 @@ namespace YargAccess
                 var b = Btn(gm, a);
                 if (b != null && !names.Contains(b)) names.Add(b);
             }
-            return names.Count == 0 ? null : string.Join(" or ", names.ToArray());
+            if (names.Count == 0) return null;
+            string all = names[0];
+            for (int i = 1; i < names.Count; i++) all = Loc.F("{0} or {1}", all, names[i]);
+            return all;
         }
 
         static string DrumDeviceHint(int[] pads, bool five)
@@ -1021,8 +1035,9 @@ namespace YargAccess
             foreach (var p in pads) names.Add(PadButton(p, five));
             string all = AllOf(names);
             if (all == null) return null;
-            string verb = PracticeDevices.Device is Gamepad ? "press " : "hit ";
-            return OnDevice(verb + all + (pads.Length > 1 ? " together." : "."));
+            bool press = PracticeDevices.Device is Gamepad;
+            if (pads.Length > 1) return OnDevice(press ? Loc.F("press {0} together.", all) : Loc.F("hit {0} together.", all));
+            return OnDevice(press ? Loc.F("press {0}.", all) : Loc.F("hit {0}.", all));
         }
 
         // Set by the tutorials for a kit the player said has no cymbals: four-lane steps, no cymbals.
@@ -1039,16 +1054,16 @@ namespace YargAccess
             _steps.Add(DrumStep(new[] { 0 }, 0.8f, five, kb, null));
             for (int p = 1; p < count; p++) _steps.Add(DrumStep(new[] { p }, 0.8f, five, kb, null));
             _steps.Add(DrumStep(new[] { 0, 1 }, 0.8f, five, kb, null));
-            var ghost = DrumStep(new[] { 1 }, 0.35f, five, kb, "A ghost note on the Red pad: it plays softly, with a whisper. On a kit, hit it gently. Hit the Red pad.");
+            var ghost = DrumStep(new[] { 1 }, 0.35f, five, kb, Loc.T("A ghost note on the Red pad: it plays softly, with a whisper. On a kit, hit it gently. Hit the Red pad."));
             var ghostPad = ghost.Sound;
             ghost.Sound = () => { ghostPad(); CueBank.PlayDrumMark(true, DrumSound.PanOf(1, five), 0.9f); };
             _steps.Add(ghost);
-            var accent = DrumStep(new[] { 1 }, 1f, five, kb, "An accent on the Red pad: it plays loudly, with a sharp crack. On a kit, hit it hard. Hit the Red pad.");
+            var accent = DrumStep(new[] { 1 }, 1f, five, kb, Loc.T("An accent on the Red pad: it plays loudly, with a sharp crack. On a kit, hit it hard. Hit the Red pad."));
             var accentPad = accent.Sound;
             accent.Sound = () => { accentPad(); CueBank.PlayDrumMark(false, DrumSound.PanOf(1, five), 0.9f); };
             _steps.Add(accent);
             // A flam: two pads a split second apart (under 44 ms in a chart); both play, one just after the other.
-            var flam = DrumStep(new[] { 1, 2 }, 0.75f, five, kb, "A flam: two pads a split second apart, the second right behind the first. Both pads play. ");
+            var flam = DrumStep(new[] { 1, 2 }, 0.75f, five, kb, Loc.T("A flam: two pads a split second apart, the second right behind the first. Both pads play.") + " ");
             flam.Sound = () =>
             {
                 int serial = _serial;
@@ -1061,14 +1076,14 @@ namespace YargAccess
             var star = DrumStep(new[] { 2 }, 0.8f, five, kb, null);
             var plain = star.Sound;
             star.Sound = () => { plain(); CueBank.Play("spnote", 0.8f); };
-            star.Text = "A star power note: the sparkle marks it. Hit every note of a star power phrase to fill the star power bar. " + star.Prompt;
+            star.Text = Loc.T("A star power note: the sparkle marks it. Hit every note of a star power phrase to fill the star power bar.") + " " + star.Prompt;
             _steps.Add(star);
             _steps.Add(new Step
             {
                 Lead = 0.3,
                 Listen = true,
                 Sound = () => CueBank.PlayFill(1.5, 0.8f),
-                Text = "On drums star power turns on in a fill, which comes only while star power is ready. A slow rise plays through the fill and ends on its last note: hit that note to turn star power on. Listen."
+                Text = Loc.T("On drums star power turns on in a fill, which comes only while star power is ready. A slow rise plays through the fill and ends on its last note: hit that note to turn star power on. Listen.")
             });
             if (!ModSettings.ListenAndRepeat) return;
             _steps.Add(DrumPattern(new[] { 0.0, 1, 2, 3 }, new[] { 0, 1, 0, 1 }, five, true, kb));
@@ -1078,7 +1093,7 @@ namespace YargAccess
         static Step DrumPattern(double[] beats, int[] pads, bool five, bool first, bool kb)
         {
             var s = DrumPatternStep(beats, pads, five, first);
-            if (kb) s.Hint = "On the keyboard: " + string.Join(", ", Array.ConvertAll(pads, p => DrumKeys[Math.Min(p, DrumKeys.Length - 1)])) + ".";
+            if (kb) s.Hint = Loc.F("On the keyboard: {0}.", string.Join(", ", Array.ConvertAll(pads, p => DrumKeys[Math.Min(p, DrumKeys.Length - 1)])));
             else if (PracticeDevices.Device != null)
             {
                 var names = new List<string>(Array.ConvertAll(pads, p => PadButton(p, five)));
@@ -1090,7 +1105,7 @@ namespace YargAccess
         static Step DrumPatternStep(double[] beats, int[] pads, bool five, bool first)
         {
             var names = five ? DrumButtonTest.FiveNames : DrumButtonTest.FourNames;
-            return PatternStep(beats, Array.ConvertAll(pads, p => "pad:" + p), Array.ConvertAll(pads, p => p == 0 ? "kick" : names[p]),
+            return PatternStep(beats, Array.ConvertAll(pads, p => "pad:" + p), Array.ConvertAll(pads, p => p == 0 ? Loc.T("kick") : DrumButtonTest.Said(five, p)),
                 i => CueBank.PlayDrum(DrumSound.SoundOf(pads[i], five), DrumSound.PanOf(pads[i], five), 0.8f),
                 i => CueBank.PlayDrumHit(DrumSound.SoundOf(pads[i], five), DrumSound.PanOf(pads[i], five), 0.9f), first);
         }
@@ -1099,8 +1114,8 @@ namespace YargAccess
         {
             var s = k.ToString();
             if (s.StartsWith("Digit", StringComparison.Ordinal)) return s.Substring(5);
-            if (k == Key.RightBracket) return "right bracket";
-            if (k == Key.LeftBracket) return "left bracket";
+            if (k == Key.RightBracket) return Loc.T("right bracket");
+            if (k == Key.LeftBracket) return Loc.T("left bracket");
             return s;
         }
 
@@ -1133,21 +1148,21 @@ namespace YargAccess
             if (keys.Length == 1)
             {
                 s.Any = specs;
-                s.Prompt = "Press " + names[0] + ".";
+                s.Prompt = Loc.F("Press {0}.", names[0]);
                 s.Text = (text ?? char.ToUpperInvariant(names[0][0]) + names[0].Substring(1) + ". ") + s.Prompt;
             }
             else
             {
                 s.All = specs;
-                s.Prompt = "Press " + Join(names) + " together.";
-                s.Text = (text ?? "A chord: " + Join(names) + ", sounding together. ") + s.Prompt;
+                s.Prompt = Loc.F("Press {0} together.", Join(names));
+                s.Text = (text ?? Loc.F("A chord: {0}, sounding together.", Join(names)) + " ") + s.Prompt;
             }
-            if (kb) s.Hint = "On the computer keyboard, press " + string.Join(" and ", hints.ToArray()) + ".";
+            if (kb) s.Hint = Loc.F("On the computer keyboard, press {0}.", And(hints));
             else
             {
                 var bound = new List<string>(Array.ConvertAll(keys, k => Btn(GameMode.ProKeys, k)));
                 string all = PracticeDevices.Device == null ? null : AllOf(bound);
-                s.Hint = all == null ? null : OnDevice("press " + all + (keys.Length > 1 ? " together." : "."));
+                s.Hint = all == null ? null : OnDevice(keys.Length > 1 ? Loc.F("press {0} together.", all) : Loc.F("press {0}.", all));
             }
             return s;
         }
@@ -1158,16 +1173,16 @@ namespace YargAccess
             var midis = new HashSet<int>();
             for (int k = 0; k <= 24; k++) midis.Add(ProKeysSound.MidiOf(k));
             CueBank.PrepareKeys(midis);
-            _steps.Add(KeyStep(new[] { 0 }, false, false, kb, "Low C, the lowest key, on the left. Each key plays its own pitch. "));
+            _steps.Add(KeyStep(new[] { 0 }, false, false, kb, Loc.T("Low C, the lowest key, on the left. Each key plays its own pitch.") + " "));
             _steps.Add(KeyStep(new[] { 4 }, false, false, kb, null));
             _steps.Add(KeyStep(new[] { 7 }, false, false, kb, null));
-            _steps.Add(KeyStep(new[] { 1 }, false, false, kb, "A black key, C sharp, between C and D. "));
-            _steps.Add(KeyStep(new[] { 12 }, false, false, kb, "Middle C, in the centre, an octave above low C. "));
-            _steps.Add(KeyStep(new[] { 24 }, false, false, kb, "High C, the highest key, on the right. "));
+            _steps.Add(KeyStep(new[] { 1 }, false, false, kb, Loc.T("A black key, C sharp, between C and D.") + " "));
+            _steps.Add(KeyStep(new[] { 12 }, false, false, kb, Loc.T("Middle C, in the centre, an octave above low C.") + " "));
+            _steps.Add(KeyStep(new[] { 24 }, false, false, kb, Loc.T("High C, the highest key, on the right.") + " "));
             _steps.Add(KeyStep(new[] { 0, 4, 7 }, false, false, kb, null));
-            _steps.Add(KeyStep(new[] { 12 }, true, false, kb, "A held note: its tone lasts, then the Let go chimes play. " + (_lr ? "When you play it back, hold the key as long as the tone lasted. " : "In a song keep the key down until the chimes. ")));
-            _steps.Add(KeyStep(new[] { 7 }, false, true, kb, "A star power note: the sparkle marks it. Hit every note of a star power phrase to fill the star power bar. "));
-            _steps.Add(StarStep(kb ? "On the keyboard, press Backspace." : StarHint(GameMode.ProKeys, 25) ?? KeyboardStill("Backspace")));
+            _steps.Add(KeyStep(new[] { 12 }, true, false, kb, Loc.T("A held note: its tone lasts, then the Let go chimes play.") + " " + (_lr ? Loc.T("When you play it back, hold the key as long as the tone lasted.") : Loc.T("In a song keep the key down until the chimes.")) + " "));
+            _steps.Add(KeyStep(new[] { 7 }, false, true, kb, Loc.T("A star power note: the sparkle marks it. Hit every note of a star power phrase to fill the star power bar.") + " "));
+            _steps.Add(StarStep(kb ? Loc.T("On the keyboard, press Backspace.") : StarHint(GameMode.ProKeys, 25) ?? KeyboardStill(Loc.T("Backspace"))));
             if (!ModSettings.ListenAndRepeat) return;
             _steps.Add(KeyPattern(new[] { 0.0, 1, 2, 3 }, new[] { 0, 4, 7, 12 }, true));
             _steps.Add(KeyPattern(new[] { 0.0, 0.5, 1, 2 }, new[] { 12, 7, 4, 0 }, false));
@@ -1193,15 +1208,15 @@ namespace YargAccess
                 Listen = !mic,
                 Sound = () => CueBank.PlayGuide(60, 0.8f),
                 Hit = () => CueBank.PlayHit(3, 0.8f),
-                Prompt = "Sing the pitch of the tone.",
-                Text = "The Pitch Guide: a soft tone at the pitch to sing, just before the word starts. Any octave counts. "
-                    + (mic ? "Sing the pitch of the tone and hold it." : "Listen; with a microphone you would sing it.")
+                Prompt = Loc.T("Sing the pitch of the tone."),
+                Text = Loc.T("The Pitch Guide: a soft tone at the pitch to sing, just before the word starts. Any octave counts.") + " "
+                    + (mic ? Loc.T("Sing the pitch of the tone and hold it.") : Loc.T("Listen; with a microphone you would sing it."))
             });
             _steps.Add(SungStep(new[] { 60, 62, 64, 65, 67 }, new[] { 0.0, 1, 2, 3, 4 }, new[] { 1.0, 1, 1, 1, 1.5 },
-                "A scale: five notes climbing, C, D, E, F, G. Each new pitch has its own Pitch Guide tone: sing each note and hold it until the next. "
-                + "While you sing too far off, a rising sweep means sing higher and a falling sweep means sing lower.", mic));
+                Loc.T("A scale: five notes climbing, C, D, E, F, G. Each new pitch has its own Pitch Guide tone: sing each note and hold it until the next. "
+                + "While you sing too far off, a rising sweep means sing higher and a falling sweep means sing lower."), mic));
             _steps.Add(SungStep(new[] { 64, 62, 60, 62, 64, 64, 64 }, new[] { 0.0, 1, 2, 3, 4, 5, 6 }, new[] { 1.0, 1, 1, 1, 1, 1, 2 },
-                "A short tune, the way a song moves: E, D, C, D, then E three times, the last one held.", mic));
+                Loc.T("A short tune, the way a song moves: E, D, C, D, then E three times, the last one held."), mic));
             _steps.Add(new Step
             {
                 Lead = 0.1,
@@ -1209,8 +1224,8 @@ namespace YargAccess
                 Listen = !mic,
                 Sound = () => CueBank.Play("vocaltalk"),
                 Hit = () => CueBank.PlayHit(3, 0.8f),
-                Prompt = "Say a word.",
-                Text = "Two soft breaths: these words are spoken, not sung, and score at any pitch. " + (mic ? "Say a word." : "Listen.")
+                Prompt = Loc.T("Say a word."),
+                Text = Loc.T("Two soft breaths: these words are spoken, not sung, and score at any pitch.") + " " + (mic ? Loc.T("Say a word.") : Loc.T("Listen."))
             });
             _steps.Add(new Step
             {
@@ -1219,27 +1234,32 @@ namespace YargAccess
                 Sound = () => CueBank.Play("vocalperc"),
                 Hit = () => CueBank.PlayHit(3, 0.8f),
                 Any = new[] { "hit", "mic" },
-                Prompt = "Press your Hit button" + (mic ? " or tap the microphone." : "."),
-                Text = (_lr ? "A percussion note, such as a tambourine: a woodblock knock. Play it back with your Hit button" : "A percussion note, such as a tambourine: a woodblock knock plays just before it. Press your Hit button") + (mic ? " or tap the microphone." : "."),
-                Hint = kb ? "On the keyboard, press Backspace." : StarHint(GameMode.Vocals, 1) ?? KeyboardStill("Backspace")
+                Prompt = mic ? Loc.T("Press your Hit button or tap the microphone.") : Loc.T("Press your Hit button."),
+                Text = _lr
+                    ? (mic ? Loc.T("A percussion note, such as a tambourine: a woodblock knock. Play it back with your Hit button or tap the microphone.")
+                        : Loc.T("A percussion note, such as a tambourine: a woodblock knock. Play it back with your Hit button."))
+                    : (mic ? Loc.T("A percussion note, such as a tambourine: a woodblock knock plays just before it. Press your Hit button or tap the microphone.")
+                        : Loc.T("A percussion note, such as a tambourine: a woodblock knock plays just before it. Press your Hit button.")),
+                Hint = kb ? Loc.T("On the keyboard, press Backspace.") : StarHint(GameMode.Vocals, 1) ?? KeyboardStill(Loc.T("Backspace"))
             });
             _steps.Add(new Step
             {
                 Lead = 0.1,
                 Listen = true,
                 Sound = () => { CueBank.PlayGuide(62, 0.8f); CueBank.Play("spnote", 0.8f); },
-                Text = "The sparkle with a tone means a star power phrase: sing it well to fill the star power bar. Listen."
+                Text = Loc.T("The sparkle with a tone means a star power phrase: sing it well to fill the star power bar. Listen.")
             });
-            _steps.Add(StarStep(kb ? "On the keyboard, press Space." : StarHint(GameMode.Vocals, 2) ?? KeyboardStill("Space")));
+            _steps.Add(StarStep(kb ? Loc.T("On the keyboard, press Space.") : StarHint(GameMode.Vocals, 2) ?? KeyboardStill(Loc.T("Space"))));
             if (!ModSettings.ListenAndRepeat) return;
-            var hit = mic ? "Hit or a tap on the microphone" : "Hit";
-            var perc = PatternStep(new[] { 0.0, 1, 1.5, 2 }, new[] { "hit|mic", "hit|mic", "hit|mic", "hit|mic" }, new[] { "Hit", "Hit", "Hit", "Hit" },
+            var hit = mic ? Loc.T("Hit or a tap on the microphone") : Loc.T("Hit");
+            var h = Loc.T("Hit");
+            var perc = PatternStep(new[] { 0.0, 1, 1.5, 2 }, new[] { "hit|mic", "hit|mic", "hit|mic", "hit|mic" }, new[] { h, h, h, h },
                 i => CueBank.Play("vocalperc"), i => CueBank.PlayHit(3, 0.8f), true);
-            perc.Text = "Now a whole pattern, as in a song: Listen and Repeat works on percussion notes, and you sing the rest of the song as usual. "
-                + "After the listen sound, four knocks play. When the your-turn sound ends, play them back with " + hit + ", in the same rhythm. First they play right, with the hit sounds.";
-            perc.Prompt = "four knocks.";
-            var hitName = kb ? "Backspace" : Btn(GameMode.Vocals, 1);
-            if (hitName != null) perc.Hint = (kb ? "On the keyboard, press " : "On your " + PracticeDevices.DeviceKind + ", press ") + hitName + " for each knock.";
+            perc.Text = Loc.F("Now a whole pattern, as in a song: Listen and Repeat works on percussion notes, and you sing the rest of the song as usual. "
+                + "After the listen sound, four knocks play. When the your-turn sound ends, play them back with {0}, in the same rhythm. First they play right, with the hit sounds.", hit);
+            perc.Prompt = Loc.T("four knocks.");
+            var hitName = kb ? Loc.T("Backspace") : Btn(GameMode.Vocals, 1);
+            if (hitName != null) perc.Hint = kb ? Loc.F("On the keyboard, press {0} for each knock.", hitName) : Loc.F("On your {0}, press {1} for each knock.", PracticeDevices.DeviceKind, hitName);
             _steps.Add(perc);
         }
     }

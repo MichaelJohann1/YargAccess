@@ -32,7 +32,7 @@ namespace YargAccess
             _lines.AddRange(items);
             _idx = 0;
             _opened = true;
-            MenuAnnouncer.Focused(_lines.Count + " entries. " + Line());
+            MenuAnnouncer.Focused(Loc.F("{0} entries. {1}", _lines.Count, Line()));
         }
 
         public static void Move(int dir)

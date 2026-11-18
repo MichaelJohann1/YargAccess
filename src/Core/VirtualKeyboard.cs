@@ -9,7 +9,7 @@ namespace YargAccess
 {
     public static class VirtualKeyboard
     {
-        static readonly string[] RowNames = { "Lowercase", "Capitals", "Numbers", "Symbols" };
+        static readonly string[] RowNames = { Loc.T("Lowercase"), Loc.T("Capitals"), Loc.T("Numbers"), Loc.T("Symbols") };
         static readonly string[] Rows =
         {
             "abcdefghijklmnopqrstuvwxyz",
@@ -28,8 +28,8 @@ namespace YargAccess
 
         public static bool IsOpen => _open;
 
-        public const string Help = "On-screen keyboard. Left and Right choose a character, Up and Down change rows. "
-            + "A types it, X deletes, Y adds a space, left bumper reads what you typed. Start saves, B cancels.";
+        public static string Help => Loc.T("On-screen keyboard. Left and Right choose a character, Up and Down change rows. "
+            + "A types it, X deletes, Y adds a space, left bumper reads what you typed. Start saves, B cancels.");
 
         public static string Open(TMP_InputField field)
         {
@@ -98,7 +98,7 @@ namespace YargAccess
         static void Type(TMP_InputField field, char c)
         {
             var t = field.text ?? "";
-            if (field.characterLimit > 0 && t.Length >= field.characterLimit) { Captions.Say("Full", true); return; }
+            if (field.characterLimit > 0 && t.Length >= field.characterLimit) { Captions.Say(Loc.T("Full"), true); return; }
             field.text = t + c;
             field.caretPosition = field.text.Length;
         }
@@ -106,44 +106,44 @@ namespace YargAccess
         static void Delete(TMP_InputField field)
         {
             var t = field.text ?? "";
-            if (t.Length == 0) { Speech.Say("blank", true); return; }
+            if (t.Length == 0) { Speech.Say(Loc.T("blank"), true); return; }
             field.text = t.Substring(0, t.Length - 1);
             field.caretPosition = field.text.Length;
         }
 
         public static string CharName(char c)
         {
-            if (char.IsUpper(c)) return "capital " + c;
+            if (char.IsUpper(c)) return Loc.F("capital {0}", c);
             switch (c)
             {
-                case ' ': return "space";
-                case '.': return "dot";
-                case ',': return "comma";
-                case '-': return "dash";
-                case '!': return "exclamation";
-                case '?': return "question";
-                case '\'': return "apostrophe";
-                case '"': return "quote";
-                case ':': return "colon";
-                case ';': return "semicolon";
-                case '_': return "underscore";
-                case '(': return "left paren";
-                case ')': return "right paren";
-                case '&': return "and";
-                case '@': return "at";
-                case '#': return "hash";
-                case '/': return "slash";
-                case '+': return "plus";
-                case '*': return "star";
-                case '=': return "equals";
-                case '%': return "percent";
-                case '$': return "dollar";
-                case '<': return "less than";
-                case '>': return "greater than";
-                case '[': return "left bracket";
-                case ']': return "right bracket";
-                case '~': return "tilde";
-                case '^': return "caret";
+                case ' ': return Loc.T("space");
+                case '.': return Loc.T("dot");
+                case ',': return Loc.T("comma");
+                case '-': return Loc.T("dash");
+                case '!': return Loc.T("exclamation");
+                case '?': return Loc.T("question");
+                case '\'': return Loc.T("apostrophe");
+                case '"': return Loc.T("quote");
+                case ':': return Loc.T("colon");
+                case ';': return Loc.T("semicolon");
+                case '_': return Loc.T("underscore");
+                case '(': return Loc.T("left paren");
+                case ')': return Loc.T("right paren");
+                case '&': return Loc.T("and");
+                case '@': return Loc.T("at");
+                case '#': return Loc.T("hash");
+                case '/': return Loc.T("slash");
+                case '+': return Loc.T("plus");
+                case '*': return Loc.T("star");
+                case '=': return Loc.T("equals");
+                case '%': return Loc.T("percent");
+                case '$': return Loc.T("dollar");
+                case '<': return Loc.T("less than");
+                case '>': return Loc.T("greater than");
+                case '[': return Loc.T("left bracket");
+                case ']': return Loc.T("right bracket");
+                case '~': return Loc.T("tilde");
+                case '^': return Loc.T("caret");
                 default: return c.ToString();
             }
         }
@@ -156,11 +156,11 @@ namespace YargAccess
             {
                 var row = Rows[_row];
                 var shown = "<noparse>" + row.Substring(0, _col) + "</noparse> <color=#FFFFFF><b>[<noparse>" + row[_col]
-                    + "</noparse>]</b></color> <noparse>" + row.Substring(_col + 1) + "</noparse>\nA type   X delete   Y space   LB read   Start save   B cancel";
+                    + "</noparse>]</b></color> <noparse>" + row.Substring(_col + 1) + "</noparse>\n" + Loc.T("A type   X delete   Y space   LB read   Start save   B cancel");
                 string key = _row + "|" + _col;
                 if (key == _drawn) return;
                 _drawn = key;
-                Tooltips.Show(shown, "On-screen keyboard: " + RowNames[_row], () => _open, true, false);
+                Tooltips.Show(shown, Loc.F("On-screen keyboard: {0}", RowNames[_row]), () => _open, true, false);
             }
             catch { }
         }

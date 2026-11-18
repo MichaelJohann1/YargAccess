@@ -64,20 +64,20 @@ namespace YargAccess
             {
                 bool import = HistoryNavigator.IsImportTab();
                 string tab = import ? "Switch To The History Tab" : "Switch To The Import Tab";
-                var d = dm.ShowList("Entry actions");
-                d.Title.text = row != null ? "Actions for " + HistoryNavigator.SongName(row) : "History actions";
+                var d = dm.ShowList(Loc.T("Entry actions"));
+                d.Title.text = row != null ? Loc.F("Actions for {0}", HistoryNavigator.SongName(row)) : Loc.T("History actions");
                 d.ClearButtons();
                 d.AddDialogButton(T("Back"), MenuData.Colors.CancelButton, () => dm.ClearDialog());
                 if (row != null)
                 {
                     // On a pad LB switches tabs in History, so Play With Replay (LB, Orange, elsewhere) is here.
                     if (InputDriver.LastDevice == Keys.Device.Gamepad)
-                        d.AddListButton("Play With Replay", () => { dm.ClearDialog(); InputDriver.PlayWithReplay(); }, false);
-                    d.AddListButton("Export Replay", () => { dm.ClearDialog(); HistoryNavigator.ExportSelected(); }, false);
-                    d.AddListButton(import ? "Remove From This List" : "Delete Entry", () => { dm.ClearDialog(); AskEntryDelete(); }, false);
+                        d.AddListButton(Loc.T("Play With Replay"), () => { dm.ClearDialog(); InputDriver.PlayWithReplay(); }, false);
+                    d.AddListButton(Loc.T("Export Replay"), () => { dm.ClearDialog(); HistoryNavigator.ExportSelected(); }, false);
+                    d.AddListButton(import ? Loc.T("Remove From This List") : Loc.T("Delete Entry"), () => { dm.ClearDialog(); AskEntryDelete(); }, false);
                 }
                 // A guitar has no free tab buttons in History (its Yellow and Orange are Analyze and Play With Replay).
-                d.AddListButton(tab, () => { dm.ClearDialog(); InputDriver.ToggleHistoryTab(); }, false);
+                d.AddListButton(import ? Loc.T("Switch To The History Tab") : Loc.T("Switch To The Import Tab"), () => { dm.ClearDialog(); InputDriver.ToggleHistoryTab(); }, false);
                 Tutorials.FocusNext(d, row == null ? tab : InputDriver.LastDevice == Keys.Device.Gamepad ? "Play With Replay" : "Export Replay");
             }
             catch (Exception ex) { ModLog.Warn("EntryActions.HistoryList", ex); }
@@ -86,23 +86,23 @@ namespace YargAccess
         static void AskEntryDelete()
         {
             var row = HistoryNavigator.SelectedRow();
-            if (row == null) { MenuAnnouncer.SayShown("Choose an entry first."); return; }
+            if (row == null) { MenuAnnouncer.SayShown(Loc.T("Choose an entry first.")); return; }
             var record = HistoryNavigator.RecordOf(row);
             var entry = HistoryNavigator.EntryOf(row);
             string what = HistoryNavigator.SongName(row) + ", " + HistoryNavigator.WhenOf(row);
             string text, button;
             if (record != null)
             {
-                text = "Delete " + what + "? Its score is removed from History and can't be brought back. Its replay goes to the Recycle Bin.";
+                text = Loc.F("Delete {0}? Its score is removed from History and can't be brought back. Its replay goes to the Recycle Bin.", what);
                 button = "Delete";
             }
             else if (entry != null)
             {
-                text = "Remove " + what + " from the Import list? The replay file itself is kept.";
+                text = Loc.F("Remove {0} from the Import list? The replay file itself is kept.", what);
                 button = "Remove";
             }
             else return;
-            Confirm("Delete", text, button, () => DeleteEntry(record, entry, HistoryNavigator.ReplayPathOf(row)));
+            Confirm(Loc.T("Delete"), text, button, () => DeleteEntry(record, entry, HistoryNavigator.ReplayPathOf(row)));
         }
 
         static void DeleteEntry(GameRecord record, ReplayInfo entry, string replay)
@@ -120,16 +120,16 @@ namespace YargAccess
                         gone = Recycle.Path(replay);
                         Recycle.Path(replay + ".yargaccess");
                     }
-                    result = gone ? "Deleted" : "Deleted from History; the replay file could not be moved to the Recycle Bin";
+                    result = gone ? Loc.T("Deleted") : Loc.T("Deleted from History; the replay file could not be moved to the Recycle Bin");
                 }
                 else
                 {
                     YARG.Replays.ReplayContainer.RemoveReplay(entry.FilePath);
                     try { YARG.Replays.ReplayContainer.WriteReplayCache(); } catch { }
-                    result = "Removed from the list";
+                    result = Loc.T("Removed from the list");
                 }
             }
-            catch (Exception ex) { ModLog.Warn("EntryActions.DeleteEntry", ex); result = "Could not delete it"; }
+            catch (Exception ex) { ModLog.Warn("EntryActions.DeleteEntry", ex); result = Loc.T("Could not delete it"); }
             HistoryNavigator.Refresh(result);
         }
 
@@ -159,13 +159,13 @@ namespace YargAccess
         {
             var view = lib.CurrentSelection as SongViewType;
             var song = view != null ? view.SongEntry : null;
-            if (song == null) { MenuAnnouncer.SayShown("Choose a song first."); return; }
+            if (song == null) { MenuAnnouncer.SayShown(Loc.T("Choose a song first.")); return; }
             if (song.SubType == EntryType.CON || song.SubType == EntryType.ExCON)
             {
-                MenuAnnouncer.SayShown(song.Name + " is inside a pack file with other songs, so it can't be deleted on its own.");
+                MenuAnnouncer.SayShown(Loc.F("{0} is inside a pack file with other songs, so it can't be deleted on its own.", song.Name));
                 return;
             }
-            Confirm("Delete Song", "Delete " + song.Name + " by " + song.Artist + "? Its files go to the Recycle Bin and it leaves your library. Your scores for it stay in History.",
+            Confirm(Loc.T("Delete Song"), Loc.F("Delete {0} by {1}? Its files go to the Recycle Bin and it leaves your library. Your scores for it stay in History.", song.Name, song.Artist),
                 "Delete", () => DeleteSong(lib, song));
         }
 
@@ -176,7 +176,7 @@ namespace YargAccess
             try
             {
                 StopPreview(lib);
-                if (IsSongRoot(loc)) { MenuAnnouncer.SayShown("That is a whole songs folder; it was not deleted."); return; }
+                if (IsSongRoot(loc)) { MenuAnnouncer.SayShown(Loc.T("That is a whole songs folder; it was not deleted.")); return; }
                 if (File.Exists(loc)) ok = Recycle.Path(loc);
                 else if (Directory.Exists(loc))
                 {
@@ -188,9 +188,9 @@ namespace YargAccess
                 if (ok) RemoveFromLibrary(song);
             }
             catch (Exception ex) { ModLog.Warn("EntryActions.DeleteSong", ex); ok = false; }
-            if (!ok) { MenuAnnouncer.SayShown("Could not delete " + song.Name + ": a file is in use. Try again after moving to another song."); return; }
+            if (!ok) { MenuAnnouncer.SayShown(Loc.F("Could not delete {0}: a file is in use. Try again after moving to another song.", song.Name)); return; }
             try { lib.RefreshAndReselect(false, true); } catch (Exception ex) { ModLog.Warn("EntryActions library refresh", ex); }
-            MenuAnnouncer.SayShown("Deleted " + song.Name);
+            MenuAnnouncer.SayShown(Loc.F("Deleted {0}", song.Name));
         }
 
         static bool IsSongRoot(string loc)
@@ -238,6 +238,7 @@ namespace YargAccess
 
         // ---- Confirmation ----
 
+        // title and text arrive translated; button is the English label (a YargAccess.Text. key).
         internal static void Confirm(string title, string text, string button, Action yes)
         {
             var dm = DialogManager.Instance;
@@ -246,8 +247,9 @@ namespace YargAccess
             {
                 var d = dm.ShowMessage(title, text);
                 d.ClearButtons();
-                d.AddDialogButton(T("Cancel"), MenuData.Colors.CancelButton, () => { dm.ClearDialog(); MenuAnnouncer.SayShown("Canceled"); });
-                d.AddDialogButton(T(button), MenuData.Colors.ConfirmButton, () => { dm.ClearDialog(); yes(); });
+                d.AddDialogButton(T("Cancel"), MenuData.Colors.CancelButton, () => { dm.ClearDialog(); MenuAnnouncer.SayShown(Loc.T("Canceled")); });
+                // button is Delete or Remove: the label must be written as a literal for the translation keys.
+                d.AddDialogButton(button == "Remove" ? T("Remove") : T("Delete"), MenuData.Colors.ConfirmButton, () => { dm.ClearDialog(); yes(); });
                 Tutorials.FocusNext(d, "Cancel");
             }
             catch (Exception ex) { ModLog.Warn("EntryActions.Confirm", ex); }

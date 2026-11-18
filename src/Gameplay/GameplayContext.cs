@@ -41,9 +41,9 @@ namespace YargAccess
                 if (gm.IsReplay && gm.IsSongStarted && gm.Paused && !Paused && gm.SongTime >= gm.SongLength)
                 {
                     _endedReplay = gm;
-                    string menu = InputDriver.LastDevice == Keys.Device.Gamepad ? "B or Start"
-                        : InputDriver.LastDevice == Keys.Device.Guitar ? "Red or Start" : "Escape or Backspace";
-                    MenuAnnouncer.SayShown("Replay finished. " + menu + " opens the replay menu, with Back To Library and Restart.");
+                    string menu = InputDriver.LastDevice == Keys.Device.Gamepad ? Loc.T("B or Start")
+                        : InputDriver.LastDevice == Keys.Device.Guitar ? Loc.T("Red or Start") : Loc.T("Escape or Backspace");
+                    MenuAnnouncer.SayShown(Loc.F("Replay finished. {0} opens the replay menu, with Back To Library and Restart.", menu));
                 }
             }
             catch { }

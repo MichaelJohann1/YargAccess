@@ -28,7 +28,7 @@ namespace YargAccess
             if (loading)
             {
                 _sawLoading = true;
-                if (!_saidScanning && elapsed >= SlowAfter) { _saidScanning = true; Captions.Say("Scanning songs"); }
+                if (!_saidScanning && elapsed >= SlowAfter) { _saidScanning = true; Captions.Say(Loc.T("Scanning songs")); }
                 return;
             }
             if (!_sawLoading)
@@ -39,7 +39,10 @@ namespace YargAccess
             _requested = false;
             int count = 0;
             try { count = YARG.Song.SongContainer.Count; } catch (Exception ex) { ModLog.Warn("ScanAnnouncer", ex); }
-            Captions.Say((_saidScanning ? "Song scan finished. " : "Scan finished. ") + count + (count == 1 ? " song" : " songs") + " in the library.", false);
+            string done;
+            if (_saidScanning) done = count == 1 ? Loc.F("Song scan finished. {0} song in the library.", count) : Loc.F("Song scan finished. {0} songs in the library.", count);
+            else done = count == 1 ? Loc.F("Scan finished. {0} song in the library.", count) : Loc.F("Scan finished. {0} songs in the library.", count);
+            Captions.Say(done, false);
         }
     }
 }

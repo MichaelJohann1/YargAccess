@@ -44,11 +44,11 @@ namespace YargAccess
             }
             catch (Exception ex) { ModLog.Warn("TextEdit.Begin", ex); }
             var cur = TextUtil.Clean(_original);
-            var head = "Editing " + label + ", " + (string.IsNullOrEmpty(cur) ? "blank" : cur) + ". ";
+            var head = Loc.F("Editing {0}, {1}.", label, string.IsNullOrEmpty(cur) ? Loc.T("blank") : cur) + " ";
             if (InputDriver.GamepadLastUsed && Gamepad.current != null) MenuAnnouncer.Focused(head + VirtualKeyboard.Open(field));
             else
             {
-                MenuAnnouncer.Focused(_keysTold ? head.TrimEnd() : head + "Type a new value to replace it, or Backspace to edit it. Enter to save, Escape to cancel.");
+                MenuAnnouncer.Focused(_keysTold ? head.TrimEnd() : head + Loc.T("Type a new value to replace it, or Backspace to edit it. Enter to save, Escape to cancel."));
                 _keysTold = true;
             }
         }
@@ -66,7 +66,7 @@ namespace YargAccess
                     if (kb.upArrowKey.wasPressedThisFrame || kb.downArrowKey.wasPressedThisFrame) { ReadAll(); return true; }
                     if (kb.f1Key.wasPressedThisFrame)
                     {
-                        MenuAnnouncer.Say("Editing " + _label + ". Type a new value. Up or Down reads it. Enter saves, Escape cancels.");
+                        MenuAnnouncer.Say(Loc.F("Editing {0}. Type a new value. Up or Down reads it. Enter saves, Escape cancels.", _label));
                         return true;
                     }
                 }
@@ -98,7 +98,7 @@ namespace YargAccess
             else
             {
                 var v = TextUtil.Clean(f.text);
-                MenuAnnouncer.Say(label + ", " + (string.IsNullOrEmpty(v) ? "blank" : v));
+                MenuAnnouncer.Say(label + ", " + (string.IsNullOrEmpty(v) ? Loc.T("blank") : v));
             }
         }
 
@@ -117,13 +117,13 @@ namespace YargAccess
             }
             catch (Exception ex) { ModLog.Warn("TextEdit.Cancel", ex); }
             try { cancel?.Invoke(); } catch { }
-            MenuAnnouncer.SayShown("Canceled");
+            MenuAnnouncer.SayShown(Loc.T("Canceled"));
         }
 
         static void ReadAll()
         {
             var v = TextUtil.Clean(_field.text);
-            MenuAnnouncer.Say(string.IsNullOrEmpty(v) ? "blank" : v);
+            MenuAnnouncer.Say(string.IsNullOrEmpty(v) ? Loc.T("blank") : v);
         }
 
         static void EchoChanges()
@@ -145,19 +145,19 @@ namespace YargAccess
             var before = _lastText ?? "";
             _lastText = t;
             if (t.Length == before.Length + 1 && t.StartsWith(before)) { Speech.Say(CharName(t[t.Length - 1]), true); return; }
-            if (t.Length + 1 == before.Length && before.StartsWith(t)) { Speech.Say("deleted " + CharName(before[before.Length - 1]), true); return; }
-            Speech.Say(string.IsNullOrEmpty(t) ? "blank" : t, true);
+            if (t.Length + 1 == before.Length && before.StartsWith(t)) { Speech.Say(Loc.F("deleted {0}", CharName(before[before.Length - 1])), true); return; }
+            Speech.Say(string.IsNullOrEmpty(t) ? Loc.T("blank") : t, true);
         }
 
         static string CharName(char c)
         {
             switch (c)
             {
-                case ' ': return "space";
-                case '.': return "dot";
-                case ',': return "comma";
-                case '-': return "minus";
-                case '#': return "hash";
+                case ' ': return Loc.T("space");
+                case '.': return Loc.T("dot");
+                case ',': return Loc.T("comma");
+                case '-': return Loc.T("minus");
+                case '#': return Loc.T("hash");
                 default: return c.ToString();
             }
         }

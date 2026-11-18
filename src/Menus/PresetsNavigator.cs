@@ -12,7 +12,8 @@ namespace YargAccess
     public static class PresetsNavigator
     {
         enum Kind { Type, Preset, Action, Text }
-        class Item { public Kind Kind; public string Label; public TMP_Dropdown Dropdown; public Component Owner; public Button Button; }
+        // Id: what an action does whatever language YARG shows (Copy, Delete, Rename, Import, Export, Open Folder).
+        class Item { public Kind Kind; public string Label, Id; public TMP_Dropdown Dropdown; public Component Owner; public Button Button; }
 
         static readonly List<Item> _items = new List<Item>();
         static int _idx = -1;
@@ -113,8 +114,8 @@ namespace YargAccess
             Rebuild();
             _idx = Mathf.Clamp(_idx, 0, _items.Count - 1);
             var line = ValueOf(_items[_idx]);
-            if (kind == Kind.Type) { var p = PresetItem(); if (p != null) line += ", preset " + ValueOf(p); }
-            if (BuiltIn()) line += ", built-in";
+            if (kind == Kind.Type) { var p = PresetItem(); if (p != null) line += Loc.F(", preset {0}", ValueOf(p)); }
+            if (BuiltIn()) line += Loc.T(", built-in");
             string tip = BuiltInTip();
             var pi = PresetItem();
             Tooltips.Show(tip, pi != null ? ValueOf(pi) : null);
@@ -133,13 +134,13 @@ namespace YargAccess
             {
                 case Kind.Type:
                 case Kind.Preset:
-                    MenuAnnouncer.Say(Keys.LeftRight + " to change. " + ValueOf(it));
+                    MenuAnnouncer.Say(Loc.F("{0} to change. {1}", Keys.LeftRight, ValueOf(it)));
                     break;
                 case Kind.Text:
                     MenuAnnouncer.Say(it.Label);
                     break;
                 case Kind.Action:
-                    var label = it.Label;
+                    var label = it.Id;
                     MenuAnnouncer.BeginBatch();
                     try { it.Button.onClick.Invoke(); }
                     catch (Exception ex) { ModLog.Warn("PresetsNavigator.Confirm", ex); }
@@ -160,13 +161,14 @@ namespace YargAccess
                 case "Delete":
                     _idx = 0;
                     for (int i = 0; i < _items.Count; i++) if (_items[i].Kind == Kind.Preset) { _idx = i; break; }
-                    MenuAnnouncer.SayShown((label == "Copy" ? "Copied. " : "Deleted. ") + "Preset, " + (p != null ? ValueOf(p) : "") +
-                        (label == "Copy" ? ". Its settings are below the actions." : ""));
+                    MenuAnnouncer.SayShown(label == "Copy"
+                        ? Loc.F("Copied. Preset, {0}. Its settings are below the actions.", p != null ? ValueOf(p) : "")
+                        : Loc.F("Deleted. Preset, {0}", p != null ? ValueOf(p) : ""));
                     break;
                 case "Import":
                 case "Export":
                 case "Open Folder":
-                    MenuAnnouncer.SayShown(label == "Open Folder" ? "Opening the preset folder in File Explorer." : "Opening the Windows file dialog.");
+                    MenuAnnouncer.SayShown(label == "Open Folder" ? Loc.T("Opening the preset folder in File Explorer.") : Loc.T("Opening the Windows file dialog."));
                     break;
             }
         }
@@ -183,8 +185,8 @@ namespace YargAccess
             string s;
             switch (it.Kind)
             {
-                case Kind.Type: s = "Preset type, " + Keys.RoleThen("dropdown", ValueOf(it)); break;
-                case Kind.Preset: s = "Preset, " + Keys.RoleThen("dropdown", ValueOf(it)) + (BuiltIn() ? ", built-in" : ""); break;
+                case Kind.Type: s = Loc.F("Preset type, {0}", Keys.RoleThen("dropdown", ValueOf(it))); break;
+                case Kind.Preset: s = Loc.F("Preset, {0}", Keys.RoleThen("dropdown", ValueOf(it))) + (BuiltIn() ? Loc.T(", built-in") : ""); break;
                 case Kind.Action: s = it.Label + Keys.Role("button"); break;
                 default: s = it.Label; break;
             }
@@ -198,7 +200,7 @@ namespace YargAccess
         {
             var d = it.Dropdown;
             if (d == null) return it.Label;
-            return (d.value >= 0 && d.value < d.options.Count) ? TextUtil.Clean(d.options[d.value].text) : "none";
+            return (d.value >= 0 && d.value < d.options.Count) ? TextUtil.Clean(d.options[d.value].text) : Loc.T("none");
         }
 
         static Item PresetItem()
@@ -225,6 +227,22 @@ namespace YargAccess
             catch { return false; }
         }
 
+        // PresetActions' method the button calls (CopyPreset -> Copy), else YARG's English label.
+        static string ActionId(Button b, string label)
+        {
+            try
+            {
+                var e = b != null ? b.onClick : null;
+                for (int i = 0; e != null && i < e.GetPersistentEventCount(); i++)
+                {
+                    var m = e.GetPersistentMethodName(i);
+                    if (!string.IsNullOrEmpty(m) && m.EndsWith("Preset")) return m.Substring(0, m.Length - "Preset".Length);
+                }
+            }
+            catch { }
+            return label;
+        }
+
         static void Rebuild()
         {
             _items.Clear();
@@ -244,14 +262,15 @@ namespace YargAccess
                 foreach (var cb in actions.GetComponentsInChildren<YARG.Menu.ColoredButton>(false))
                 {
                     var label = cb.Text != null ? TextUtil.Clean(cb.Text.text) : Describer.PrettifyName(cb.name);
-                    if (builtIn && (label == "Rename" || label == "Delete" || label == "Export")) continue;
                     var b = cb.GetComponentInChildren<Button>(false);
-                    if (b != null) _items.Add(new Item { Kind = Kind.Action, Label = label, Button = b });
+                    var id = ActionId(b, label);
+                    if (builtIn && (id == "Rename" || id == "Delete" || id == "Export")) continue;
+                    if (b != null) _items.Add(new Item { Kind = Kind.Action, Label = label, Id = id, Button = b });
                 }
             }
 
             foreach (var b in type.GetComponentsInChildren<Button>(false))
-                if (b.GetComponentInParent<TMP_Dropdown>() == null) { _items.Add(new Item { Kind = Kind.Action, Label = "Open Folder", Button = b }); break; }
+                if (b.GetComponentInParent<TMP_Dropdown>() == null) { _items.Add(new Item { Kind = Kind.Action, Label = Loc.T("Open Folder"), Id = "Open Folder", Button = b }); break; }
 
             var def = GameObject.Find("PresetDefaultText(Clone)");
             if (def != null && def.activeInHierarchy)

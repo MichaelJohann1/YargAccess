@@ -16,7 +16,7 @@ namespace YargAccess
     {
         const BindingFlags BF = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
 
-        class Item { public Component comp; public string kind; public string label; public ReviewBinds.Bind bind; public int review; }
+        class Item { public Component comp; public string kind; public string label; public ReviewBinds.Bind bind; public int review; public bool addNew; }
 
         static readonly List<Item> _items = new List<Item>();
         static int _idx;
@@ -62,7 +62,7 @@ namespace YargAccess
             ht.SelectTabById(list[nv].Id);
             MenuAnnouncer.DiscardBatch();
             _idx = 0; _pendingDelete = null;
-            var line = list[nv].DisplayName + " tab" + Keys.Pos(nv, list.Count);
+            var line = Loc.F("{0} tab", list[nv].DisplayName) + Keys.Pos(nv, list.Count);
             Rebuild();
             if (_items.Count > 0) line += ". " + ItemText(0);
             MenuAnnouncer.Focused(line);
@@ -76,7 +76,7 @@ namespace YargAccess
             _pendingAddNew = null;
             Rebuild();
             _pendingDelete = null; _pendingReview = null;
-            if (_items.Count == 0) { MenuAnnouncer.SayShown("Nothing here"); return; }
+            if (_items.Count == 0) { MenuAnnouncer.SayShown(Loc.T("Nothing here")); return; }
             _idx = Mathf.Clamp(_idx + dir, 0, _items.Count - 1);
             Announce();
         }
@@ -91,7 +91,7 @@ namespace YargAccess
             switch (it.kind)
             {
                 case "button":
-                    if (it.label == "Add New") { _pendingAddNew = it.comp; _pendingSince = Time.unscaledTime; OpenAddNew(); }
+                    if (it.addNew) { _pendingAddNew = it.comp; _pendingSince = Time.unscaledTime; OpenAddNew(); }
                     else InvokeColored(it.comp);
                     break;
                 case "gamemode": SelectGameMode(it.comp as NavigatableBehaviour); break;
@@ -99,10 +99,10 @@ namespace YargAccess
                     if (_pendingDelete == it.comp)
                     {
                         _pendingDelete = null;
-                        try { it.comp.GetType().GetMethod("DeleteBinding").Invoke(it.comp, null); MenuAnnouncer.SayShown("Removed " + it.label); }
+                        try { it.comp.GetType().GetMethod("DeleteBinding").Invoke(it.comp, null); MenuAnnouncer.SayShown(Loc.F("Removed {0}", it.label)); }
                         catch (Exception ex) { ModLog.Warn("ProfileInfoNavigator delete", ex); }
                     }
-                    else { _pendingDelete = it.comp; MenuAnnouncer.SayShown("Remove " + it.label + "? Press " + Keys.Ok + " again to confirm."); }
+                    else { _pendingDelete = it.comp; MenuAnnouncer.SayShown(Loc.F("Remove {0}? Press {1} again to confirm.", it.label, Keys.Ok)); }
                     break;
                 case "rvadd":
                     ReviewBinds.BeginCapture(CurrentProfile(), (ReviewBinds.Kind) it.review);
@@ -112,11 +112,11 @@ namespace YargAccess
                     {
                         _pendingReview = null;
                         ReviewBinds.Remove(it.bind);
-                        MenuAnnouncer.SayShown("Removed " + it.label);
+                        MenuAnnouncer.SayShown(Loc.F("Removed {0}", it.label));
                     }
-                    else { _pendingReview = it.bind; MenuAnnouncer.SayShown("Remove " + it.label + "? Press " + Keys.Ok + " again to confirm."); }
+                    else { _pendingReview = it.bind; MenuAnnouncer.SayShown(Loc.F("Remove {0}? Press {1} again to confirm.", it.label, Keys.Ok)); }
                     break;
-                case "name":     MenuAnnouncer.SayShown(it.label + ". To rename the profile, go back to the profile list and use Rename on the Tab toolbar."); break;
+                case "name":     MenuAnnouncer.SayShown(Loc.F("{0}. To rename the profile, go back to the profile list and use Rename on the Tab toolbar.", it.label)); break;
                 default:         MenuAnnouncer.Say(it.label); break;
             }
         }
@@ -124,8 +124,8 @@ namespace YargAccess
         public static bool Back()
         {
             var cd = ActiveControlDialog();
-            if (cd != null) { _awaitingBind = false; try { cd.CancelAndClose(); } catch { } MenuAnnouncer.SayShown("Canceled"); return true; }
-            if (_pendingAddNew != null) { _pendingAddNew = null; MenuAnnouncer.SayShown("Canceled"); return true; }
+            if (cd != null) { _awaitingBind = false; try { cd.CancelAndClose(); } catch { } MenuAnnouncer.SayShown(Loc.T("Canceled")); return true; }
+            if (_pendingAddNew != null) { _pendingAddNew = null; MenuAnnouncer.SayShown(Loc.T("Canceled")); return true; }
             try
             {
                 var mm = UnityEngine.Object.FindObjectOfType<MenuManager>();
@@ -145,11 +145,11 @@ namespace YargAccess
             {
                 case "header":
                 case "rvheader": return it.label + Keys.Role("heading") + suffix;
-                case "rvbind":   return it.label + ", " + Keys.Ok + " to remove" + suffix;
-                case "rvadd":    return it.label + Keys.Role("button") + ", " + Keys.Ok + " to bind a control" + suffix;
-                case "bind":     return it.label + ", " + Keys.Ok + " to remove" + suffix;
-                case "button":   return it.label + Keys.Role("button") + (it.label == "Add New" ? ", " + Keys.Ok + " to bind a control" : "") + suffix;
-                case "gamemode": return it.label + (IsShownGameMode(it.comp) ? ", selected" : "") + suffix;
+                case "rvbind":   return it.label + Loc.F(", {0} to remove", Keys.Ok) + suffix;
+                case "rvadd":    return it.label + Keys.Role("button") + Loc.F(", {0} to bind a control", Keys.Ok) + suffix;
+                case "bind":     return it.label + Loc.F(", {0} to remove", Keys.Ok) + suffix;
+                case "button":   return it.label + Keys.Role("button") + (it.addNew ? Loc.F(", {0} to bind a control", Keys.Ok) : "") + suffix;
+                case "gamemode": return it.label + (IsShownGameMode(it.comp) ? Loc.T(", selected") : "") + suffix;
                 default:         return it.label + suffix;
             }
         }
@@ -158,7 +158,7 @@ namespace YargAccess
         {
             var menu = UnityEngine.Object.FindObjectOfType<ProfileInfoMenu>();
             string who = "";
-            try { if (menu != null && menu.CurrentProfile != null) who = "Editing " + menu.CurrentProfile.Name + ". "; } catch { }
+            try { if (menu != null && menu.CurrentProfile != null) who = Loc.F("Editing {0}.", menu.CurrentProfile.Name) + " "; } catch { }
             var ht = Tabs();
             string tab = "";
             if (ht != null && ht.Tabs != null)
@@ -166,11 +166,11 @@ namespace YargAccess
                 bool onBinds = false;
                 var bindsRoot = menu != null ? GetTabRoot(menu, "_editBindsTab") : null;
                 if (bindsRoot != null) onBinds = bindsRoot.activeInHierarchy;
-                tab = (onBinds ? "Binds" : "Overview") + " tab. ";
+                tab = (onBinds ? Loc.T("Binds tab.") : Loc.T("Overview tab.")) + " ";
             }
             Rebuild();
             _idx = Mathf.Clamp(_idx, 0, Mathf.Max(0, _items.Count - 1));
-            MenuAnnouncer.Focused(who + tab + (_items.Count > 0 ? ItemText(_idx) : "Nothing here"), true);
+            MenuAnnouncer.Focused(who + tab + (_items.Count > 0 ? ItemText(_idx) : Loc.T("Nothing here")), true);
         }
 
         static void Rebuild()
@@ -185,8 +185,8 @@ namespace YargAccess
             if (onBinds) RebuildBinds();
             else RebuildOverview(menu);
 
-            var qb = FindColored(menu.transform, "Quick Bind");
-            if (qb != null) _items.Add(new Item { comp = qb, kind = "button", label = "Quick Bind" });
+            var qb = FindColored(menu.transform, "Quick Bind", "ShowQuickBind");
+            if (qb != null) _items.Add(new Item { comp = qb, kind = "button", label = ColoredText(qb, "Quick Bind") });
         }
 
         static void RebuildOverview(ProfileInfoMenu menu)
@@ -195,7 +195,7 @@ namespace YargAccess
             if (root == null) return;
 
             var nameTmp = FindTmpByName(root.transform, "Profile Name");
-            if (nameTmp != null) _items.Add(new Item { comp = nameTmp, kind = "name", label = "Profile, " + TextUtil.Clean(nameTmp.text) });
+            if (nameTmp != null) _items.Add(new Item { comp = nameTmp, kind = "name", label = Loc.F("Profile, {0}", TextUtil.Clean(nameTmp.text)) });
 
             var extras = FindTmpByName(root.transform, "Profile Extras");
             if (extras != null && !string.IsNullOrWhiteSpace(extras.text)) _items.Add(new Item { comp = extras, kind = "text", label = TextUtil.Clean(extras.text) });
@@ -229,8 +229,8 @@ namespace YargAccess
                 }
                 catch { }
                 var label = menuBinds
-                    ? "Menu binds, the buttons that move through menus"
-                    : "Game mode binds, " + nm + ", the buttons used while playing a song";
+                    ? Loc.T("Menu binds, the buttons that move through menus")
+                    : Loc.F("Game mode binds, {0}, the buttons used while playing a song", nm);
                 _items.Add(new Item { comp = mb, kind = "gamemode", label = label });
             }
 
@@ -253,14 +253,14 @@ namespace YargAccess
                 {
                     string nm = TmpFieldText(header, "_bindingNameText");
                     if (string.IsNullOrEmpty(nm)) nm = FirstTmp(header.transform);
-                    string summary = bindTexts.Count > 0 ? string.Join(", ", bindTexts) : "unbound";
+                    string summary = bindTexts.Count > 0 ? string.Join(", ", bindTexts) : Loc.T("unbound");
                     _items.Add(new Item { comp = header, kind = "header", label = nm + ", " + summary });
                 }
                 for (int i = 0; i < bindViews.Count; i++)
                     _items.Add(new Item { comp = bindViews[i], kind = "bind", label = bindTexts[i] });
 
-                var add = FindColored(grp.transform, "Add New");
-                if (add != null) _items.Add(new Item { comp = add, kind = "button", label = "Add New" });
+                var add = FindColored(grp.transform, "Add New", "AddNewBind");
+                if (add != null) _items.Add(new Item { comp = add, kind = "button", label = ColoredText(add, "Add New"), addNew = true });
             }
 
             if (!tab.SelectingMenuBinds) return;
@@ -270,11 +270,11 @@ namespace YargAccess
             {
                 var kind = (ReviewBinds.Kind) k;
                 var own = ReviewBinds.For(profile, kind);
-                string label = ReviewBinds.Names[k] + ", default " + ReviewBinds.Defaults(profile, kind);
+                string label = Loc.F("{0}, default {1}", ReviewBinds.Names[k], ReviewBinds.Defaults(profile, kind));
                 foreach (var b in own) label += "; " + b.Name;
                 _items.Add(new Item { kind = "rvheader", label = label, review = k });
                 foreach (var b in own) _items.Add(new Item { kind = "rvbind", label = b.Name, bind = b, review = k });
-                _items.Add(new Item { kind = "rvadd", label = "Add New", review = k });
+                _items.Add(new Item { kind = "rvadd", label = Loc.T("Add New"), review = k });
             }
         }
 
@@ -306,9 +306,9 @@ namespace YargAccess
                 string name = "";
                 try { name = TextUtil.Clean(YARG.Localization.Localize.Key("Bindings", binding.Name)); } catch { }
                 if (string.IsNullOrEmpty(name)) name = binding.Name;
-                string what = control != null ? control.displayName : "a control";
+                string what = control != null ? control.displayName : Loc.T("a control");
                 string device = control != null && control.device != null ? ", " + control.device.displayName : "";
-                MenuAnnouncer.SayShown(name + " set to " + what + device);
+                MenuAnnouncer.SayShown(Loc.F("{0} set to {1}", name, what + device));
             }
             catch (Exception ex) { ModLog.Warn("ProfileInfoNavigator.OnBindingAdded", ex); }
         }
@@ -322,8 +322,8 @@ namespace YargAccess
             if (entries.Count == 0) return;
             _choiceSpoken = true;
             _cdIdx = 0;
-            MenuAnnouncer.SayShown("Several controls responded. Choose the one to bind, " + Keys.UpDown + " to move, "
-                + Keys.Ok + " to bind, " + Keys.Back + " to cancel. " + FirstTmp(entries[0].transform) + Keys.Pos(0, entries.Count));
+            MenuAnnouncer.SayShown(Loc.F("Several controls responded. Choose the one to bind, {0} to move, {1} to bind, {2} to cancel.", Keys.UpDown, Keys.Ok, Keys.Back)
+                + " " + FirstTmp(entries[0].transform) + Keys.Pos(0, entries.Count));
         }
 
         static void OpenAddNew()
@@ -337,15 +337,15 @@ namespace YargAccess
             _cdIdx = 0;
             WatchBindings();
             _awaitingBind = true;
-            MenuAnnouncer.SayShown("Waiting for input. Press the control you want to bind, or " + Keys.Back + " to cancel." + ListeningTo());
+            MenuAnnouncer.SayShown(Loc.F("Waiting for input. Press the control you want to bind, or {0} to cancel.", Keys.Back) + ListeningTo());
         }
 
         static string ListeningTo()
         {
             var names = new List<string>();
             foreach (var d in ReviewBinds.Devices(CurrentProfile())) if (!names.Contains(d.displayName)) names.Add(d.displayName);
-            if (names.Count == 0) return " This profile has no devices to bind with: add one from the profile's Devices first.";
-            return " Only " + string.Join(", ", names.ToArray()) + " can be bound here; to use another device, add it from the profile's Devices first.";
+            if (names.Count == 0) return " " + Loc.T("This profile has no devices to bind with: add one from the profile's Devices first.");
+            return " " + Loc.F("Only {0} can be bound here; to use another device, add it from the profile's Devices first.", string.Join(", ", names.ToArray()));
         }
 
         static List<ControlEntry> ControlEntries()
@@ -360,7 +360,7 @@ namespace YargAccess
         static void MoveControlDialog(int dir)
         {
             var entries = ControlEntries();
-            if (entries.Count == 0) { MenuAnnouncer.SayShown("Waiting for input. Press the control you want to bind, or " + Keys.Back + " to cancel."); return; }
+            if (entries.Count == 0) { MenuAnnouncer.SayShown(Loc.F("Waiting for input. Press the control you want to bind, or {0} to cancel.", Keys.Back)); return; }
             _cdIdx = Mathf.Clamp(_cdIdx + dir, 0, entries.Count - 1);
             MenuAnnouncer.Focused(FirstTmp(entries[_cdIdx].transform) + Keys.Pos(_cdIdx, entries.Count));
         }
@@ -427,7 +427,7 @@ namespace YargAccess
                     if (i >= 0) grp.SelectAt(i, SelectionOrigin.Programmatically);
                 }
                 _idx = 0;
-                MenuAnnouncer.SayShown("Selected. " + Keys.UpDown + " to read the bindings.");
+                MenuAnnouncer.SayShown(Loc.F("Selected. {0} to read the bindings.", Keys.UpDown));
             }
             catch (Exception ex) { ModLog.Warn("ProfileInfoNavigator.SelectGameMode", ex); }
         }
@@ -440,14 +440,29 @@ namespace YargAccess
             catch (Exception ex) { ModLog.Warn("ProfileInfoNavigator.InvokeColored", ex); }
         }
 
-        static YARG.Menu.ColoredButton FindColored(Transform root, string label)
+        // A YARG button by the method its click calls (any language), else by its English text.
+        static YARG.Menu.ColoredButton FindColored(Transform root, string label, string method)
         {
             foreach (var c in root.GetComponentsInChildren<YARG.Menu.ColoredButton>(false))
             {
+                try
+                {
+                    var e = c.OnClick;
+                    for (int i = 0; e != null && i < e.GetPersistentEventCount(); i++)
+                        if (e.GetPersistentMethodName(i) == method) return c;
+                }
+                catch { }
                 var t = c.Text;
                 if (t != null && TextUtil.Clean(t.text) == label) return c;
             }
             return null;
+        }
+
+        // The text YARG shows on the button (in its language), else the English label.
+        static string ColoredText(YARG.Menu.ColoredButton c, string english)
+        {
+            var s = c != null && c.Text != null ? TextUtil.Clean(c.Text.text) : "";
+            return string.IsNullOrEmpty(s) ? english : s;
         }
 
         static TMP_Text FindTmpByName(Transform root, string name)

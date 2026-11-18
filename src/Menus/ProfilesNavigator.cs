@@ -35,7 +35,7 @@ namespace YargAccess
             _action = -1;
             _pendingDelete = null;
             var ps = ProfileViews();
-            if (ps.Count == 0) { MenuAnnouncer.SayShown("No profiles. Press Tab for Add Profile or Add Bot."); return; }
+            if (ps.Count == 0) { MenuAnnouncer.SayShown(Loc.T("No profiles. Press Tab for Add Profile or Add Bot.")); return; }
             _profileIdx = Mathf.Clamp(_profileIdx + dir, 0, ps.Count - 1);
             AnnounceProfile(ps[_profileIdx], false);
         }
@@ -87,12 +87,12 @@ namespace YargAccess
                         bool ok = DeleteProfile(view.Profile);
                         _pendingDelete = null;
                         _action = -1;
-                        MenuAnnouncer.SayShown(ok ? ("Deleted " + nm) : ("Could not delete " + nm));
+                        MenuAnnouncer.SayShown(ok ? Loc.F("Deleted {0}", nm) : Loc.F("Could not delete {0}", nm));
                     }
                     else
                     {
                         _pendingDelete = view.Profile;
-                        MenuAnnouncer.SayShown("Delete " + view.Profile.Name + "? Press " + Keys.Ok + " again to confirm.");
+                        MenuAnnouncer.SayShown(Loc.F("Delete {0}? Press {1} again to confirm.", view.Profile.Name, Keys.Ok));
                     }
                     break;
                 }
@@ -103,8 +103,8 @@ namespace YargAccess
 
         public static bool Back()
         {
-            if (_inDevices) { _inDevices = false; MenuAnnouncer.Focused("Devices closed. " + ActionText()); return true; }
-            if (_inSettings) { _inSettings = false; _pendingConfigure = null; MenuAnnouncer.Focused("Profile settings closed. " + ActionText()); return true; }
+            if (_inDevices) { _inDevices = false; MenuAnnouncer.Focused(Loc.T("Devices closed.") + " " + ActionText()); return true; }
+            if (_inSettings) { _inSettings = false; _pendingConfigure = null; MenuAnnouncer.Focused(Loc.T("Profile settings closed.") + " " + ActionText()); return true; }
             return false;
         }
 
@@ -119,7 +119,7 @@ namespace YargAccess
             var ps = ProfileViews();
             if (ps.Count == 0)
             {
-                MenuAnnouncer.SayItem("No profiles. Press Tab for Add Profile or Add Bot.");
+                MenuAnnouncer.SayItem(Loc.T("No profiles. Press Tab for Add Profile or Add Bot."));
                 return;
             }
             _profileIdx = Mathf.Clamp(_profileIdx, 0, ps.Count - 1);
@@ -192,7 +192,7 @@ namespace YargAccess
             var p = pv.Profile;
             var sb = new System.Text.StringBuilder();
             sb.Append(p != null ? p.Name : Describer.GetLabel(pv.gameObject));
-            if (p != null && p.IsBot) sb.Append(", bot");
+            if (p != null && p.IsBot) sb.Append(Loc.T(", bot"));
             if (p != null) { sb.Append(", "); sb.Append(InstrumentName(p)); }
             sb.Append(", "); sb.Append(ConnectionInfo(p));
             return sb + Keys.Pos(_profileIdx, ProfileViews().Count);
@@ -202,7 +202,7 @@ namespace YargAccess
         {
             var p = pv.Profile;
             if (p == null) return Describer.GetLabel(pv.gameObject);
-            return p.Name + (p.IsBot ? ", bot" : "") + ", " + InstrumentName(p) + ", " + ConnectionInfo(p);
+            return p.Name + (p.IsBot ? Loc.T(", bot") : "") + ", " + InstrumentName(p) + ", " + ConnectionInfo(p);
         }
 
         static string InstrumentName(YargProfile p)
@@ -213,10 +213,10 @@ namespace YargAccess
         static string ConnectionInfo(YargProfile p)
         {
             var player = GetPlayer(p);
-            if (player == null) return "not connected";
-            if (p != null && p.IsBot) return "connected";
+            if (player == null) return Loc.T("not connected");
+            if (p != null && p.IsBot) return Loc.T("connected");
             int n = DeviceCount(player);
-            return "connected, " + n + (n == 1 ? " device" : " devices");
+            return n == 1 ? Loc.F("connected, {0} device", n) : Loc.F("connected, {0} devices", n);
         }
 
         internal static List<string> Actions()
@@ -260,10 +260,33 @@ namespace YargAccess
             string pos = Keys.Pos(_action, actions.Count);
             switch (name)
             {
-                case "Instrument": return "Instrument, " + (p != null ? InstrumentName(p) : "no profile") + ", " + Keys.LeftRight + " to change" + pos;
-                case "Devices": return "Devices" + Keys.Role("button") + ", " + (p != null ? ConnectionInfo(p) : "no profile") + ", " + Keys.Ok + " to list them" + pos;
-                case "Profile Settings": return "Profile Settings for " + ProfileNameOr("profile") + Keys.Role("button") + pos;
-                default: return name + Keys.Role("button") + pos;
+                case "Instrument": return Loc.F("Instrument, {0}, {1} to change", p != null ? InstrumentName(p) : Loc.T("no profile"), Keys.LeftRight) + pos;
+                case "Devices": return Loc.T("Devices") + Keys.Role("button") + ", " + (p != null ? ConnectionInfo(p) : Loc.T("no profile")) + Loc.F(", {0} to list them", Keys.Ok) + pos;
+                case "Profile Settings": return Loc.F("Profile Settings for {0}", ProfileNameOr(Loc.T("profile"))) + Keys.Role("button") + pos;
+                default: return ActionWord(name) + Keys.Role("button") + pos;
+            }
+        }
+
+        // Actions() gives English names (switched on above); this is how they are read.
+        static string ActionWord(string a)
+        {
+            switch (a)
+            {
+                case "Add Profile": return Loc.T("Add Profile");
+                case "Add Bot": return Loc.T("Add Bot");
+                case "Disconnect": return Loc.T("Disconnect");
+                case "Edit Binds": return Loc.T("Edit Binds");
+                case "Rename": return Loc.T("Rename");
+                case "Profile Settings": return Loc.T("Profile Settings");
+                case "Add Device": return Loc.T("Add Device");
+                case "Remove Device": return Loc.T("Remove Device");
+                case "Move Player Up": return Loc.T("Move Player Up");
+                case "Move Player Down": return Loc.T("Move Player Down");
+                case "Connect": return Loc.T("Connect");
+                case "Delete Profile": return Loc.T("Delete Profile");
+                case "Instrument": return Loc.T("Instrument");
+                case "Devices": return Loc.T("Devices");
+                default: return a;
             }
         }
 
@@ -277,7 +300,7 @@ namespace YargAccess
             Follow(newest);
             _action = -1;
             var pv = Selected();
-            if (pv != null) MenuAnnouncer.SayShown("Added. " + ProfileText(pv));
+            if (pv != null) MenuAnnouncer.SayShown(Loc.F("Added. {0}", ProfileText(pv)));
         }
 
         static bool CanConnect()
@@ -297,7 +320,7 @@ namespace YargAccess
             var player = p != null ? GetPlayer(p) : null;
             if (player != null)
             {
-                if (p.IsBot) { MenuAnnouncer.SayShown("Bots have no binds. Use Profile Settings to change this bot's options."); return; }
+                if (p.IsBot) { MenuAnnouncer.SayShown(Loc.T("Bots have no binds. Use Profile Settings to change this bot's options.")); return; }
                 var sidebar = Sidebar();
                 if (sidebar != null)
                 {
@@ -314,7 +337,7 @@ namespace YargAccess
 
         static void Connect(ProfileView pv)
         {
-            if (!CanConnect()) { MenuAnnouncer.SayShown("Can't connect another profile. Disconnect one first."); return; }
+            if (!CanConnect()) { MenuAnnouncer.SayShown(Loc.T("Can't connect another profile. Disconnect one first.")); return; }
             var p = pv.Profile;
             MenuAnnouncer.BeginBatch();
             InvokeView(pv, "ConnectButtonAction");
@@ -322,7 +345,7 @@ namespace YargAccess
             Follow(p);
             _action = -1;
             if (p != null && GetPlayer(p) != null && !DialogNavigator.IsActive)
-                { int n = DeviceCount(GetPlayer(p)); MenuAnnouncer.SayShown("Connected " + p.Name + (p.IsBot ? "" : ", " + n + (n == 1 ? " device" : " devices"))); }
+                { int n = DeviceCount(GetPlayer(p)); MenuAnnouncer.SayShown(p.IsBot ? Loc.F("Connected {0}", p.Name) : n == 1 ? Loc.F("Connected {0}, {1} device", p.Name, n) : Loc.F("Connected {0}, {1} devices", p.Name, n)); }
         }
 
         static void Disconnect(ProfileView pv)
@@ -333,7 +356,7 @@ namespace YargAccess
             MenuAnnouncer.DiscardBatch();
             Follow(p);
             _action = -1;
-            MenuAnnouncer.SayShown("Disconnected " + (p != null ? p.Name : "profile"));
+            MenuAnnouncer.SayShown(Loc.F("Disconnected {0}", p != null ? p.Name : Loc.T("profile")));
         }
 
         static void MovePlayer(ProfileView pv, int dir)
@@ -344,7 +367,7 @@ namespace YargAccess
             var player = GetPlayer(p);
             int idx = PlayerIndex(player);
             _action = -1;
-            MenuAnnouncer.SayShown(p.Name + " is now player " + (idx + 1) + " of " + PlayerContainer.Players.Count);
+            MenuAnnouncer.SayShown(Loc.F("{0} is now player {1} of {2}", p.Name, idx + 1, PlayerContainer.Players.Count));
         }
 
         static void CycleInstrument(int dir)
@@ -366,7 +389,7 @@ namespace YargAccess
         {
             var sb = Sidebar();
             if (sb == null || pv == null || pv.Profile == null) return null;
-            if (GetPlayer(pv.Profile) == null) { MenuAnnouncer.SayShown("Connect " + pv.Profile.Name + " first."); return null; }
+            if (GetPlayer(pv.Profile) == null) { MenuAnnouncer.SayShown(Loc.F("Connect {0} first.", pv.Profile.Name)); return null; }
             try { sb.UpdateSidebar(pv.Profile, pv); }
             catch (Exception ex) { ModLog.Warn("ProfilesNavigator.BindSidebar", ex); return null; }
             return sb;
@@ -389,9 +412,9 @@ namespace YargAccess
             if (field == null) return;
             try { sb.SetNameEditMode(true); }
             catch (Exception ex) { ModLog.Warn("ProfilesNavigator.Rename", ex); return; }
-            TextEdit.Begin(field, "profile name", text =>
+            TextEdit.Begin(field, Loc.T("profile name"), text =>
             {
-                MenuAnnouncer.SayShown("Renamed to " + p.Name);
+                MenuAnnouncer.SayShown(Loc.F("Renamed to {0}", p.Name));
             });
         }
 
@@ -401,11 +424,11 @@ namespace YargAccess
         {
             if (BindSidebar(pv) == null) return;
             var rows = Rows();
-            if (rows.Count == 0) { MenuAnnouncer.SayShown("No settings available."); return; }
+            if (rows.Count == 0) { MenuAnnouncer.SayShown(Loc.T("No settings available.")); return; }
             _inSettings = true;
             _settingIdx = 0;
             _pendingConfigure = null;
-            MenuAnnouncer.Focused("Profile settings for " + pv.Profile.Name + ". " + RowText(rows, 0));
+            MenuAnnouncer.Focused(Loc.F("Profile settings for {0}.", pv.Profile.Name) + " " + RowText(rows, 0));
         }
 
         static void MoveSetting(int dir)
@@ -455,7 +478,7 @@ namespace YargAccess
                 MenuAnnouncer.Focused(ValueText(r));
                 return;
             }
-            if (r.Toggle != null) MenuAnnouncer.Say("Press " + Keys.Ok + " to change. " + ValueText(r));
+            if (r.Toggle != null) MenuAnnouncer.Say(Loc.F("Press {0} to change.", Keys.Ok) + " " + ValueText(r));
         }
 
         static void ConfirmSetting()
@@ -480,14 +503,14 @@ namespace YargAccess
                 if (_pendingConfigure != p)
                 {
                     _pendingConfigure = p;
-                    MenuAnnouncer.SayShown("This opens the drums lane-order editor, which can only be used with a mouse. Press " + Keys.Ok + " again to open it anyway.");
+                    MenuAnnouncer.SayShown(Loc.F("This opens the drums lane-order editor, which can only be used with a mouse. Press {0} again to open it anyway.", Keys.Ok));
                     return;
                 }
                 _pendingConfigure = null;
                 try { r.Button.onClick.Invoke(); } catch (Exception ex) { ModLog.Warn("ProfilesNavigator.Configure", ex); }
                 return;
             }
-            if (r.Dropdown != null) MenuAnnouncer.Say(Keys.LeftRight + " to change. " + ValueText(r));
+            if (r.Dropdown != null) MenuAnnouncer.Say(Loc.F("{0} to change.", Keys.LeftRight) + " " + ValueText(r));
         }
 
         static string RowText(List<Row> rows, int i)
@@ -522,16 +545,16 @@ namespace YargAccess
             if (r.Dropdown != null)
             {
                 var d = r.Dropdown;
-                return (d.value >= 0 && d.value < d.options.Count) ? TextUtil.Clean(d.options[d.value].text) : "none";
+                return (d.value >= 0 && d.value < d.options.Count) ? TextUtil.Clean(d.options[d.value].text) : Loc.T("none");
             }
-            if (r.Toggle != null) return r.Toggle.isOn ? "checked" : "not checked";
+            if (r.Toggle != null) return r.Toggle.isOn ? Loc.T("checked") : Loc.T("not checked");
             if (r.Input != null)
             {
                 var t = TextUtil.Clean(r.Input.text);
-                if (string.IsNullOrEmpty(t)) return "blank";
-                return r.Key == "Input Calibration" ? t + " milliseconds" : t;
+                if (string.IsNullOrEmpty(t)) return Loc.T("blank");
+                return r.Key == "Input Calibration" ? Loc.F("{0} milliseconds", t) : t;
             }
-            return "opens the lane-order editor";
+            return Loc.T("opens the lane-order editor");
         }
 
         static string PresetTip(Row r)
@@ -606,7 +629,7 @@ namespace YargAccess
         static void EnterDevices()
         {
             var names = DeviceNames();
-            if (names.Count == 0) { MenuAnnouncer.SayShown("No devices. Use Add Device on the toolbar to connect one."); return; }
+            if (names.Count == 0) { MenuAnnouncer.SayShown(Loc.T("No devices. Use Add Device on the toolbar to connect one.")); return; }
             _inDevices = true; _deviceIdx = 0;
             AnnounceDevice();
         }
@@ -637,7 +660,7 @@ namespace YargAccess
                 if (b != null)
                 {
                     if (b.InputDevices != null) foreach (var d in b.InputDevices) if (d != null) res.Add(d.displayName);
-                    if (b.Microphone != null) res.Add("Microphone");
+                    if (b.Microphone != null) res.Add(Loc.T("Microphone"));
                 }
             }
             catch { }

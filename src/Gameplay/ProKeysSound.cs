@@ -58,13 +58,13 @@ namespace YargAccess
         internal static int MidiOf(int key) => 60 + key;
         internal static float PanOf(int key) => -0.9f + 1.8f * Mathf.Clamp(key, 0, 24) / 24f;
 
-        static readonly string[] PitchNames = { "C", "C sharp", "D", "E flat", "E", "F", "F sharp", "G", "A flat", "A", "B flat", "B" };
+        static readonly string[] PitchNames = { Loc.T("C"), Loc.T("C sharp"), Loc.T("D"), Loc.T("E flat"), Loc.T("E"), Loc.T("F"), Loc.T("F sharp"), Loc.T("G"), Loc.T("A flat"), Loc.T("A"), Loc.T("B flat"), Loc.T("B") };
 
         internal static string NameOf(int key)
         {
-            if (key == 0) return "low C";
-            if (key == 12) return "middle C";
-            if (key == 24) return "high C";
+            if (key == 0) return Loc.T("low C");
+            if (key == 12) return Loc.T("middle C");
+            if (key == 24) return Loc.T("high C");
             return PitchNames[key % 12] + " " + (key / 12 + 1);
         }
 

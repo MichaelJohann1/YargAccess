@@ -23,7 +23,7 @@ namespace YargAccess
         }
 
         static object _pending;
-        const string EmptyText = "Empty list";
+        static string EmptyText => Loc.T("Empty list");
 
         public static void Announce(object listMenu)
         {
@@ -89,7 +89,7 @@ namespace YargAccess
             if (_hintVisit == Menu.PrefixArmedAt && _hintDevice == Keys.Current) return "";
             _hintVisit = Menu.PrefixArmedAt;
             _hintDevice = Keys.Current;
-            return ". Song details: " + Keys.ReviewHint;
+            return Loc.F(". Song details: {0}", Keys.ReviewHint);
         }
 
         static string Line(object listMenu)
@@ -173,7 +173,7 @@ namespace YargAccess
                 var count = TextUtil.Clean(HeaderText(menu, "_sortInfoHeaderSongCountText"));
                 if (!string.IsNullOrEmpty(count)) parts.Add(count.ToLowerInvariant());
                 var stars = TextUtil.Clean(HeaderText(menu, "_sortInfoHeaderStarCountText"));
-                if (!string.IsNullOrEmpty(stars)) parts.Add(stars.Replace(" / ", " of ").Replace("/", " of ") + " stars");
+                if (!string.IsNullOrEmpty(stars)) parts.Add(Loc.F("{0} stars", stars.Replace(" / ", Loc.T(" of ")).Replace("/", Loc.T(" of "))));
                 return string.Join(", ", parts.ToArray());
             }
             catch (Exception ex) { ModLog.Warn("ListMenuAnnouncer.LibraryHeader", ex); return ""; }

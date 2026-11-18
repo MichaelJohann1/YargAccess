@@ -40,7 +40,7 @@ namespace YargAccess
                 if (entry != null && entry.Toggle != null)
                 {
                     YargInput.Invoke("Green");
-                    MenuAnnouncer.Say(entry.Toggle.isOn ? "checked" : "not checked");
+                    MenuAnnouncer.Say(entry.Toggle.isOn ? Loc.T("checked") : Loc.T("not checked"));
                     return true;
                 }
             }

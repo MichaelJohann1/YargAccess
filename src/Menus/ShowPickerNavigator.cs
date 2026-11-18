@@ -10,6 +10,7 @@ namespace YargAccess
     {
         const BindingFlags BF = BindingFlags.Instance | BindingFlags.NonPublic;
         static readonly string[] Colors = { "Green", "Red", "Yellow", "Blue", "Orange" };
+        static readonly string[] ColorNames = { Loc.T("Green"), Loc.T("Red"), Loc.T("Yellow"), Loc.T("Blue"), Loc.T("Orange") };
         static readonly string[] Pickers = { "OnGreenButton", "OnRedButton", "OnYellowButton", "OnBlueButton", "OnOrangeButton" };
 
         static SongPickerListDialog _dialog;
@@ -61,7 +62,8 @@ namespace YargAccess
                     _lastCount = count;
                     _lastChoices = key;
                     _lastSecond = -1;
-                    MenuAnnouncer.SayShown((added ? "Added. " + CountLine(d) + " " : "Time's up. ") + "New choices. " + Choice(d, _index));
+                    MenuAnnouncer.SayShown(added ? Loc.F("Added. {0} New choices. {1}", CountLine(d), Choice(d, _index))
+                        : Loc.F("Time's up. New choices. {0}", Choice(d, _index)));
                     return;
                 }
                 int left = (int) Math.Ceiling(SecondsLeft(d));
@@ -90,7 +92,7 @@ namespace YargAccess
             var d = Dialog;
             if (d == null) return;
             int left = (int) Math.Ceiling(SecondsLeft(d));
-            MenuAnnouncer.SayShown(left + (left == 1 ? " second" : " seconds") + " before the choices change.");
+            MenuAnnouncer.SayShown(left == 1 ? Loc.F("{0} second before the choices change.", left) : Loc.F("{0} seconds before the choices change.", left));
         }
 
         static bool _held;
@@ -145,12 +147,12 @@ namespace YargAccess
             {
                 var name = ChoiceText(d, i);
                 var song = SongName(d, i);
-                if (song != null) name += ": " + song;
+                if (song != null) name = Loc.F("{0}: {1}", name, song);
                 typeof(SongPickerListDialog).GetMethod(Pickers[i]).Invoke(d, null);
                 _lastCount = ShowCount(d);
                 _lastChoices = ChoicesKey(d);
                 _lastSecond = -1;
-                MenuAnnouncer.SayShown("Added " + name + ". " + CountLine(d) + " New choices. " + Choice(d, _index));
+                MenuAnnouncer.SayShown(Loc.F("Added {0}. {1} New choices. {2}", name, CountLine(d), Choice(d, _index)));
             }
             catch (Exception ex) { ModLog.Warn("ShowPickerNavigator.Pick", ex); }
         }
@@ -163,15 +165,16 @@ namespace YargAccess
             try { d.OnSelectButton(); }
             catch (Exception ex) { ModLog.Warn("ShowPickerNavigator.Back", ex); }
             MenuAnnouncer.SayShown(n == 0
-                ? "Done. The show has no songs. Back leaves show mode."
-                : "Done. " + n + (n == 1 ? " song" : " songs") + " in the show. Blue, or 4 on the keyboard, starts the show. Back leaves show mode and clears it.");
+                ? Loc.T("Done. The show has no songs. Back leaves show mode.")
+                : n == 1 ? Loc.F("Done. {0} song in the show. Blue, or 4 on the keyboard, starts the show. Back leaves show mode and clears it.", n)
+                : Loc.F("Done. {0} songs in the show. Blue, or 4 on the keyboard, starts the show. Back leaves show mode and clears it.", n));
             return true;
         }
 
         static string CountLine(SongPickerListDialog d)
         {
             int n = ShowCount(d);
-            return n + (n == 1 ? " song" : " songs") + " in the show.";
+            return n == 1 ? Loc.F("{0} song in the show.", n) : Loc.F("{0} songs in the show.", n);
         }
 
         static int ShowCount(SongPickerListDialog d)
@@ -179,7 +182,7 @@ namespace YargAccess
             try { return d.MusicLibrary != null ? d.MusicLibrary.ShowPlaylist.Count : 0; } catch { return 0; }
         }
 
-        static string Choice(SongPickerListDialog d, int i) { return Colors[i] + ", " + ChoiceText(d, i); }
+        static string Choice(SongPickerListDialog d, int i) { return ColorNames[i] + ", " + ChoiceText(d, i); }
 
         static string ChoicesKey(SongPickerListDialog d)
         {
@@ -196,9 +199,9 @@ namespace YargAccess
                 var view = views != null && i < views.Length ? views.GetValue(i) as YARG.Menu.MusicLibrary.ShowCategoryView : null;
                 var t = view != null ? view.CategoryText : null;
                 var s = t != null ? TextUtil.Clean(t.text) : "";
-                return string.IsNullOrEmpty(s) ? "empty" : s;
+                return string.IsNullOrEmpty(s) ? Loc.T("empty") : s;
             }
-            catch { return "unknown"; }
+            catch { return Loc.T("unknown"); }
         }
 
         static string SongName(SongPickerListDialog d, int i)
@@ -213,7 +216,7 @@ namespace YargAccess
                 var entry = song as YARG.Core.Song.SongEntry;
                 if (entry == null) return null;
                 string n = entry.Name, a = entry.Artist;
-                return TextUtil.Clean(n) + (string.IsNullOrWhiteSpace(a) ? "" : " by " + TextUtil.Clean(a));
+                return string.IsNullOrWhiteSpace(a) ? TextUtil.Clean(n) : Loc.F("{0} by {1}", TextUtil.Clean(n), TextUtil.Clean(a));
             }
             catch { return null; }
         }

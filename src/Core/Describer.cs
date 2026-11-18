@@ -109,7 +109,8 @@ namespace YargAccess
             int h, m, sec;
             if (!int.TryParse(bits[0], out h) || !int.TryParse(bits[1], out m) || !int.TryParse(bits[2], out sec)) return s;
             m += h * 60;
-            return m + (m == 1 ? " minute " : " minutes ") + sec + (sec == 1 ? " second" : " seconds");
+            if (m == 1) return sec == 1 ? Loc.F("{0} minute {1} second", m, sec) : Loc.F("{0} minute {1} seconds", m, sec);
+            return sec == 1 ? Loc.F("{0} minutes {1} second", m, sec) : Loc.F("{0} minutes {1} seconds", m, sec);
         }
 
         static List<string> CollectTexts(Transform root)
@@ -136,10 +137,10 @@ namespace YargAccess
         static string GetRoleState(GameObject go)
         {
             var custom = CustomToggleState(go);
-            if (custom != null) return Keys.RoleThen("checkbox", custom.Value ? "checked" : "not checked");
+            if (custom != null) return Keys.RoleThen("checkbox", custom.Value ? Loc.T("checked") : Loc.T("not checked"));
 
             var toggle = go.GetComponentInChildren<Toggle>();
-            if (toggle != null) return Keys.RoleThen("checkbox", toggle.isOn ? "checked" : "not checked");
+            if (toggle != null) return Keys.RoleThen("checkbox", toggle.isOn ? Loc.T("checked") : Loc.T("not checked"));
 
             var slider = go.GetComponentInChildren<Slider>();
             if (slider != null) return Keys.RoleThen("slider", FormatSlider(slider));
@@ -155,10 +156,10 @@ namespace YargAccess
             if (input != null)
             {
                 var t = TextUtil.Clean(input.text);
-                return Keys.RoleThen("edit box", string.IsNullOrEmpty(t) ? "blank" : t);
+                return Keys.RoleThen("edit box", string.IsNullOrEmpty(t) ? Loc.T("blank") : t);
             }
 
-            return ModSettings.ReadRoles.Value ? "button" : "";
+            return ModSettings.ReadRoles.Value ? Loc.T("button") : "";
         }
 
         static readonly string[] CustomToggleTypes = { "ModifierItem" };

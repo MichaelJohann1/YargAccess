@@ -72,7 +72,7 @@ namespace YargAccess
                 int pct = Parse(f.text) + 5 * dir;
                 pct = Mathf.Clamp(pct, 10, 5000);
                 f.text = pct + "%";
-                MenuAnnouncer.Focused(pct + " percent");
+                MenuAnnouncer.Focused(Loc.F("{0} percent", pct));
             }
             catch (Exception ex) { ModLog.Warn("DifficultySelectExtras.Adjust", ex); }
             return true;
@@ -89,7 +89,7 @@ namespace YargAccess
         {
             var f = Field();
             if (f == null) return;
-            MenuAnnouncer.Focused("Song speed, " + Parse(f.text) + " percent. " + Keys.LeftRight + " to change.");
+            MenuAnnouncer.Focused(Loc.F("Song speed, {0} percent. {1} to change.", Parse(f.text), Keys.LeftRight));
         }
 
         public static string Warning()
@@ -115,8 +115,8 @@ namespace YargAccess
                 var state = YARG.GlobalVariables.State;
                 var song = state.CurrentSong;
                 if (song == null) return "";
-                var mode = state.IsPractice ? "Practice" : "Quickplay";
-                var line = mode + ", " + song.Name + ", by " + song.Artist;
+                var mode = state.IsPractice ? Loc.T("Practice") : Loc.T("Quickplay");
+                var line = Loc.F("{0}, {1}, by {2}", mode, song.Name, song.Artist);
                 var phrase = TextUtil.Clean(song.LoadingPhrase);
                 if (!string.IsNullOrEmpty(phrase)) line += ". " + phrase;
                 var warn = Warning();

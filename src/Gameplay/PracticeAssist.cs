@@ -57,7 +57,7 @@ namespace YargAccess
                     {
                         var on = ModSettings.AnnounceSections;
                         on.SetValueWithoutNotify(!on.Value); on.ForceInvokeCallback();
-                        Captions.Say(on.Value ? "Section announcements on" : "Section announcements off", true);
+                        Captions.Say(on.Value ? Loc.T("Section announcements on") : Loc.T("Section announcements off"), true);
                     }
                 }
 
@@ -91,11 +91,11 @@ namespace YargAccess
             if (!string.IsNullOrEmpty(section)) parts.Add(Pretty(section));
             parts.Add(SpeedPhrase());
             var pct = Text("_percentHitText");
-            if (!string.IsNullOrEmpty(pct)) parts.Add(pct + " hit");
+            if (!string.IsNullOrEmpty(pct)) parts.Add(Loc.F("{0} hit", pct));
             var best = Text("_bestPercentText");
-            if (!string.IsNullOrEmpty(best)) parts.Add("best " + best);
+            if (!string.IsNullOrEmpty(best)) parts.Add(Loc.F("best {0}", best));
             var notes = Text("_notesHitTotalText");
-            if (!string.IsNullOrEmpty(notes)) parts.Add(notes.Replace("/", " of ") + " notes");
+            if (!string.IsNullOrEmpty(notes)) parts.Add(NotesLine(notes));
             Speech.Say(string.Join(", ", parts.ToArray()), true);
         }
 
@@ -137,7 +137,7 @@ namespace YargAccess
                 if (pm == null) return;
                 _lastSection = "";
                 pm.ResetPractice();
-                Captions.Say("Restarting section", true);
+                Captions.Say(Loc.T("Restarting section"), true);
             }
             catch (Exception ex) { ModLog.Warn("PracticeAssist.RestartSection", ex); }
         }
@@ -148,7 +148,7 @@ namespace YargAccess
             {
                 var g = Game;
                 if (g == null) return "";
-                return "speed " + Mathf.RoundToInt(g.SongSpeed * 100f) + " percent";
+                return Loc.F("speed {0} percent", Mathf.RoundToInt(g.SongSpeed * 100f));
             }
             catch { return ""; }
         }
@@ -189,7 +189,7 @@ namespace YargAccess
                 var g = Game;
                 if (g == null || g.PracticeManager == null) return "";
                 double t = a ? g.PracticeManager.TimeStart : g.PracticeManager.TimeEnd;
-                return (a ? "A position " : "B position ") + Clock(t);
+                return a ? Loc.F("A position {0}", Clock(t)) : Loc.F("B position {0}", Clock(t));
             }
             catch { return ""; }
         }
@@ -199,7 +199,15 @@ namespace YargAccess
             if (seconds < 0) seconds = 0;
             var ts = TimeSpan.FromSeconds(seconds);
             int m = (int) ts.TotalMinutes;
-            return m + (m == 1 ? " minute " : " minutes ") + ts.Seconds + " seconds";
+            return m == 1 ? Loc.F("{0} minute {1} seconds", m, ts.Seconds) : Loc.F("{0} minutes {1} seconds", m, ts.Seconds);
+        }
+
+        // YARG's "hit/total" notes text as "hit of total notes"; anything else keeps its old wording.
+        static string NotesLine(string notes)
+        {
+            var bits = notes.Split('/');
+            if (bits.Length == 2) return Loc.F("{0} of {1} notes", bits[0].Trim(), bits[1].Trim());
+            return Loc.F("{0} notes", notes);
         }
 
         public static void Reset()

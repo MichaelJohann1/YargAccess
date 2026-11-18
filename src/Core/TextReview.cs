@@ -12,7 +12,8 @@ namespace YargAccess
         static bool _speaking;
         static string _short, _full;
 
-        static readonly Regex Split = new Regex(@"(?<=[,.!?;:])\s+");
+        // Japanese full-width punctuation (、。！？) is followed by no space, so it splits on its own.
+        static readonly Regex Split = new Regex(@"(?<=[,.!?;:])\s+|(?<=[、。，．！？；：])\s*");
 
         public static void Spoken(string text)
         {
@@ -36,7 +37,7 @@ namespace YargAccess
             _pieces.Clear();
             foreach (var raw in Split.Split(text))
             {
-                var p = raw.Trim().TrimEnd(',', ';');
+                var p = raw.Trim().TrimEnd(',', ';', '、', '，', '；');
                 if (p.EndsWith(".") && !p.EndsWith("..")) p = p.Substring(0, p.Length - 1);
                 if (p.Length > 0) _pieces.Add(p);
             }
@@ -47,7 +48,7 @@ namespace YargAccess
 
         static void Step(int dir)
         {
-            if (_pieces.Count == 0) { Say("Nothing to review"); return; }
+            if (_pieces.Count == 0) { Say(Loc.T("Nothing to review")); return; }
             if (_idx < 0) _idx = dir > 0 ? 0 : _pieces.Count - 1;
             else _idx = Math.Max(0, Math.Min(_pieces.Count - 1, _idx + dir));
             Say(_pieces[_idx]);
@@ -55,7 +56,7 @@ namespace YargAccess
 
         public static void All()
         {
-            if (_text.Length == 0) { Say("Nothing to review"); return; }
+            if (_text.Length == 0) { Say(Loc.T("Nothing to review")); return; }
             _idx = -1;
             Say(_text);
         }

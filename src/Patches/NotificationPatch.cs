@@ -23,7 +23,7 @@ namespace YargAccess.Patches
                 if (string.IsNullOrEmpty(text)) return;
                 if (text.ToUpperInvariant() == text && text.ToLowerInvariant() != text)
                     text = SentenceCase(text);
-                if (!ShouldSpeak(text)) return;
+                if (!ShouldSpeak(notification.Type)) return;
                 float now = Time.unscaledTime;
                 if (text == _last && now - _lastAt < 1f) return;
                 _last = text;
@@ -33,13 +33,13 @@ namespace YargAccess.Patches
             catch (Exception ex) { ModLog.Warn("NotificationPatch", ex); }
         }
 
-        static bool ShouldSpeak(string text)
+        // By the notification's type, not its text: YARG shows the text in its own language.
+        static bool ShouldSpeak(TextNotificationType type)
         {
-            var t = text.ToLowerInvariant();
             var mode = ModSettings.InSongSpeech != null ? ModSettings.InSongSpeech.Value : "important";
             if (mode == "off") return false;
             if (mode == "all" || VocalSound.Active) return true;
-            return t.Contains("star power ready") || t.Contains("full combo") || t.Contains("high score");
+            return type == TextNotificationType.StarPowerReady || type == TextNotificationType.FullCombo || type == TextNotificationType.NewHighScore;
         }
 
         static string SentenceCase(string text)

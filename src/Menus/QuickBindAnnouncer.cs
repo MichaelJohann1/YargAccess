@@ -40,14 +40,14 @@ namespace YargAccess
 
                 if (IsWaiting && control.Length > 0 && control != _lastControl)
                 {
-                    string skip = _skipTold ? "" : " Escape to skip.";
+                    string skip = _skipTold ? "" : " " + Loc.T("Escape to skip.");
                     _skipTold = true;
-                    Captions.Say(Take() + "Hit " + control + Kind(d, control) + "." + skip, true);
+                    Captions.Say(Take() + Loc.F("Hit {0}{1}.", control, Kind(d, control)) + skip, true);
                 }
                 if (state == "Done" && _lastState != "Done" && _lastState != "")
                 {
                     DialogNavigator.FocusLabel("Close");
-                    Captions.Say(Take() + TextUtil.Clean(d.Message.text) + " " + Keys.Ok + " to close.", true);
+                    Captions.Say(Take() + TextUtil.Clean(d.Message.text) + " " + Loc.F("{0} to close.", Keys.Ok), true);
                 }
                 _lastControl = control;
                 _lastState = state;
@@ -94,7 +94,7 @@ namespace YargAccess
             string name = "";
             try { name = TextUtil.Clean(YARG.Localization.Localize.Key("Bindings", binding.Name)); } catch { }
             if (string.IsNullOrEmpty(name)) name = binding.Name;
-            _pendingSet = name + " set to " + (control != null ? control.displayName : "?") + ". ";
+            _pendingSet = Loc.F("{0} set to {1}.", name, control != null ? control.displayName : "?") + " ";
         }
 
         static string Take()
@@ -113,7 +113,7 @@ namespace YargAccess
                 if (possible != null) possible.Clear();
                 var cts = typeof(FriendlyBindingDialog).GetField("_bindingTokenSource", BF).GetValue(d) as CancellationTokenSource;
                 if (cts != null) cts.Cancel();
-                _pendingSet = control + " skipped. ";
+                _pendingSet = Loc.F("{0} skipped.", control) + " ";
             }
             catch (Exception ex) { ModLog.Warn("QuickBindAnnouncer.Skip", ex); }
         }
@@ -141,25 +141,26 @@ namespace YargAccess
             try { return TextUtil.Clean(YARG.Localization.Localize.Key("Bindings", key)); } catch { return key; }
         }
 
-        static readonly string[] NoteNames = { "C", "C sharp", "D", "D sharp", "E", "F", "F sharp", "G", "G sharp", "A", "A sharp", "B" };
+        static readonly string[] NoteNames = { Loc.T("C"), Loc.T("C sharp"), Loc.T("D"), Loc.T("D sharp"), Loc.T("E"), Loc.T("F"),
+            Loc.T("F sharp"), Loc.T("G"), Loc.T("G sharp"), Loc.T("A"), Loc.T("A sharp"), Loc.T("B") };
 
         static string KindOf(string name)
         {
             switch (name)
             {
-                case "Drums.Kick": return "the kick pedal";
-                case "FourDrums.RedPad": case "FiveDrums.RedPad": return "the snare";
-                case "FourDrums.YellowPad": return "the high tom";
-                case "FourDrums.BluePad": case "FiveDrums.BluePad": return "the middle tom";
-                case "FourDrums.GreenPad": case "FiveDrums.GreenPad": return "the low tom";
-                case "FourDrums.YellowCymbal": case "FiveDrums.YellowCymbal": return "the hi-hat cymbal";
-                case "FourDrums.BlueCymbal": return "the ride cymbal";
-                case "FourDrums.GreenCymbal": return "the crash cymbal";
-                case "FiveDrums.OrangeCymbal": return "the crash cymbal";
+                case "Drums.Kick": return Loc.T("the kick pedal");
+                case "FourDrums.RedPad": case "FiveDrums.RedPad": return Loc.T("the snare");
+                case "FourDrums.YellowPad": return Loc.T("the high tom");
+                case "FourDrums.BluePad": case "FiveDrums.BluePad": return Loc.T("the middle tom");
+                case "FourDrums.GreenPad": case "FiveDrums.GreenPad": return Loc.T("the low tom");
+                case "FourDrums.YellowCymbal": case "FiveDrums.YellowCymbal": return Loc.T("the hi-hat cymbal");
+                case "FourDrums.BlueCymbal": return Loc.T("the ride cymbal");
+                case "FourDrums.GreenCymbal": return Loc.T("the crash cymbal");
+                case "FiveDrums.OrangeCymbal": return Loc.T("the crash cymbal");
             }
             int n;
             if (name.StartsWith("ProKeys.Key") && int.TryParse(name.Substring(11), out n) && n >= 1)
-                return NoteNames[(n - 1) % 12] + (n == 25 ? ", the top C" : "");
+                return n == 25 ? Loc.F("{0}, the top C", NoteNames[(n - 1) % 12]) : NoteNames[(n - 1) % 12];
             return "";
         }
 

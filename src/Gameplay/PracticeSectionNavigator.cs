@@ -66,7 +66,7 @@ namespace YargAccess
 
                 if (!hadStart)
                 {
-                    MenuAnnouncer.SayShown("Start at " + hovered + ". Now choose the last section, then press " + Keys.Ok + ".");
+                    MenuAnnouncer.SayShown(Loc.F("Start at {0}. Now choose the last section, then press {1}.", hovered, Keys.Ok));
                 }
                 else
                 {
@@ -75,8 +75,8 @@ namespace YargAccess
                     string last = a <= b ? hovered : start;
                     int count = Mathf.Abs(b - a) + 1;
                     string what = (first == last)
-                        ? ("Practicing " + first)
-                        : ("Practicing " + first + " to " + last + ", " + count + " sections");
+                        ? Loc.F("Practicing {0}", first)
+                        : Loc.F("Practicing {0} to {1}, {2} sections", first, last, count);
                     MenuAnnouncer.SayShown(what + ". " + PracticeAssist.SpeedPhrase());
                     _lastIndex = -1;
                 }
@@ -96,8 +96,8 @@ namespace YargAccess
                 YargInput.Invoke("Red");
                 _lastFirst = m.FirstSelectedIndex;
 
-                if (hadStart) MenuAnnouncer.SayShown("Start section cleared.");
-                else if (!everSelected) MenuAnnouncer.SayShown("Leaving practice.");
+                if (hadStart) MenuAnnouncer.SayShown(Loc.T("Start section cleared."));
+                else if (!everSelected) MenuAnnouncer.SayShown(Loc.T("Leaving practice."));
                 return true;
             }
             catch (Exception ex)
@@ -130,7 +130,7 @@ namespace YargAccess
             if (m.FirstSelectedIndex.HasValue)
             {
                 int count = Mathf.Abs(i - m.FirstSelectedIndex.Value) + 1;
-                s += ", " + count + (count == 1 ? " section selected" : " sections selected");
+                s += ", " + (count == 1 ? Loc.F("{0} section selected", count) : Loc.F("{0} sections selected", count));
             }
             return s;
         }
@@ -140,7 +140,7 @@ namespace YargAccess
             var m = Menu;
             if (m == null) return "";
             _lastIndex = m.HoveredIndex;
-            return Line(m) + ". " + Keys.UpDown + " to choose a section, " + Keys.Ok + " to set the start.";
+            return Line(m) + ". " + Loc.F("{0} to choose a section, {1} to set the start.", Keys.UpDown, Keys.Ok);
         }
 
         public static void Reset() { _lastIndex = -1; _menu = null; _tracking = false; }
@@ -164,8 +164,8 @@ namespace YargAccess
                     _lastFirst = first;
                     _lastIndex = m.HoveredIndex;
                     MenuAnnouncer.SayShown(first.HasValue
-                        ? "Start at " + SectionName(m, first.Value) + ". Now choose the last section, then press " + Keys.Ok + "."
-                        : "Start section cleared.");
+                        ? Loc.F("Start at {0}. Now choose the last section, then press {1}.", SectionName(m, first.Value), Keys.Ok)
+                        : Loc.T("Start section cleared."));
                     return;
                 }
                 Announce(false);

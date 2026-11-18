@@ -48,30 +48,30 @@ namespace YargAccess
                 bool first = _last == null;
                 _last = cur;
                 if (first) return;
-                if (cur != null && Available() && !CreditsNavigator.IsReading && !GuidedPractice.Active && ModSettings.AnnounceMusic.Value) Speak("Now playing, ", cur, false);
+                if (cur != null && Available() && !CreditsNavigator.IsReading && !GuidedPractice.Active && ModSettings.AnnounceMusic.Value) Speak(cur, false);
             }
         }
 
         public static void AnnounceNowPlaying()
         {
             var s = SafeNowPlaying();
-            if (s == null || !Available()) { MenuAnnouncer.SayShown("No song playing"); return; }
-            Speak("Now playing, ", s, true);
+            if (s == null || !Available()) { MenuAnnouncer.SayShown(Loc.T("No song playing")); return; }
+            Speak(s, true);
         }
 
         public static void TogglePlay()
         {
             var p = Player();
-            if (p == null || !Available()) { MenuAnnouncer.SayShown("No song playing"); return; }
+            if (p == null || !Available()) { MenuAnnouncer.SayShown(Loc.T("No song playing")); return; }
             try { p.TogglePlay(); } catch (Exception ex) { ModLog.Warn("MusicControl.TogglePlay", ex); return; }
             bool? paused = MixerPaused(p);
-            MenuAnnouncer.SayShown(paused == true ? "Paused" : paused == false ? "Playing" : "Music toggled");
+            MenuAnnouncer.SayShown(paused == true ? Loc.T("Paused") : paused == false ? Loc.T("Playing") : Loc.T("Music toggled"));
         }
 
         public static void Next()
         {
             var p = Player();
-            if (p == null || !Available()) { MenuAnnouncer.SayShown("No song playing"); return; }
+            if (p == null || !Available()) { MenuAnnouncer.SayShown(Loc.T("No song playing")); return; }
             if (_pos >= 0 && _pos < _history.Count - 1 && ReferenceEquals(_history[_pos], SafeNowPlaying()))
             {
                 _pos++;
@@ -84,10 +84,10 @@ namespace YargAccess
         public static void Previous()
         {
             var p = Player();
-            if (p == null || !Available()) { MenuAnnouncer.SayShown("No song playing"); return; }
+            if (p == null || !Available()) { MenuAnnouncer.SayShown(Loc.T("No song playing")); return; }
             var cur = SafeNowPlaying();
             if (cur != null && (_pos < 0 || _pos >= _history.Count || !ReferenceEquals(_history[_pos], cur))) Record(cur);
-            if (_pos <= 0) { MenuAnnouncer.SayShown("No previous song"); return; }
+            if (_pos <= 0) { MenuAnnouncer.SayShown(Loc.T("No previous song")); return; }
             _pos--;
             Play(p, _history[_pos]);
         }
@@ -158,12 +158,12 @@ namespace YargAccess
 
         static SongEntry SafeNowPlaying() { try { return MusicPlayer.NowPlaying; } catch { return null; } }
 
-        static void Speak(string prefix, SongEntry s, bool interrupt)
+        static void Speak(SongEntry s, bool interrupt)
         {
             string name = s.Name;
             string artist = s.Artist;
-            var msg = prefix + TextUtil.Clean(name);
-            if (!string.IsNullOrWhiteSpace(artist)) msg += ", by " + TextUtil.Clean(artist);
+            var msg = string.IsNullOrWhiteSpace(artist) ? Loc.F("Now playing, {0}", TextUtil.Clean(name))
+                : Loc.F("Now playing, {0}, by {1}", TextUtil.Clean(name), TextUtil.Clean(artist));
             if (interrupt) MenuAnnouncer.Say(msg);
             else Speech.Say(msg, false);
         }

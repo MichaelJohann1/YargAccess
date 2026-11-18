@@ -12,26 +12,26 @@ namespace YargAccess
 
         static readonly Dictionary<string, string> Profile = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
-            { "Instrument Select", "The kind of instrument this profile plays, such as five-fret guitar, four-lane, pro or five-lane drums, pro keys or vocals. It decides which parts you can pick and which buttons you bind." },
-            { "Note Speed", "How fast notes scroll down the highway. It only changes what is drawn; the mod's sounds play at the same times." },
-            { "Highway Length", "How far ahead the highway shows notes. It only changes what is drawn." },
-            { "Lefty Flip", "Mirrors the lanes left to right for left-handed players. The mod's note sounds are mirrored with them." },
-            { "Engine Preset", "The rules for hitting notes: the size of the hit window and how forgiving strums and frets are." },
-            { "Theme Select", "How the notes and frets look. Visual only." },
-            { "Color Profile Select", "The colours of the notes, frets and effects. Visual only." },
-            { "Camera Preset", "The camera angle and curve of the highway. Visual only." },
-            { "Highway Preset", "The highway's colours and background. Visual only." },
-            { "Rock Meter Preset", "How quickly you fail: how much misses and overhits cost and how fast hits win it back." },
-            { "Input Calibration", "This profile's own timing correction in milliseconds, added to the game-wide calibration. Raise it if your hits count as late, lower it if they count as early." },
-            { "Range Disable", "Shows markers where a part moves to a different set of five lanes, mostly on keys. Visual only." },
+            { "Instrument Select", Loc.T("The kind of instrument this profile plays, such as five-fret guitar, four-lane, pro or five-lane drums, pro keys or vocals. It decides which parts you can pick and which buttons you bind.") },
+            { "Note Speed", Loc.T("How fast notes scroll down the highway. It only changes what is drawn; the mod's sounds play at the same times.") },
+            { "Highway Length", Loc.T("How far ahead the highway shows notes. It only changes what is drawn.") },
+            { "Lefty Flip", Loc.T("Mirrors the lanes left to right for left-handed players. The mod's note sounds are mirrored with them.") },
+            { "Engine Preset", Loc.T("The rules for hitting notes: the size of the hit window and how forgiving strums and frets are.") },
+            { "Theme Select", Loc.T("How the notes and frets look. Visual only.") },
+            { "Color Profile Select", Loc.T("The colours of the notes, frets and effects. Visual only.") },
+            { "Camera Preset", Loc.T("The camera angle and curve of the highway. Visual only.") },
+            { "Highway Preset", Loc.T("The highway's colours and background. Visual only.") },
+            { "Rock Meter Preset", Loc.T("How quickly you fail: how much misses and overhits cost and how fast hits win it back.") },
+            { "Input Calibration", Loc.T("This profile's own timing correction in milliseconds, added to the game-wide calibration. Raise it if your hits count as late, lower it if they count as early.") },
+            { "Range Disable", Loc.T("Shows markers where a part moves to a different set of five lanes, mostly on keys. Visual only.") },
         };
 
         static readonly KeyValuePair<string, string>[] ProfileByLabel =
         {
-            new KeyValuePair<string, string>("Open", "Whether the highway shows a lane for open notes: never, always, or only when the chart has open notes. Visual only."),
-            new KeyValuePair<string, string>("Cymbal", "Draws cymbal notes as cymbals instead of flat notes. Visual only."),
-            new KeyValuePair<string, string>("Activation", "On drums, which hit at the end of a fill turns star power on. Rightmost Note: the rightmost pad of the fill's last note. All Notes: any pad of that note."),
-            new KeyValuePair<string, string>("Hand Position", "Shows hand position markers on the highway. Visual only."),
+            new KeyValuePair<string, string>("Open", Loc.T("Whether the highway shows a lane for open notes: never, always, or only when the chart has open notes. Visual only.")),
+            new KeyValuePair<string, string>("Cymbal", Loc.T("Draws cymbal notes as cymbals instead of flat notes. Visual only.")),
+            new KeyValuePair<string, string>("Activation", Loc.T("On drums, which hit at the end of a fill turns star power on. Rightmost Note: the rightmost pad of the fill's last note. All Notes: any pad of that note.")),
+            new KeyValuePair<string, string>("Hand Position", Loc.T("Shows hand position markers on the highway. Visual only.")),
         };
 
         public static string ForProfileSetting(string key, string label)
@@ -46,67 +46,72 @@ namespace YargAccess
 
         static readonly Dictionary<string, string> EnginePresets = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
-            { "Default", "A fixed hit window, 70 milliseconds either side of each note." },
-            { "Casual", "More forgiving than Default: strums and frets may be a little further apart, hammer-ons can be held before they arrive, the wrong fret doesn't break your streak, and rolls are easier." },
-            { "Precision", "Stricter than Default: the hit window shrinks from 60 to as little as 20 milliseconds either side as notes get faster, early strums are forgiven less, and vocals need truer pitch." },
-            { "Solo Taps", "Default, plus during solos the solo frets play notes without strumming." },
+            { "Default", Loc.T("A fixed hit window, 70 milliseconds either side of each note.") },
+            { "Casual", Loc.T("More forgiving than Default: strums and frets may be a little further apart, hammer-ons can be held before they arrive, the wrong fret doesn't break your streak, and rolls are easier.") },
+            { "Precision", Loc.T("Stricter than Default: the hit window shrinks from 60 to as little as 20 milliseconds either side as notes get faster, early strums are forgiven less, and vocals need truer pitch.") },
+            { "Solo Taps", Loc.T("Default, plus during solos the solo frets play notes without strumming.") },
         };
 
         static readonly Dictionary<string, string> RockMeterPresets = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
-            { "Normal", "The standard rock meter." },
-            { "Easy", "Misses and overhits cost less and hits win back more than Normal." },
-            { "Casual", "The most forgiving: misses cost half as much and hits win back twice as much as Normal." },
-            { "Hard", "Misses cost one and a half times as much and hits win back half as much as Normal,, and you start with the meter half full." },
-            { "Unfair", "Misses cost three times as much and hits win back a quarter as much as Normal, starting half full." },
+            { "Normal", Loc.T("The standard rock meter.") },
+            { "Easy", Loc.T("Misses and overhits cost less and hits win back more than Normal.") },
+            { "Casual", Loc.T("The most forgiving: misses cost half as much and hits win back twice as much as Normal.") },
+            { "Hard", Loc.T("Misses cost one and a half times as much and hits win back half as much as Normal,, and you start with the meter half full.") },
+            { "Unfair", Loc.T("Misses cost three times as much and hits win back a quarter as much as Normal, starting half full.") },
         };
 
         // Built-in camera presets (YARG.Core CameraPreset.Defaults). The names copy other games' camera
         // angles: The Band is Rock Band, Hero is Guitar Hero, Clone is Clone Hero.
         static readonly Dictionary<string, string> CameraPresets = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
-            { "Default", "YARG's own view: the camera fairly high behind the highway, tilted down, and the far end of the highway curves gently away." },
-            { "Circular", "Made for the Circular theme: a slightly wider view from a little lower and further back, with a flat highway." },
-            { "High FOV", "Like Default with a wider view, so more of the highway fits on the screen." },
-            { "The Band 1", "Copies a Rock Band camera: a narrower view, a little lower and tilted down a bit more than Default, with the curved highway." },
-            { "The Band 2", "Copies a Rock Band camera: the narrowest view, high and close to the highway, so the notes look bigger." },
-            { "The Band 3", "Copies a Rock Band camera: a wider view from lower and further back." },
-            { "The Band 4", "Copies a Rock Band camera: a wide view, tilted down less than Default." },
-            { "Hero 2", "Copies the Guitar Hero 2 camera: low behind the highway and only a little tilted, so the highway runs far into the distance. Flat highway." },
-            { "Hero 3", "Copies the Guitar Hero 3 camera: low and close, tilted a little, flat highway." },
-            { "Hero Traveling the World", "Copies the camera of the later Guitar Hero games: low, a little tilted, flat highway." },
-            { "Hero Live", "Copies the Guitar Hero Live camera: a wide view, tilted down a little less than Default, flat highway." },
-            { "Clone", "Copies the Clone Hero camera: a medium view from low behind the highway, flat highway." },
+            { "Default", Loc.T("YARG's own view: the camera fairly high behind the highway, tilted down, and the far end of the highway curves gently away.") },
+            { "Circular", Loc.T("Made for the Circular theme: a slightly wider view from a little lower and further back, with a flat highway.") },
+            { "High FOV", Loc.T("Like Default with a wider view, so more of the highway fits on the screen.") },
+            { "The Band 1", Loc.T("Copies a Rock Band camera: a narrower view, a little lower and tilted down a bit more than Default, with the curved highway.") },
+            { "The Band 2", Loc.T("Copies a Rock Band camera: the narrowest view, high and close to the highway, so the notes look bigger.") },
+            { "The Band 3", Loc.T("Copies a Rock Band camera: a wider view from lower and further back.") },
+            { "The Band 4", Loc.T("Copies a Rock Band camera: a wide view, tilted down less than Default.") },
+            { "Hero 2", Loc.T("Copies the Guitar Hero 2 camera: low behind the highway and only a little tilted, so the highway runs far into the distance. Flat highway.") },
+            { "Hero 3", Loc.T("Copies the Guitar Hero 3 camera: low and close, tilted a little, flat highway.") },
+            { "Hero Traveling the World", Loc.T("Copies the camera of the later Guitar Hero games: low, a little tilted, flat highway.") },
+            { "Hero Live", Loc.T("Copies the Guitar Hero Live camera: a wide view, tilted down a little less than Default, flat highway.") },
+            { "Clone", Loc.T("Copies the Clone Hero camera: a medium view from low behind the highway, flat highway.") },
         };
 
         // Built-in themes (YARG.Themes.ThemePreset.Defaults): the 3D models of the notes and frets.
         static readonly Dictionary<string, string> Themes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
-            { "Rectangular", "YARG's own look: notes are flat rectangular bars across their lanes, and the frets at the strike line are flat buttons. Works for every instrument." },
-            { "Circular (Beta)", "Notes are round gems and the frets are round, like the older guitar games. Only five-fret guitar and five-lane keys; other instruments keep the Rectangular look. It picks the Circular colours and camera." },
-            { "YARG on Fire", "The April Fools theme: flaming notes in bright colours. Five-fret guitar, drums and five-lane keys." },
+            { "Rectangular", Loc.T("YARG's own look: notes are flat rectangular bars across their lanes, and the frets at the strike line are flat buttons. Works for every instrument.") },
+            { "Circular (Beta)", Loc.T("Notes are round gems and the frets are round, like the older guitar games. Only five-fret guitar and five-lane keys; other instruments keep the Rectangular look. It picks the Circular colours and camera.") },
+            { "YARG on Fire", Loc.T("The April Fools theme: flaming notes in bright colours. Five-fret guitar, drums and five-lane keys.") },
         };
 
         static readonly Dictionary<string, string> ColorProfiles = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
-            { "Default", "YARG's colours: Green, Red, Yellow, Blue and Orange frets and notes, purple open notes, white star power notes, grey missed notes." },
-            { "Circular", "Colours to go with the Circular theme, for five-fret guitar; the other instruments keep the default colours." },
-            { "YARG on Fire", "Colours to go with the YARG on Fire theme: brighter frets and notes, with a purple Orange fret." },
+            { "Default", Loc.T("YARG's colours: Green, Red, Yellow, Blue and Orange frets and notes, purple open notes, white star power notes, grey missed notes.") },
+            { "Circular", Loc.T("Colours to go with the Circular theme, for five-fret guitar; the other instruments keep the default colours.") },
+            { "YARG on Fire", Loc.T("Colours to go with the YARG on Fire theme: brighter frets and notes, with a purple Orange fret.") },
         };
 
         static readonly Dictionary<string, string> HighwayPresets = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
-            { "Default", "A dark grey highway with a pattern. It turns blue (the groove) while your multiplier is at its highest, and glows orange while star power runs." },
-            { "Basic", "A plain dark highway: no pattern, no blue groove colour and no star power colour." },
-            { "No Groove", "Like Default, but the highway stays grey at the highest multiplier instead of turning blue." },
+            { "Default", Loc.T("A dark grey highway with a pattern. It turns blue (the groove) while your multiplier is at its highest, and glows orange while star power runs.") },
+            { "Basic", Loc.T("A plain dark highway: no pattern, no blue groove colour and no star power colour.") },
+            { "No Groove", Loc.T("Like Default, but the highway stays grey at the highest multiplier instead of turning blue.") },
         };
 
         public static string ForBuiltInPreset(string type, string name)
         {
             if (type == null || name == null) return null;
             string tip;
+            type = TypeWord(type);
+            string shown = name;
             name = name.Replace(" Engine", "").Trim();
             if (type.IndexOf("Engine", StringComparison.OrdinalIgnoreCase) >= 0 && EnginePresets.TryGetValue(name, out tip)) return tip;
+            if (type.IndexOf("Engine", StringComparison.OrdinalIgnoreCase) >= 0)
+                foreach (var kv in EngineKeys)
+                    if (SameText(shown, Yarg(kv.Value)) && EnginePresets.TryGetValue(kv.Key, out tip)) return tip;
             if (type.IndexOf("Rock", StringComparison.OrdinalIgnoreCase) >= 0 && RockMeterPresets.TryGetValue(name, out tip)) return tip;
             if (type.IndexOf("Camera", StringComparison.OrdinalIgnoreCase) >= 0 && CameraPresets.TryGetValue(name, out tip)) return tip;
             if (type.IndexOf("Theme", StringComparison.OrdinalIgnoreCase) >= 0 && Themes.TryGetValue(name, out tip)) return tip;
@@ -115,27 +120,61 @@ namespace YargAccess
             return null;
         }
 
+        // YARG shows the built-in engine names and the Presets tab's type names in its own language: they
+        // are matched by YARG's localization keys too, not only by the English names.
+        static readonly KeyValuePair<string, string>[] EngineKeys =
+        {
+            new KeyValuePair<string, string>("Default", "Settings.PresetSetting.EnginePreset.DefaultEngines.DefaultEngine"),
+            new KeyValuePair<string, string>("Casual", "Settings.PresetSetting.EnginePreset.DefaultEngines.CasualEngine"),
+            new KeyValuePair<string, string>("Precision", "Settings.PresetSetting.EnginePreset.DefaultEngines.PrecisionEngine"),
+            new KeyValuePair<string, string>("Solo Taps", "Settings.PresetSetting.EnginePreset.DefaultEngines.SoloTapsEngine"),
+        };
+
+        static readonly KeyValuePair<string, string>[] TypeKeys =
+        {
+            new KeyValuePair<string, string>("Engine", "Settings.PresetType.EnginePresetContainer"),
+            new KeyValuePair<string, string>("Rock", "Settings.PresetType.RockMeterPresetContainer"),
+            new KeyValuePair<string, string>("Highway", "Settings.PresetType.HighwayPresetContainer"),
+        };
+
+        static string TypeWord(string type)
+        {
+            foreach (var kv in TypeKeys)
+                if (SameText(type, Yarg(kv.Value))) return kv.Key;
+            return type;
+        }
+
+        static string Yarg(string key)
+        {
+            try { return TextUtil.Clean(YARG.Localization.Localize.Key(key)); } catch { return null; }
+        }
+
+        static bool SameText(string a, string b)
+        {
+            return !string.IsNullOrEmpty(a) && !string.IsNullOrEmpty(b) && string.Equals(a.Trim(), b.Trim(), StringComparison.OrdinalIgnoreCase);
+        }
+
         static readonly Dictionary<string, string> PresetSettings = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
-            { "PercussionHitWindow", "Vocals: the time window for hitting a percussion note." },
-            { "ChordStaggerWindow", "Keys: how far apart in time the keys of a chord can be pressed and still count as one chord." },
-            { "FatFingerWindow", "Keys: how long an extra key pressed next to the right one is forgiven." },
-            { "PerfectPitchPercent", "Vocals: how close to the note your pitch must be to count as perfect, as a share of the pitch window." },
-            { "SustainDropLeniency", "How long you can let go of a held note before the hold counts as dropped." },
-            { "StarPowerColor", "The colour the highway glows while star power runs, unless Star Power Highway FX Mode in Settings turns it off." },
-            { "BackgroundBaseColor1", "The highway's main colour." },
-            { "BackgroundBaseColor2", "The second highway colour, blended over the first towards the far end." },
-            { "BackgroundBaseColor3", "Not used by YARG." },
-            { "BackgroundPatternColor", "The colour of the pattern drawn on the highway." },
-            { "BackgroundGrooveBaseColor1", "The groove is the highway's look while your multiplier is at its highest. This is its main colour." },
-            { "BackgroundGrooveBaseColor2", "The second groove colour, blended over the first." },
-            { "BackgroundGrooveBaseColor3", "Not used by YARG." },
-            { "BackgroundGroovePatternColor", "The colour of the pattern while the groove shows, at the highest multiplier." },
-            { "NoteHeight", "How tall the notes are drawn, from 0.8 to 1.2 times their normal height." },
-            { "BackgroundImage", "An image file drawn on the highway instead of the built-in pattern." },
-            { "SideImage", "An image file drawn along the sides of the highway; it lights up during star power." },
-            { "BaseWaviness", "How much the highway's image ripples as it scrolls." },
-            { "SideWaviness", "How much the side image ripples as it scrolls." },
+            { "PercussionHitWindow", Loc.T("Vocals: the time window for hitting a percussion note.") },
+            { "ChordStaggerWindow", Loc.T("Keys: how far apart in time the keys of a chord can be pressed and still count as one chord.") },
+            { "FatFingerWindow", Loc.T("Keys: how long an extra key pressed next to the right one is forgiven.") },
+            { "PerfectPitchPercent", Loc.T("Vocals: how close to the note your pitch must be to count as perfect, as a share of the pitch window.") },
+            { "SustainDropLeniency", Loc.T("How long you can let go of a held note before the hold counts as dropped.") },
+            { "StarPowerColor", Loc.T("The colour the highway glows while star power runs, unless Star Power Highway FX Mode in Settings turns it off.") },
+            { "BackgroundBaseColor1", Loc.T("The highway's main colour.") },
+            { "BackgroundBaseColor2", Loc.T("The second highway colour, blended over the first towards the far end.") },
+            { "BackgroundBaseColor3", Loc.T("Not used by YARG.") },
+            { "BackgroundPatternColor", Loc.T("The colour of the pattern drawn on the highway.") },
+            { "BackgroundGrooveBaseColor1", Loc.T("The groove is the highway's look while your multiplier is at its highest. This is its main colour.") },
+            { "BackgroundGrooveBaseColor2", Loc.T("The second groove colour, blended over the first.") },
+            { "BackgroundGrooveBaseColor3", Loc.T("Not used by YARG.") },
+            { "BackgroundGroovePatternColor", Loc.T("The colour of the pattern while the groove shows, at the highest multiplier.") },
+            { "NoteHeight", Loc.T("How tall the notes are drawn, from 0.8 to 1.2 times their normal height.") },
+            { "BackgroundImage", Loc.T("An image file drawn on the highway instead of the built-in pattern.") },
+            { "SideImage", Loc.T("An image file drawn along the sides of the highway; it lights up during star power.") },
+            { "BaseWaviness", Loc.T("How much the highway's image ripples as it scrolls.") },
+            { "SideWaviness", Loc.T("How much the side image ripples as it scrolls.") },
         };
 
         public static string ForPresetSetting(string unlocalizedName)
@@ -155,20 +194,20 @@ namespace YargAccess
         // One line per part, matched on the end of the name.
         static readonly KeyValuePair<string, string>[] ColorParts =
         {
-            new KeyValuePair<string, string>("MetalStarPower", "The colour of the notes' metal rims during star power."),
-            new KeyValuePair<string, string>("Metal", "The colour of the notes' metal rims."),
-            new KeyValuePair<string, string>("ActivationNote", "The colour of a note that turns star power on at the end of a drum fill."),
-            new KeyValuePair<string, string>("FretInner", "The colour of the inner part of this lane's fret, the button at the strike line."),
-            new KeyValuePair<string, string>("Fret", "The colour of this lane's fret, the button drawn at the strike line."),
-            new KeyValuePair<string, string>("NoteStarPower", "The colour of this lane's notes while they are part of a star power phrase or star power runs."),
-            new KeyValuePair<string, string>("Starpower", "The colour of this lane's notes while they are part of a star power phrase or star power runs."),
-            new KeyValuePair<string, string>("Particles", "The colour of the burst drawn at the strike line when you hit a note in this lane."),
-            new KeyValuePair<string, string>("Overlay", "The colour laid over the keys of this group on the pro keys highway."),
-            new KeyValuePair<string, string>("Miss", "The colour a note turns when you miss it."),
-            new KeyValuePair<string, string>("Key", "The colour of these keys on the pro keys highway."),
-            new KeyValuePair<string, string>("Note", "The colour of this lane's notes."),
-            new KeyValuePair<string, string>("Cymbal", "The colour of this lane's cymbal notes."),
-            new KeyValuePair<string, string>("Drum", "The colour of this lane's pad notes."),
+            new KeyValuePair<string, string>("MetalStarPower", Loc.T("The colour of the notes' metal rims during star power.")),
+            new KeyValuePair<string, string>("Metal", Loc.T("The colour of the notes' metal rims.")),
+            new KeyValuePair<string, string>("ActivationNote", Loc.T("The colour of a note that turns star power on at the end of a drum fill.")),
+            new KeyValuePair<string, string>("FretInner", Loc.T("The colour of the inner part of this lane's fret, the button at the strike line.")),
+            new KeyValuePair<string, string>("Fret", Loc.T("The colour of this lane's fret, the button drawn at the strike line.")),
+            new KeyValuePair<string, string>("NoteStarPower", Loc.T("The colour of this lane's notes while they are part of a star power phrase or star power runs.")),
+            new KeyValuePair<string, string>("Starpower", Loc.T("The colour of this lane's notes while they are part of a star power phrase or star power runs.")),
+            new KeyValuePair<string, string>("Particles", Loc.T("The colour of the burst drawn at the strike line when you hit a note in this lane.")),
+            new KeyValuePair<string, string>("Overlay", Loc.T("The colour laid over the keys of this group on the pro keys highway.")),
+            new KeyValuePair<string, string>("Miss", Loc.T("The colour a note turns when you miss it.")),
+            new KeyValuePair<string, string>("Key", Loc.T("The colour of these keys on the pro keys highway.")),
+            new KeyValuePair<string, string>("Note", Loc.T("The colour of this lane's notes.")),
+            new KeyValuePair<string, string>("Cymbal", Loc.T("The colour of this lane's cymbal notes.")),
+            new KeyValuePair<string, string>("Drum", Loc.T("The colour of this lane's pad notes.")),
         };
 
         static string ForColorSetting(string name)
@@ -180,29 +219,56 @@ namespace YargAccess
 
         static readonly Dictionary<string, string> Rows = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
-            { "All Strums", "Every note needs a strum: hammer-ons, pull-offs and taps become strummed notes." },
-            { "All HOPOs", "Every note that can be is a hammer-on or pull-off, played without strumming." },
-            { "All Taps", "Every note is a tap: press the fret, no strum." },
-            { "HOPOs To Taps", "Hammer-ons and pull-offs become taps, which still work after a miss." },
-            { "Taps to HOPOs", "Taps become hammer-ons and pull-offs, which only work right after a note you hit." },
-            { "Note Shuffle", "The notes move to random frets or pads." },
-            { "No Kicks", "Drums with no kick notes." },
-            { "Unpitched Only", "Vocals score your timing only; pitch doesn't matter." },
-            { "No Dynamics", "Drum ghost and accent notes count as normal notes." },
-            { "No Percussion", "Vocals without the percussion notes." },
-            { "No Range Shifts", "Keys and guitar parts stay in the same five lanes instead of moving." },
-            { "Opens To Greens", "Open notes become green notes." },
-            { "Beginner", "Every note can be hit with any fret or pad; just play in time." },
-            { "Expert+", "Expert drums with double kick notes." },
+            { "All Strums", Loc.T("Every note needs a strum: hammer-ons, pull-offs and taps become strummed notes.") },
+            { "All HOPOs", Loc.T("Every note that can be is a hammer-on or pull-off, played without strumming.") },
+            { "All Taps", Loc.T("Every note is a tap: press the fret, no strum.") },
+            { "HOPOs To Taps", Loc.T("Hammer-ons and pull-offs become taps, which still work after a miss.") },
+            { "Taps to HOPOs", Loc.T("Taps become hammer-ons and pull-offs, which only work right after a note you hit.") },
+            { "Note Shuffle", Loc.T("The notes move to random frets or pads.") },
+            { "No Kicks", Loc.T("Drums with no kick notes.") },
+            { "Unpitched Only", Loc.T("Vocals score your timing only; pitch doesn't matter.") },
+            { "No Dynamics", Loc.T("Drum ghost and accent notes count as normal notes.") },
+            { "No Percussion", Loc.T("Vocals without the percussion notes.") },
+            { "No Range Shifts", Loc.T("Keys and guitar parts stay in the same five lanes instead of moving.") },
+            { "Opens To Greens", Loc.T("Open notes become green notes.") },
+            { "Beginner", Loc.T("Every note can be hit with any fret or pad; just play in time.") },
+            { "Expert+", Loc.T("Expert drums with double kick notes.") },
         };
+
+        // YARG's localization keys for the rows above: the difficulty screen shows them in YARG's language.
+        static readonly KeyValuePair<string, string>[] RowKeys =
+        {
+            new KeyValuePair<string, string>("All Strums", "Enum.Modifier.AllStrums"),
+            new KeyValuePair<string, string>("All HOPOs", "Enum.Modifier.AllHopos"),
+            new KeyValuePair<string, string>("All Taps", "Enum.Modifier.AllTaps"),
+            new KeyValuePair<string, string>("HOPOs To Taps", "Enum.Modifier.HoposToTaps"),
+            new KeyValuePair<string, string>("Taps to HOPOs", "Enum.Modifier.TapsToHopos"),
+            new KeyValuePair<string, string>("Note Shuffle", "Enum.Modifier.NoteShuffle"),
+            new KeyValuePair<string, string>("No Kicks", "Enum.Modifier.NoKicks"),
+            new KeyValuePair<string, string>("Unpitched Only", "Enum.Modifier.UnpitchedOnly"),
+            new KeyValuePair<string, string>("No Dynamics", "Enum.Modifier.NoDynamics"),
+            new KeyValuePair<string, string>("No Percussion", "Enum.Modifier.NoVocalPercussion"),
+            new KeyValuePair<string, string>("No Range Shifts", "Enum.Modifier.RangeCompress"),
+            new KeyValuePair<string, string>("Opens To Greens", "Enum.Modifier.OpensToGreens"),
+            new KeyValuePair<string, string>("Beginner", "Enum.Difficulty.Beginner"),
+            new KeyValuePair<string, string>("Expert+", "Enum.Difficulty.ExpertPlus"),
+        };
+
+        static bool RowStarts(string spoken, string name)
+        {
+            return !string.IsNullOrEmpty(name) && spoken.StartsWith(name, StringComparison.OrdinalIgnoreCase)
+                && (spoken.Length == name.Length || spoken[name.Length] == ',' || spoken[name.Length] == '.');
+        }
 
         public static string ForDifficultyRow(string spoken)
         {
             if (string.IsNullOrEmpty(spoken)) return null;
             foreach (var kv in Rows)
-                if (spoken.StartsWith(kv.Key, StringComparison.OrdinalIgnoreCase)
-                    && (spoken.Length == kv.Key.Length || spoken[kv.Key.Length] == ',' || spoken[kv.Key.Length] == '.'))
+                if (RowStarts(spoken, kv.Key))
                     return kv.Value;
+            string tip;
+            foreach (var kv in RowKeys)
+                if (RowStarts(spoken, Yarg(kv.Value)) && Rows.TryGetValue(kv.Key, out tip)) return tip;
             return null;
         }
 

@@ -71,22 +71,22 @@ namespace YargAccess
                     said.Add(SongDetails.StarText(p.Stars));
                     said.Add(Part(p));
                     said.Add(Percent(p));
-                    said.Add("score " + p.Score.ToString("N0", CultureInfo.CurrentCulture));
-                    said.Add(p.NotesHit + " hit, " + p.NotesMissed + " missed");
-                    if (p.IsFc) said.Add("full combo");
+                    said.Add(Loc.F("score {0}", p.Score.ToString("N0", CultureInfo.CurrentCulture)));
+                    said.Add(Loc.F("{0} hit, {1} missed", p.NotesHit, p.NotesMissed));
+                    if (p.IsFc) said.Add(Loc.T("full combo"));
                 }
                 else
                 {
                     said.Add(SongDetails.StarText(band));
-                    said.Add("band score " + bandScore.ToString("N0", CultureInfo.CurrentCulture));
+                    said.Add(Loc.F("band score {0}", bandScore.ToString("N0", CultureInfo.CurrentCulture)));
                     if (players != null)
                         foreach (var p in players)
                         {
                             if (p == null) continue;
                             string who = Name(p.PlayerId);
                             said.Add((who != null ? who + ": " : "") + Part(p) + ", " + SongDetails.StarText(p.Stars) + ", " + Percent(p)
-                                + ", score " + p.Score.ToString("N0", CultureInfo.CurrentCulture) + ", " + p.NotesHit + " hit, " + p.NotesMissed + " missed"
-                                + (p.IsFc ? ", full combo" : "") + (p.IsReplay ? ", from a replay" : ""));
+                                + ", " + Loc.F("score {0}", p.Score.ToString("N0", CultureInfo.CurrentCulture)) + ", " + Loc.F("{0} hit, {1} missed", p.NotesHit, p.NotesMissed)
+                                + (p.IsFc ? Loc.T(", full combo") : "") + (p.IsReplay ? Loc.T(", from a replay") : ""));
                         }
                 }
                 if (players == null && entry != null && entry.Stats != null)
@@ -94,18 +94,18 @@ namespace YargAccess
                     {
                         if (st == null) continue;
                         string line = (string.IsNullOrEmpty(st.PlayerName) ? "" : st.PlayerName + ": ")
-                            + SongDetails.StarText((StarAmount) (sbyte) Math.Max(0, Math.Min(6, (int) Math.Floor(st.Stars)))) + ", score " + st.Score.ToString("N0", CultureInfo.CurrentCulture);
+                            + SongDetails.StarText((StarAmount) (sbyte) Math.Max(0, Math.Min(6, (int) Math.Floor(st.Stars)))) + ", " + Loc.F("score {0}", st.Score.ToString("N0", CultureInfo.CurrentCulture));
                         int hit = IntField(st, "NumNotesHit"), total = IntField(st, "TotalNotes");
-                        if (total > 0) line += ", " + hit + " hit, " + (total - hit) + " missed";
-                        if (st.IsReplayPlayer) line += ", from a replay";
+                        if (total > 0) line += ", " + Loc.F("{0} hit, {1} missed", hit, total - hit);
+                        if (st.IsReplayPlayer) line += Loc.T(", from a replay");
                         said.Add(line);
                     }
                 if (style != null) said.Add(style);
-                if (Math.Abs(speed - 1f) > 0.001f) said.Add(Math.Round(speed * 100) + "% speed");
-                if (record != null && record.HasBots) said.Add("with bots");
-                if (record != null && record.PlayedWithReplay) said.Add("played along with a replay");
-                if (record != null && record.ReplayFileName == null) said.Add("no replay saved");
-                if (song == null) said.Add("the song is not in your library");
+                if (Math.Abs(speed - 1f) > 0.001f) said.Add(Loc.F("{0}% speed", Math.Round(speed * 100)));
+                if (record != null && record.HasBots) said.Add(Loc.T("with bots"));
+                if (record != null && record.PlayedWithReplay) said.Add(Loc.T("played along with a replay"));
+                if (record != null && record.ReplayFileName == null) said.Add(Loc.T("no replay saved"));
+                if (song == null) said.Add(Loc.T("the song is not in your library"));
                 if (date != DateTime.MinValue) said.Add(When(date));
 
                 spoken = string.Join(", ", said.ToArray());
@@ -139,10 +139,10 @@ namespace YargAccess
             string path = ReplayPath(record, entry);
             if (path == null) return null;
             int size;
-            return ListenRepeat.ReplayIsListenRepeat(path, out size) ? "Listen and Repeat " + size : "Play What You Hear";
+            return ListenRepeat.ReplayIsListenRepeat(path, out size) ? Loc.F("Listen and Repeat {0}", size) : Loc.T("Play What You Hear");
         }
 
-        static string Part(PlayerScoreRecord p) => Playability.InstrumentName(p.Instrument) + " " + p.Difficulty;
+        static string Part(PlayerScoreRecord p) => Playability.InstrumentName(p.Instrument) + " " + SongDetails.DifficultyName(p.Difficulty);
 
         static string Percent(PlayerScoreRecord p)
         {
@@ -165,9 +165,9 @@ namespace YargAccess
         static string When(DateTime d)
         {
             var time = d.ToString("t", CultureInfo.CurrentCulture);
-            if (d.Date == DateTime.Today) return "today at " + time;
-            if (d.Date == DateTime.Today.AddDays(-1)) return "yesterday at " + time;
-            return d.ToString(d.Year == DateTime.Today.Year ? "d MMMM" : "d MMMM yyyy", CultureInfo.CurrentCulture) + " at " + time;
+            if (d.Date == DateTime.Today) return Loc.F("today at {0}", time);
+            if (d.Date == DateTime.Today.AddDays(-1)) return Loc.F("yesterday at {0}", time);
+            return Loc.F("{0} at {1}", d.ToString(d.Year == DateTime.Today.Year ? "d MMMM" : "d MMMM yyyy", CultureInfo.CurrentCulture), time);
         }
 
         // ---- Moving ----
@@ -210,7 +210,7 @@ namespace YargAccess
                 for (int i = (atStart ? head : head + 1) - 1; i >= 0; i--) if (rows[i] is CategoryViewType) { target = i; break; }
                 if (!atStart && rows[head] is CategoryViewType) target = head;
             }
-            if (target < 0) { MenuAnnouncer.SayShown(dir > 0 ? "Last group" : "First group"); return true; }
+            if (target < 0) { MenuAnnouncer.SayShown(dir > 0 ? Loc.T("Last group") : Loc.T("First group")); return true; }
             string name = TextUtil.Clean(((ViewType) rows[target]).GetPrimaryText(false));
             if (!string.IsNullOrEmpty(name) && name.ToUpperInvariant() == name)
                 name = char.ToUpperInvariant(name[0]) + name.Substring(1).ToLowerInvariant();
@@ -228,7 +228,7 @@ namespace YargAccess
             int i = -1;
             if (end) { for (int k = rows.Count - 1; k >= 0 && i < 0; k--) if (rows[k] is ReplayViewType) i = k; }
             else { for (int k = 0; k < rows.Count && i < 0; k++) if (rows[k] is ReplayViewType) i = k; }
-            if (i < 0) { MenuAnnouncer.SayShown("No entries"); return true; }
+            if (i < 0) { MenuAnnouncer.SayShown(Loc.T("No entries")); return true; }
             Select(m, i, null);
             return true;
         }
@@ -256,11 +256,11 @@ namespace YargAccess
             bool export;
             var b = HeaderButton(m, out export);
             if (b == null) return null;
-            if (!export) return "Import Replay" + Keys.Role("button") + ". Opens a file browser to add a replay file to this list.";
+            if (!export) return Loc.F("Import Replay{0}. Opens a file browser to add a replay file to this list.", Keys.Role("button"));
             var row = m.CurrentSelection as ReplayViewType;
             var song = row != null && _songF != null ? _songF.GetValue(row) as SongEntry : null;
-            string what = song != null ? "the replay of " + song.Name : "the chosen entry's replay";
-            return "Export Replay" + Keys.Role("button") + ". Saves a copy of " + what + " as a file. To export another entry, select it and press E.";
+            string what = song != null ? Loc.F("the replay of {0}", song.Name) : Loc.T("the chosen entry's replay");
+            return Loc.F("Export Replay{0}. Saves a copy of {1} as a file. To export another entry, select it and press E.", Keys.Role("button"), what);
         }
 
         public static bool MoveUp()
@@ -284,7 +284,7 @@ namespace YargAccess
             _onButton = false;
             var m = Menu();
             if (m == null) return false;
-            if (!HasEntries(m)) { MenuAnnouncer.SayShown("No entries"); return true; }
+            if (!HasEntries(m)) { MenuAnnouncer.SayShown(Loc.T("No entries")); return true; }
             Select(m, m.SelectedIndex, null);
             return true;
         }
@@ -339,9 +339,9 @@ namespace YargAccess
         static void Export(HistoryMenu m)
         {
             var row = m.CurrentSelection as ReplayViewType;
-            if (row == null) { MenuAnnouncer.SayShown(HasEntries(m) ? "Choose an entry first." : "No entries"); return; }
+            if (row == null) { MenuAnnouncer.SayShown(HasEntries(m) ? Loc.T("Choose an entry first.") : Loc.T("No entries")); return; }
             string source = ReplayPath(row);
-            if (source == null || !File.Exists(source)) { MenuAnnouncer.SayShown("This entry has no replay to export."); return; }
+            if (source == null || !File.Exists(source)) { MenuAnnouncer.SayShown(Loc.T("This entry has no replay to export.")); return; }
             _chosen = null;
             FileBrowserNavigator.AfterChoose = paths => _chosen = paths != null && paths.Length > 0 ? paths[0] : null;
             FileBrowserNavigator.OnClosed = () => Closed(m, true, source, 0);
@@ -352,26 +352,26 @@ namespace YargAccess
         static void Closed(HistoryMenu m, bool export, string source, int before)
         {
             string result;
-            if (_chosen == null) result = "Canceled";
+            if (_chosen == null) result = Loc.T("Canceled");
             else if (export)
             {
                 if (File.Exists(_chosen))
                 {
-                    result = "Saved " + Path.GetFileName(_chosen);
+                    result = Loc.F("Saved {0}", Path.GetFileName(_chosen));
                     try
                     {
                         string note = source + ".yargaccess";
-                        if (File.Exists(note)) { File.Copy(note, _chosen + ".yargaccess", true); result += ", with its Listen and Repeat file. Keep the two files together"; }
+                        if (File.Exists(note)) { File.Copy(note, _chosen + ".yargaccess", true); result += Loc.T(", with its Listen and Repeat file. Keep the two files together"); }
                     }
                     catch (Exception ex) { ModLog.Warn("HistoryNavigator export note", ex); }
                 }
-                else result = "Export failed: the file was not saved";
+                else result = Loc.T("Export failed: the file was not saved");
             }
             else
             {
                 int after = ReplayCount();
-                result = after > before ? "Imported " + Path.GetFileName(_chosen)
-                    : "Not added: " + Path.GetFileName(_chosen) + " is already in the list, or isn't a replay YARG can read";
+                result = after > before ? Loc.F("Imported {0}", Path.GetFileName(_chosen))
+                    : Loc.F("Not added: {0} is already in the list, or isn't a replay YARG can read", Path.GetFileName(_chosen));
             }
             _chosen = null;
             if (Menu() == null) { MenuAnnouncer.SayShown(result); return; }
@@ -403,7 +403,7 @@ namespace YargAccess
             if (song != null) return song.Name;
             var entry = EntryOf(row);
             if (entry != null) return entry.SongName;
-            return "this entry";
+            return Loc.T("this entry");
         }
 
         internal static string WhenOf(ReplayViewType row)
@@ -431,7 +431,7 @@ namespace YargAccess
                 int keep = m.SelectedIndex;
                 HarmonyLib.AccessTools.Method(typeof(HistoryMenu), "RequestViewListUpdate").Invoke(m, null);
                 var rows = Rows(m);
-                if (rows == null || !HasEntries(m)) { _onButton = false; MenuAnnouncer.Focused(result + ". No entries", true); return; }
+                if (rows == null || !HasEntries(m)) { _onButton = false; MenuAnnouncer.Focused(result + ". " + Loc.T("No entries"), true); return; }
                 int i = Math.Min(keep, rows.Count - 1);
                 while (i > 0 && !(rows[i] is ReplayViewType)) i--;
                 if (!(rows[i] is ReplayViewType)) for (i = 0; i < rows.Count && !(rows[i] is ReplayViewType); i++) { }
@@ -449,10 +449,10 @@ namespace YargAccess
             var m = Menu();
             if (m == null || DialogNavigator.IsActive) return false;
             var row = m.CurrentSelection as ReplayViewType;
-            if (row == null) { MenuAnnouncer.SayShown("Choose a song first."); return true; }
+            if (row == null) { MenuAnnouncer.SayShown(Loc.T("Choose a song first.")); return true; }
             var song = _songF != null ? _songF.GetValue(row) as SongEntry : null;
-            if (song == null) { MenuAnnouncer.SayShown("This song is not in your library."); return true; }
-            if (YARG.Player.PlayerContainer.Players.Count == 0) { MenuAnnouncer.SayShown("Connect a profile first."); return true; }
+            if (song == null) { MenuAnnouncer.SayShown(Loc.T("This song is not in your library.")); return true; }
+            if (YARG.Player.PlayerContainer.Players.Count == 0) { MenuAnnouncer.SayShown(Loc.T("Connect a profile first.")); return true; }
             try
             {
                 YARG.GlobalVariables.State = YARG.PersistentState.Default;
@@ -465,7 +465,7 @@ namespace YargAccess
                 YARG.GlobalVariables.State = state;
                 // Said after the push, so it joins the difficulty screen's line instead of being cut off by it.
                 UnityEngine.MonoSingleton<YARG.Menu.MenuManager>.Instance.PushMenu(YARG.Menu.MenuManager.Menu.DifficultySelect);
-                MenuAnnouncer.Say("Play " + song.Name + ", " + (ModSettings.ListenAndRepeat ? "Listen and Repeat" : "Play What You Hear"));
+                MenuAnnouncer.Say(Loc.F("Play {0}, {1}", song.Name, ModSettings.ListenAndRepeat ? Loc.T("Listen and Repeat") : Loc.T("Play What You Hear")));
             }
             catch (Exception ex) { ModLog.Warn("HistoryNavigator.Colour", ex); }
             return true;

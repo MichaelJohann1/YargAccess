@@ -28,7 +28,7 @@ namespace YargAccess
         static readonly List<Bind> _binds = new List<Bind>();
         static MelonPreferences_Entry<string> _saved;
 
-        public static readonly string[] Names = { "Text review, previous piece", "Text review, next piece", "Text review, read it all" };
+        public static readonly string[] Names = { Loc.T("Text review, previous piece"), Loc.T("Text review, next piece"), Loc.T("Text review, read it all") };
 
         static void Load()
         {
@@ -83,9 +83,9 @@ namespace YargAccess
             }
             if (!kb && !pad && !guitar) kb = true;
             var parts = new List<string>();
-            if (kb) parts.Add(kind == Kind.Previous ? "left bracket" : kind == Kind.Next ? "right bracket" : "backslash");
-            if (pad) parts.Add(kind == Kind.Previous ? "right stick left" : kind == Kind.Next ? "right stick right" : "right stick down");
-            if (guitar) parts.Add(kind == Kind.Previous ? "hold Select and press Yellow" : kind == Kind.Next ? "hold Select and press Blue" : "hold Select and press Green");
+            if (kb) parts.Add(kind == Kind.Previous ? Loc.T("left bracket") : kind == Kind.Next ? Loc.T("right bracket") : Loc.T("backslash"));
+            if (pad) parts.Add(kind == Kind.Previous ? Loc.T("right stick left") : kind == Kind.Next ? Loc.T("right stick right") : Loc.T("right stick down"));
+            if (guitar) parts.Add(kind == Kind.Previous ? Loc.T("hold Select and press Yellow") : kind == Kind.Next ? Loc.T("hold Select and press Blue") : Loc.T("hold Select and press Green"));
             return string.Join("; ", parts.ToArray());
         }
 
@@ -158,15 +158,16 @@ namespace YargAccess
         {
             Load();
             var devs = Devices(profile);
-            if (devs.Count == 0) { MenuAnnouncer.SayShown("This profile has no device connected. Connect it on the profile list first."); return; }
+            if (devs.Count == 0) { MenuAnnouncer.SayShown(Loc.T("This profile has no device connected. Connect it on the profile list first.")); return; }
             _capProfile = profile;
             _capKind = kind;
             _capStart = Time.unscaledTime;
             _first = null;
             _resting.Clear();
             foreach (var c in Candidates(devs)) if (c.isPressed) _resting.Add(c);
-            MenuAnnouncer.SayShown("Press the button for " + Names[(int) kind] + ". To use a combination, hold one button and press another. "
-                + (HasKeyboard(devs) ? "Escape cancels." : "Nothing pressed for 10 seconds cancels."));
+            MenuAnnouncer.SayShown(HasKeyboard(devs)
+                ? Loc.F("Press the button for {0}. To use a combination, hold one button and press another. Escape cancels.", Names[(int) kind])
+                : Loc.F("Press the button for {0}. To use a combination, hold one button and press another. Nothing pressed for 10 seconds cancels.", Names[(int) kind]));
         }
 
         static bool HasKeyboard(List<InputDevice> devs)
@@ -200,8 +201,8 @@ namespace YargAccess
             try
             {
                 var kb = Keyboard.current;
-                if (kb != null && kb.escapeKey.wasPressedThisFrame) { Cancel("Canceled"); return true; }
-                if (_first == null && Time.unscaledTime - _capStart > 10f) { Cancel("Nothing pressed. Canceled"); return true; }
+                if (kb != null && kb.escapeKey.wasPressedThisFrame) { Cancel(Loc.T("Canceled")); return true; }
+                if (_first == null && Time.unscaledTime - _capStart > 10f) { Cancel(Loc.T("Nothing pressed. Canceled")); return true; }
                 var devs = Devices(_capProfile);
                 foreach (var c in Candidates(devs))
                 {
@@ -212,7 +213,7 @@ namespace YargAccess
                 }
                 if (_first != null && !_first.isPressed) Finish(_first, null);
             }
-            catch (Exception ex) { ModLog.Warn("ReviewBinds.CaptureTick", ex); Cancel("Canceled"); }
+            catch (Exception ex) { ModLog.Warn("ReviewBinds.CaptureTick", ex); Cancel(Loc.T("Canceled")); }
             return true;
         }
 
@@ -220,7 +221,8 @@ namespace YargAccess
         {
             var d = c.device;
             string dev = d.displayName;
-            string name = (hold != null ? "hold " + hold.displayName + " and press " + c.displayName : c.displayName) + ", " + dev;
+            // Saved with the bind and read back as it is, so it is kept in the language it was set in.
+            string name = (hold != null ? Loc.F("hold {0} and press {1}", hold.displayName, c.displayName) : c.displayName) + ", " + dev;
             var b = new Bind
             {
                 Profile = _capProfile.Id.ToString(), Kind = _capKind, Layout = d.layout,
@@ -232,7 +234,7 @@ namespace YargAccess
             var kind = _capKind;
             _capProfile = null;
             _first = null;
-            MenuAnnouncer.SayShown(Names[(int) kind] + " set to " + name);
+            MenuAnnouncer.SayShown(Loc.F("{0} set to {1}", Names[(int) kind], name));
         }
 
         static string Relative(InputControl c)

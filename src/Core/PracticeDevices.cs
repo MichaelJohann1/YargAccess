@@ -45,10 +45,10 @@ namespace YargAccess
                         if (p == null || p.Bindings == null || p.Bindings.Microphone == null) continue;
                         used.Add(p.Bindings.Microphone.DisplayName);
                         if (p.Profile != null && !p.Profile.IsBot && Plays(p, mode))
-                            list.Add(new Choice { Name = "Microphone, " + p.Bindings.Microphone.DisplayName + ", on " + p.Profile.Name, MicName = p.Bindings.Microphone.DisplayName, Player = p });
+                            list.Add(new Choice { Name = Loc.F("Microphone, {0}, on {1}", p.Bindings.Microphone.DisplayName, p.Profile.Name), MicName = p.Bindings.Microphone.DisplayName, Player = p });
                     }
                     foreach (var m in GlobalAudioHandler.GetAllInputDevices())
-                        if (!used.Contains(m.Item2)) list.Add(new Choice { Name = "Microphone, " + m.Item2, MicId = m.Item1, MicName = m.Item2 });
+                        if (!used.Contains(m.Item2)) list.Add(new Choice { Name = Loc.F("Microphone, {0}", m.Item2), MicId = m.Item1, MicName = m.Item2 });
                     return list;
                 }
                 var seen = new HashSet<InputDevice>();
@@ -57,7 +57,7 @@ namespace YargAccess
                     if (p == null || p.Profile == null || p.Profile.IsBot || p.Bindings == null || !Plays(p, mode)) continue;
                     foreach (var d in p.Bindings.InputDevices)
                         if (FitsPractice(d, mode) && seen.Add(d))
-                            list.Add(new Choice { Name = Cap(Kind(d)) + ", " + d.displayName + ", on " + p.Profile.Name, Device = d, Player = p });
+                            list.Add(new Choice { Name = Loc.F("{0}, {1}, on {2}", Cap(Kind(d)), d.displayName, p.Profile.Name), Device = d, Player = p });
                 }
                 var free = new List<InputDevice>();
                 foreach (var d in InputSystem.devices)
@@ -87,13 +87,13 @@ namespace YargAccess
 
         static string Kind(InputDevice d)
         {
-            if (d is FiveFretGuitar) return "guitar";
-            if (d is FourLaneDrumkit || d is FiveLaneDrumkit) return "drum kit";
-            if (d is ProKeyboard) return "pro keys keyboard";
-            if (d is Minis.MidiDevice) return DrumName(d) ? "drum kit" : "MIDI keyboard";
-            if (d is Gamepad) return "controller";
-            if (d is Keyboard) return "computer keyboard";
-            return "controller";
+            if (d is FiveFretGuitar) return Loc.T("guitar");
+            if (d is FourLaneDrumkit || d is FiveLaneDrumkit) return Loc.T("drum kit");
+            if (d is ProKeyboard) return Loc.T("pro keys keyboard");
+            if (d is Minis.MidiDevice) return DrumName(d) ? Loc.T("drum kit") : Loc.T("MIDI keyboard");
+            if (d is Gamepad) return Loc.T("controller");
+            if (d is Keyboard) return Loc.T("computer keyboard");
+            return Loc.T("controller");
         }
 
         static bool Plays(YargPlayer p, string mode)
@@ -200,8 +200,9 @@ namespace YargAccess
         // While a practice runs, only the tutorial profile's buttons count.
         public static bool Listens(YargPlayer p) => !GuidedPractice.Active || (TempPlayer != null && p == TempPlayer);
 
-        // Makes the tutorial profile with the practice device and says which device it is.
-        public static string Ensure(string mode)
+        // Makes the tutorial profile with the practice device and says which device it is. trying: the line is
+        // worded for Practice The Buttons ("try the buttons") instead of a tutorial practice.
+        public static string Ensure(string mode, bool trying = false)
         {
             var chosen = Chosen;
             Chosen = null;
@@ -211,11 +212,16 @@ namespace YargAccess
             Device = null;
             try
             {
-                if (mode == "vocals") return EnsureVocals(chosen);
+                if (mode == "vocals") return EnsureVocals(chosen, trying);
                 var d = chosen != null && chosen.Device != null ? chosen.Device : Find(mode);
                 if (d == null)
-                    return mode == "fivefret" ? "No guitar or controller was found, so practise on the computer keyboard. "
-                        : "No " + (mode == "drums" ? "drum kit" : "MIDI or pro keys keyboard") + " was found, so practise on the computer keyboard. ";
+                    return (trying
+                        ? (mode == "fivefret" ? Loc.T("No guitar or controller was found, so try the buttons on the computer keyboard.")
+                            : mode == "drums" ? Loc.T("No drum kit was found, so try the buttons on the computer keyboard.")
+                            : Loc.T("No MIDI or pro keys keyboard was found, so try the buttons on the computer keyboard."))
+                        : (mode == "fivefret" ? Loc.T("No guitar or controller was found, so practise on the computer keyboard.")
+                            : mode == "drums" ? Loc.T("No drum kit was found, so practise on the computer keyboard.")
+                            : Loc.T("No MIDI or pro keys keyboard was found, so practise on the computer keyboard."))) + " ";
                 GameMode gm;
                 Instrument inst;
                 if (mode == "fivefret") { gm = GameMode.FiveFretGuitar; inst = Instrument.FiveFretGuitar; }
@@ -226,9 +232,11 @@ namespace YargAccess
                 p.Bindings.AddDevice(d);
                 p.Bindings.SetDefaultBinds(d);
                 Device = d;
-                string text = "Practising on your " + Kind(d) + ", " + (d is Minis.MidiDevice ? MidiBase(d) : d.displayName) + ", with a practice profile that is removed afterwards. ";
+                string dn = d is Minis.MidiDevice ? MidiBase(d) : d.displayName;
+                string text = (trying ? Loc.F("Trying the buttons on your {0}, {1}, with a practice profile that is removed afterwards.", Kind(d), dn)
+                    : Loc.F("Practising on your {0}, {1}, with a practice profile that is removed afterwards.", Kind(d), dn)) + " ";
                 if (d is Minis.MidiDevice && !p.Bindings.ContainsBindingsForDevice(d))
-                    text += "It has no " + (mode == "drums" ? "pads" : "keys") + " bound, so the practice reads it directly. ";
+                    text += (mode == "drums" ? Loc.T("It has no pads bound, so the practice reads it directly.") : Loc.T("It has no keys bound, so the practice reads it directly.")) + " ";
                 return text;
             }
             catch (Exception ex)
@@ -259,7 +267,7 @@ namespace YargAccess
             return guitar;
         }
 
-        static string EnsureVocals(Choice chosen)
+        static string EnsureVocals(Choice chosen, bool trying)
         {
             var p = CreateTemp(GameMode.Vocals, Instrument.Vocals);
             if (p == null) return "";
@@ -273,7 +281,9 @@ namespace YargAccess
                 foreach (var m in GlobalAudioHandler.GetAllInputDevices()) { id = m.Item1; name = m.Item2; break; }
             }
             bool none = chosen != null && chosen.MicName == "";
-            if (name == null) text = (none ? "No microphone" : "No microphone was found") + (Tutorials.TryingButtons ? ", so only the buttons are tried. " : ", so the sung and spoken notes only play for you to hear. ");
+            if (name == null) text = (Tutorials.TryingButtons
+                    ? (none ? Loc.T("No microphone, so only the buttons are tried.") : Loc.T("No microphone was found, so only the buttons are tried."))
+                    : (none ? Loc.T("No microphone, so the sung and spoken notes only play for you to hear.") : Loc.T("No microphone was found, so the sung and spoken notes only play for you to hear."))) + " ";
             else
             {
                 MicInUse = name;
@@ -286,7 +296,8 @@ namespace YargAccess
                     var mic = id >= 0 ? GlobalAudioHandler.CreateInputDevice(id, name) : null;
                     if (mic != null) p.Bindings.AddMicrophone(mic);
                 }
-                text = "Practising with your microphone, " + name + ", with a practice profile that is removed afterwards. ";
+                text = (trying ? Loc.F("Trying the buttons with your microphone, {0}, with a practice profile that is removed afterwards.", name)
+                    : Loc.F("Practising with your microphone, {0}, with a practice profile that is removed afterwards.", name)) + " ";
             }
             // The Hit and star power buttons: a controller when one was pressed last, else the computer keyboard.
             if (Keys.Current == Keys.Device.Gamepad)
@@ -305,7 +316,7 @@ namespace YargAccess
         {
             var profile = new YargProfile
             {
-                Name = TempName,
+                Name = Loc.T("Tutorial Practice"),
                 NoteSpeed = 5f,
                 HighwayLength = 1f,
                 GameMode = gm
@@ -384,7 +395,10 @@ namespace YargAccess
                         if (!names.Contains(n)) names.Add(n);
                     }
                 }
-                return names.Count == 0 ? null : string.Join(" or ", names.ToArray());
+                if (names.Count == 0) return null;
+                string all = names[0];
+                for (int i = 1; i < names.Count; i++) all = Loc.F("{0} or {1}", all, names[i]);
+                return all;
             }
             catch (Exception ex) { ModLog.Warn("PracticeDevices.ButtonName", ex); }
             return null;

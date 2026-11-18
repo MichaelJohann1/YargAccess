@@ -38,6 +38,15 @@ namespace YargAccess
 
         internal static readonly string[] FourNames = { "Kick", "Red pad", "Yellow pad", "Blue pad", "Green pad", "Yellow cymbal", "Blue cymbal", "Green cymbal" };
         internal static readonly string[] FiveNames = { "Kick", "Red pad", "Yellow cymbal", "Blue pad", "Orange cymbal", "Green pad" };
+        // The same names as spoken (FourNames / FiveNames stay English for the checks on them).
+        static readonly string[] FourSaid = { Loc.T("Kick"), Loc.T("Red pad"), Loc.T("Yellow pad"), Loc.T("Blue pad"), Loc.T("Green pad"), Loc.T("Yellow cymbal"), Loc.T("Blue cymbal"), Loc.T("Green cymbal") };
+        static readonly string[] FiveSaid = { Loc.T("Kick"), Loc.T("Red pad"), Loc.T("Yellow cymbal"), Loc.T("Blue pad"), Loc.T("Orange cymbal"), Loc.T("Green pad") };
+
+        internal static string Said(bool fiveLane, int pad)
+        {
+            var said = fiveLane ? FiveSaid : FourSaid;
+            return pad >= 0 && pad < said.Length ? said[pad] : Loc.T("Pad");
+        }
 
         public static void Open()
         {
@@ -50,9 +59,9 @@ namespace YargAccess
             if (GuidedPractice.Active) return;
             string how;
             if (Keys.Current == Keys.Device.Keyboard && !_keyboardProfile)
-                how = "On the keyboard: Z X C V for the pads, S D F for the cymbals, Space for the kick";
-            else how = _subscribed.Count > 0 ? "Use your profile's drums" : "Use the keyboard: Z X C V for the pads, S D F for the cymbals, Space for the kick";
-            Captions.SayIn("Practice The Buttons", () => IsOpen, "Try the drums. Hit a pad, cymbal or the kick to hear its sound in a song. " + how + ". " + Keys.Finish + " to finish.", true);
+                how = Loc.T("On the keyboard: Z X C V for the pads, S D F for the cymbals, Space for the kick");
+            else how = _subscribed.Count > 0 ? Loc.T("Use your profile's drums") : Loc.T("Use the keyboard: Z X C V for the pads, S D F for the cymbals, Space for the kick");
+            Captions.SayIn(Loc.T("Practice The Buttons"), () => IsOpen, Loc.F("Try the drums. Hit a pad, cymbal or the kick to hear its sound in a song. {0}. {1} to finish.", how, Keys.Finish), true);
         }
 
         public static void Close()
@@ -62,7 +71,7 @@ namespace YargAccess
             Unsubscribe();
             _inputs.Clear();
             _midiHits.Clear();
-            Tutorials.TestClosed("Done trying the drums.");
+            Tutorials.TestClosed(Loc.T("Done trying the drums."));
         }
 
         static void Subscribe()
@@ -206,20 +215,22 @@ namespace YargAccess
         static void HitPad(Kit kit, int pad, float velocity)
         {
             var names = kit.FiveLane ? FiveNames : FourNames;
+            // The names stay English for the checks; they are translated where spoken.
             string name = pad >= 0 && pad < names.Length ? names[pad] : "Pad";
-            if (GuidedPractice.Pressed("pad:" + pad, name == "Kick" ? "the kick" : "the " + name)) return;
+            if (GuidedPractice.Pressed("pad:" + pad, name == "Kick" ? Loc.T("the kick") : Loc.F("the {0}", Said(kit.FiveLane, pad)))) return;
             string id = DrumSound.SoundOf(pad, kit.FiveLane);
             float pan = DrumSound.PanOf(pad, kit.FiveLane);
             CueBank.PlayDrum(id, kit.Lefty ? -pan : pan, 0.8f * Mathf.Clamp(velocity, 0.4f, 1f));
             var cue = CueBank.Get(id);
-            string full = name;
+            string said = Said(kit.FiveLane, pad);
+            string full = said;
             if (cue != null)
             {
                 int colon = cue.Meaning.IndexOf(':');
                 string sound = colon > 0 ? cue.Meaning.Substring(0, colon) : cue.Meaning;
-                full = name + ": " + sound + ".";
+                full = said + ": " + sound + ".";
             }
-            Captions.SayIn("Practice The Buttons", () => IsOpen, _told.Add((kit.FiveLane ? "5" : "4") + pad) ? full : name, true);
+            Captions.SayIn(Loc.T("Practice The Buttons"), () => IsOpen, _told.Add((kit.FiveLane ? "5" : "4") + pad) ? full : said, true);
         }
     }
 }

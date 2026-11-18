@@ -16,7 +16,9 @@ namespace YargAccess
 
         public static bool IsOpen { get; private set; }
 
-        public static void Open(List<string> lines, string device)
+        // firstIsTitle: the first line is the help's title (ContextHelp says so, since a translated title may
+        // hold ": " too); null keeps the old rule, a first line with no ": " is the title.
+        public static void Open(List<string> lines, string device, bool? firstIsTitle = null)
         {
             _lines.Clear();
             string title = null;
@@ -24,22 +26,29 @@ namespace YargAccess
             {
                 var line = (l ?? "").Trim().TrimEnd('.');
                 if (line.Length == 0) continue;
-                if (title == null && _lines.Count == 0 && line.IndexOf(": ", StringComparison.Ordinal) < 0) { title = line; continue; }
+                if (title == null && _lines.Count == 0 && (firstIsTitle ?? line.IndexOf(": ", StringComparison.Ordinal) < 0)) { title = line; continue; }
                 // The same line twice (a key YARG names and the mod names too) is read once.
                 if (_lines.Exists(x => string.Equals(x, line, StringComparison.OrdinalIgnoreCase))) continue;
                 _lines.Add(line);
             }
             bool inSong = GameplayContext.InGameplay;
-            if (device == "keyboard") _lines.Add(inSong ? "Backspace or F1: close this help" : "Escape, Backspace or F1: close this help");
-            else if (device == "controller") _lines.Add("B or View: close this help");
-            else _lines.Add("Red fret or Select: close this help");
+            if (device == "keyboard") _lines.Add(inSong ? Loc.T("Backspace or F1: close this help") : Loc.T("Escape, Backspace or F1: close this help"));
+            else if (device == "controller") _lines.Add(Loc.T("B or View: close this help"));
+            else _lines.Add(Loc.T("Red fret or Select: close this help"));
             _idx = 0;
-            _title = (title != null ? title + " help" : "Help");
+            _title = (title != null ? Loc.F("{0} help", title) : Loc.T("Help"));
             IsOpen = true;
             _openedFrame = Time.frameCount;
-            string read = device == "keyboard" ? "Up and Down" : device == "controller" ? "D-pad up and down" : "Strum up and down";
-            Captions.SayIn(_title ?? "Help", () => IsOpen, (title != null ? title + ", help" : "Help") + " for the " + device + ", " + _lines.Count + " lines. "
-                + read + " to read. " + Line(0), true);
+            string read = device == "keyboard" ? Loc.T("Up and Down") : device == "controller" ? Loc.T("D-pad up and down") : Loc.T("Strum up and down");
+            int n = _lines.Count;
+            string head;
+            if (device == "keyboard")
+                head = title != null ? Loc.F("{0}, help for the keyboard, {1} lines.", title, n) : Loc.F("Help for the keyboard, {0} lines.", n);
+            else if (device == "controller")
+                head = title != null ? Loc.F("{0}, help for the controller, {1} lines.", title, n) : Loc.F("Help for the controller, {0} lines.", n);
+            else
+                head = title != null ? Loc.F("{0}, help for the guitar, {1} lines.", title, n) : Loc.F("Help for the guitar, {0} lines.", n);
+            Captions.SayIn(_title ?? Loc.T("Help"), () => IsOpen, head + " " + Loc.F("{0} to read.", read) + " " + Line(0), true);
         }
 
         static string Line(int i) { return _lines[i] + Keys.Pos(i, _lines.Count); }
@@ -48,7 +57,7 @@ namespace YargAccess
         {
             int n = Mathf.Clamp(_idx + dir, 0, _lines.Count - 1);
             _idx = n;
-            Captions.SayIn(_title ?? "Help", () => IsOpen, Line(_idx), true);
+            Captions.SayIn(_title ?? Loc.T("Help"), () => IsOpen, Line(_idx), true);
         }
 
         static void Close()

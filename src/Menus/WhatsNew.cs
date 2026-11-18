@@ -32,8 +32,8 @@ namespace YargAccess
         public static void Read()
         {
             var s = Text();
-            if (string.IsNullOrEmpty(s)) { MenuAnnouncer.SayShown("No message from YARG yet. It shows on the main menu."); return; }
-            MenuAnnouncer.Say("YARG's message: " + s);
+            if (string.IsNullOrEmpty(s)) { MenuAnnouncer.SayShown(Loc.T("No message from YARG yet. It shows on the main menu.")); return; }
+            MenuAnnouncer.Say(Loc.F("YARG's message: {0}", s));
         }
     }
 }

@@ -46,9 +46,9 @@ namespace YargAccess
                 _builtFor = null;
                 _replaceAsked = null;
                 Rebuild();
-                string what = FoldersMode ? "Choose a folder. " : SaveMode ? "Save a file. " : "Choose a file. ";
-                MenuAnnouncer.Say(what + Where() + ". " + RowText(_idx)
-                    + " " + Keys.UpDown + " to move, " + Keys.Ok + " to open or choose, Backspace for the folder above, Escape to cancel.");
+                string what = FoldersMode ? Loc.T("Choose a folder.") : SaveMode ? Loc.T("Save a file.") : Loc.T("Choose a file.");
+                MenuAnnouncer.Say(what + " " + Where() + ". " + RowText(_idx)
+                    + " " + Loc.F("{0} to move, {1} to open or choose, Backspace for the folder above, Escape to cancel.", Keys.UpDown, Keys.Ok));
             }
             if (!open && _wasOpen)
             {
@@ -121,36 +121,36 @@ namespace YargAccess
                             if (l != null)
                             {
                                 string name = TextUtil.Clean(l.Name);
-                                string label = string.Equals(name, l.TargetPath, StringComparison.OrdinalIgnoreCase) ? name + " drive" : name + ", " + l.TargetPath;
+                                string label = string.Equals(name, l.TargetPath, StringComparison.OrdinalIgnoreCase) ? Loc.F("{0} drive", name) : name + ", " + l.TargetPath;
                                 _rows.Add(new Row { Kind = Kind.Place, Label = label, Path = l.TargetPath });
                             }
                 }
                 catch (Exception ex) { ModLog.Warn("FileBrowserNavigator places", ex); }
-                _rows.Add(new Row { Kind = Kind.Cancel, Label = "Cancel" });
+                _rows.Add(new Row { Kind = Kind.Cancel, Label = Loc.T("Cancel") });
             }
             else
             {
-                if (FoldersMode) _rows.Add(new Row { Kind = Kind.ChooseHere, Label = "Choose this folder, " + path, Path = path });
+                if (FoldersMode) _rows.Add(new Row { Kind = Kind.ChooseHere, Label = Loc.F("Choose this folder, {0}", path), Path = path });
                 if (SaveMode)
                 {
-                    _rows.Add(new Row { Kind = Kind.SaveHere, Label = "Save here", Path = path });
-                    _rows.Add(new Row { Kind = Kind.FileName, Label = "File name" });
+                    _rows.Add(new Row { Kind = Kind.SaveHere, Label = Loc.T("Save here"), Path = path });
+                    _rows.Add(new Row { Kind = Kind.FileName, Label = Loc.T("File name") });
                 }
                 string parent = null;
                 try { var p = Directory.GetParent(path); if (p != null) parent = p.FullName; } catch { }
-                if (parent != null) _rows.Add(new Row { Kind = Kind.Parent, Label = "Up to " + parent, Path = parent });
+                if (parent != null) _rows.Add(new Row { Kind = Kind.Parent, Label = Loc.F("Up to {0}", parent), Path = parent });
                 try
                 {
                     var entries = typeof(FileBrowser).GetField("validFileEntries", BF).GetValue(Browser) as IList;
                     if (entries != null)
                         foreach (FileSystemEntry e in entries)
                             _rows.Add(e.IsDirectory
-                                ? new Row { Kind = Kind.Folder, Label = e.Name + ", folder", Path = e.Path }
-                                : new Row { Kind = Kind.File, Label = e.Name + ", file", Path = e.Path });
+                                ? new Row { Kind = Kind.Folder, Label = Loc.F("{0}, folder", e.Name), Path = e.Path }
+                                : new Row { Kind = Kind.File, Label = Loc.F("{0}, file", e.Name), Path = e.Path });
                 }
                 catch (Exception ex) { ModLog.Warn("FileBrowserNavigator entries", ex); }
-                _rows.Add(new Row { Kind = Kind.Places, Label = "Drives and places" });
-                _rows.Add(new Row { Kind = Kind.Cancel, Label = "Cancel" });
+                _rows.Add(new Row { Kind = Kind.Places, Label = Loc.T("Drives and places") });
+                _rows.Add(new Row { Kind = Kind.Cancel, Label = Loc.T("Cancel") });
             }
             if (_idx >= _rows.Count) _idx = _rows.Count - 1;
             if (_idx < 0) _idx = 0;
@@ -158,10 +158,10 @@ namespace YargAccess
 
         static string Where()
         {
-            if (_inPlaces) return "Drives and places, " + Math.Max(0, _rows.Count - 1) + " items";
+            if (_inPlaces) return Loc.F("Drives and places, {0} items", Math.Max(0, _rows.Count - 1));
             int n = 0;
             foreach (var r in _rows) if (r.Kind == Kind.Folder || r.Kind == Kind.File) n++;
-            return CurrentPath + ", " + (n == 0 ? "empty" : n + (n == 1 ? " item" : " items"));
+            return CurrentPath + ", " + (n == 0 ? Loc.T("empty") : n == 1 ? Loc.F("{0} item", n) : Loc.F("{0} items", n));
         }
 
         static string RowText(int i)
@@ -171,12 +171,12 @@ namespace YargAccess
             string hint = "";
             switch (r.Kind)
             {
-                case Kind.ChooseHere: hint = Keys.Role("button") + ", " + Keys.Ok + " to choose it"; break;
-                case Kind.SaveHere: return "Save here as " + Filename + Keys.Role("button") + Keys.Pos(i, _rows.Count);
-                case Kind.FileName: return "File name, " + Keys.RoleThen("edit box", Filename) + ", " + Keys.Ok + " to type" + Keys.Pos(i, _rows.Count);
+                case Kind.ChooseHere: hint = Keys.Role("button") + Loc.F(", {0} to choose it", Keys.Ok); break;
+                case Kind.SaveHere: return Loc.F("Save here as {0}", Filename) + Keys.Role("button") + Keys.Pos(i, _rows.Count);
+                case Kind.FileName: return Loc.F("File name, {0}", Keys.RoleThen("edit box", Filename)) + Loc.F(", {0} to type", Keys.Ok) + Keys.Pos(i, _rows.Count);
                 case Kind.Cancel: hint = Keys.Role("button"); break;
-                case Kind.Folder: hint = ", " + Keys.Ok + " to open"; break;
-                case Kind.File: hint = ", " + Keys.Ok + (SaveMode ? " to save over it" : " to choose"); break;
+                case Kind.Folder: hint = Loc.F(", {0} to open", Keys.Ok); break;
+                case Kind.File: hint = SaveMode ? Loc.F(", {0} to save over it", Keys.Ok) : Loc.F(", {0} to choose", Keys.Ok); break;
             }
             return r.Label + hint + Keys.Pos(i, _rows.Count);
         }
@@ -211,18 +211,18 @@ namespace YargAccess
                         Choose(r.Path, true);
                         break;
                     case Kind.SaveHere:
-                        if (string.IsNullOrWhiteSpace(Filename)) { MenuAnnouncer.SayShown("Type a file name first."); break; }
+                        if (string.IsNullOrWhiteSpace(Filename)) { MenuAnnouncer.SayShown(Loc.T("Type a file name first.")); break; }
                         if (File.Exists(Path.Combine(CurrentPath, Filename)) && _replaceAsked != Filename)
                         {
                             _replaceAsked = Filename;
-                            MenuAnnouncer.SayShown(Filename + " already exists here. Press " + Keys.Ok + " again to replace it.");
+                            MenuAnnouncer.SayShown(Loc.F("{0} already exists here. Press {1} again to replace it.", Filename, Keys.Ok));
                             break;
                         }
                         Choose(Path.Combine(CurrentPath, Filename), false);
                         break;
                     case Kind.FileName:
                         var field = FilenameField;
-                        if (field != null) TextEdit.Begin(field, "File name", text => { _replaceAsked = null; MenuAnnouncer.Say("File name, " + text); });
+                        if (field != null) TextEdit.Begin(field, Loc.T("File name"), text => { _replaceAsked = null; MenuAnnouncer.Say(Loc.F("File name, {0}", text)); });
                         break;
                     case Kind.Parent:
                     case Kind.Folder:
@@ -233,7 +233,7 @@ namespace YargAccess
                         if (SaveMode && _replaceAsked != r.Path)
                         {
                             _replaceAsked = r.Path;
-                            MenuAnnouncer.SayShown("Replace " + Path.GetFileName(r.Path) + "? Press " + Keys.Ok + " again to replace it.");
+                            MenuAnnouncer.SayShown(Loc.F("Replace {0}? Press {1} again to replace it.", Path.GetFileName(r.Path), Keys.Ok));
                             break;
                         }
                         SetFilename(Path.GetFileName(r.Path));
@@ -245,7 +245,7 @@ namespace YargAccess
                         break;
                     case Kind.Cancel:
                         CallPrivate("OnCancelButtonClicked");
-                        if (OnClosed == null) MenuAnnouncer.SayShown("Canceled");
+                        if (OnClosed == null) MenuAnnouncer.SayShown(Loc.T("Canceled"));
                         break;
                 }
             }
@@ -261,13 +261,13 @@ namespace YargAccess
             if (!parentKey)
             {
                 try { CallPrivate("OnCancelButtonClicked"); } catch { }
-                if (OnClosed == null) MenuAnnouncer.SayShown("Canceled");
+                if (OnClosed == null) MenuAnnouncer.SayShown(Loc.T("Canceled"));
                 return;
             }
             if (_inPlaces)
             {
                 try { CallPrivate("OnCancelButtonClicked"); } catch { }
-                if (OnClosed == null) MenuAnnouncer.SayShown("Canceled");
+                if (OnClosed == null) MenuAnnouncer.SayShown(Loc.T("Canceled"));
                 return;
             }
             string parent = null;
@@ -284,7 +284,7 @@ namespace YargAccess
             CurrentPath = path;
             if (CurrentPath == before && !string.Equals(path, before, StringComparison.OrdinalIgnoreCase))
             {
-                MenuAnnouncer.SayShown("Can't open " + path);
+                MenuAnnouncer.SayShown(Loc.F("Can't open {0}", path));
                 return;
             }
             _idx = 0;
@@ -297,7 +297,7 @@ namespace YargAccess
         {
             var after = AfterChoose;
             CallPrivate("OnSubmitButtonClicked");
-            if (IsActive) { MenuAnnouncer.SayShown("Can't choose that " + (folder ? "folder" : "file")); return; }
+            if (IsActive) { MenuAnnouncer.SayShown(folder ? Loc.T("Can't choose that folder") : Loc.T("Can't choose that file")); return; }
             if (after != null)
             {
                 AfterChoose = null;
@@ -306,7 +306,7 @@ namespace YargAccess
                 try { after(result ?? new[] { path }); } catch (Exception ex) { ModLog.Warn("FileBrowserNavigator.AfterChoose", ex); }
                 return;
             }
-            Captions.Say(folder ? "Folder set to " + path + ". Scan Songs to add its songs." : "Chose " + Path.GetFileName(path));
+            Captions.Say(folder ? Loc.F("Folder set to {0}. Scan Songs to add its songs.", path) : Loc.F("Chose {0}", Path.GetFileName(path)));
         }
     }
 }

@@ -80,8 +80,8 @@ namespace YargAccess
                 var s = SettingOf(nb);
                 var v = s?.GetType().GetProperty("Value")?.GetValue(s, null);
                 if (v == null) return "";
-                if (v is bool b) return b ? "checked" : "not checked";
-                if (v is float f) return Mathf.RoundToInt(f * 100f) + "%";
+                if (v is bool b) return b ? Loc.T("checked") : Loc.T("not checked");
+                if (v is float f) return Loc.F("{0}%", Mathf.RoundToInt(f * 100f));
                 return v.ToString();
             }
             catch { return ""; }

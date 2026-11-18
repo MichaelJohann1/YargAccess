@@ -90,7 +90,7 @@ namespace YargAccess
         {
             if (_focused == null) { Move(1); return; }
             var tog = _focused as Toggle;
-            if (tog != null) { tog.isOn = !tog.isOn; MenuAnnouncer.Focused(tog.isOn ? "checked" : "not checked"); return; }
+            if (tog != null) { tog.isOn = !tog.isOn; MenuAnnouncer.Focused(tog.isOn ? Loc.T("checked") : Loc.T("not checked")); return; }
             var txt = _focused as TMP_Text;
             if (txt != null) { MenuAnnouncer.Focused(TextUtil.Clean(txt.text)); return; }
             var piece = _focused as Piece;
@@ -99,7 +99,7 @@ namespace YargAccess
             if (field != null)
             {
                 var lbl = FieldLabel(field);
-                TextEdit.Begin(field, lbl, text => MenuAnnouncer.Say(lbl + ", " + (string.IsNullOrEmpty(text) ? "blank" : TextUtil.Clean(text)) + ". Move to the confirm button and press " + Keys.Ok + "."));
+                TextEdit.Begin(field, lbl, text => MenuAnnouncer.Say(Loc.F("{0}, {1}. Move to the confirm button and press {2}.", lbl, string.IsNullOrEmpty(text) ? Loc.T("blank") : TextUtil.Clean(text), Keys.Ok)));
                 return;
             }
             var cb = _focused as YARG.Menu.ColoredButton;
@@ -123,16 +123,38 @@ namespace YargAccess
 
         public static void Reset() { _items.Clear(); _focused = null; }
 
+        // label is the English label; the button shows it in YARG's language (the mod's translation, or
+        // YARG's own Menu.Common word for Close, Cancel, Back and the like).
         public static void FocusLabel(string label)
         {
             Rebuild();
             foreach (var c in _items)
             {
                 var nb = c as NavigatableBehaviour;
-                if (nb != null && Describer.GetLabel(nb.gameObject) == label) { _focused = nb; SyncSelection(nb); return; }
+                if (nb != null && LabelIs(Describer.GetLabel(nb.gameObject), label)) { _focused = nb; SyncSelection(nb); return; }
                 var cb = c as YARG.Menu.ColoredButton;
-                if (cb != null && cb.Text != null && TextUtil.Clean(cb.Text.text) == label) { _focused = cb; return; }
+                if (cb != null && cb.Text != null && LabelIs(TextUtil.Clean(cb.Text.text), label)) { _focused = cb; return; }
             }
+        }
+
+        static readonly HashSet<string> CommonWords = new HashSet<string>
+            { "Apply", "Back", "Cancel", "Close", "Confirm", "Continue", "Delete", "Next", "Previous", "Reset", "Save" };
+
+        // A lookup for comparing, not a new key: the labels are keys where their callers write them.
+        static readonly Func<string, string> Translated = Loc.T;
+
+        // Whether text shown on a button is this English label, in English or in YARG's language.
+        public static bool LabelIs(string text, string english)
+        {
+            if (text == null || english == null) return false;
+            if (text == english) return true;
+            if (Loc.English) return false;
+            if (text == Translated(english)) return true;
+            string mod;
+            if (ModSettings.TryLocalize(ModSettings.TextKey + english, out mod) && text == mod) return true;
+            if (!CommonWords.Contains(english)) return false;
+            try { return text == TextUtil.Clean(YARG.Localization.Localize.Key("Menu.Common." + english)); }
+            catch { return false; }
         }
 
         public static bool Back()
@@ -145,7 +167,7 @@ namespace YargAccess
                 var nb = c as NavigatableBehaviour;
                 if (nb == null) continue;
                 var lbl = Describer.GetLabel(nb.gameObject);
-                if (lbl == "Close" || lbl == "Cancel" || lbl == "Back")
+                if (LabelIs(lbl, "Close") || LabelIs(lbl, "Cancel") || LabelIs(lbl, "Back"))
                 {
                     Press(nb);
                     return true;
@@ -220,7 +242,7 @@ namespace YargAccess
             var tog = _focused as Toggle;
             if (tog != null)
             {
-                MenuAnnouncer.Say(ToggleLabel(tog) + ", " + Keys.RoleThen("checkbox", tog.isOn ? "checked" : "not checked") + suffix);
+                MenuAnnouncer.Say(ToggleLabel(tog) + ", " + Keys.RoleThen("checkbox", tog.isOn ? Loc.T("checked") : Loc.T("not checked")) + suffix);
                 return;
             }
             var txt = _focused as TMP_Text;
@@ -236,7 +258,7 @@ namespace YargAccess
             if (field != null)
             {
                 var v = TextUtil.Clean(field.text);
-                MenuAnnouncer.Say(FieldLabel(field) + ", " + Keys.RoleThen("edit box", string.IsNullOrEmpty(v) ? "blank" : v) + ", " + Keys.Ok + " to type" + suffix);
+                MenuAnnouncer.Say(FieldLabel(field) + ", " + Keys.RoleThen("edit box", string.IsNullOrEmpty(v) ? Loc.T("blank") : v) + Loc.F(", {0} to type", Keys.Ok) + suffix);
                 return;
             }
             var cb = _focused as YARG.Menu.ColoredButton;
@@ -254,7 +276,7 @@ namespace YargAccess
         {
             var ph = f.placeholder as TMP_Text;
             var s = ph != null ? TextUtil.Clean(ph.text) : "";
-            return string.IsNullOrEmpty(s) ? "Text" : s;
+            return string.IsNullOrEmpty(s) ? Loc.T("Text") : s;
         }
 
         static string ToggleLabel(Toggle t)
@@ -272,7 +294,7 @@ namespace YargAccess
                     }
                 }
             }
-            return "checkbox";
+            return Loc.T("checkbox");
         }
     }
 }

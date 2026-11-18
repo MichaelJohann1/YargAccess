@@ -95,7 +95,7 @@ namespace YargAccess
             if (vis is ToggleSettingVisual)
             {
                 var t = FieldVal(vis, "_toggle") as Toggle;
-                return Keys.RoleThen("checkbox", t != null && t.isOn ? "checked" : "not checked");
+                return Keys.RoleThen("checkbox", t != null && t.isOn ? Loc.T("checked") : Loc.T("not checked"));
             }
             if (vis is SliderSettingVisual) return Keys.RoleThen("slider", SliderText(vis));
             if (vis is DropdownSettingVisual)
@@ -106,15 +106,15 @@ namespace YargAccess
             {
                 var f = FieldVal(vis, "_inputField") as TMP_InputField;
                 var t = f != null ? TextUtil.Clean(f.text) : "";
-                return Keys.RoleThen("number", string.IsNullOrEmpty(t) ? "blank" : t);
+                return Keys.RoleThen("number", string.IsNullOrEmpty(t) ? Loc.T("blank") : t);
             }
-            if (vis is ColorSettingVisual) return Keys.RoleThen("color", ValueOnly(vis)) + ", " + Keys.Ok + " to type a hex code";
+            if (vis is ColorSettingVisual) return Keys.RoleThen("color", ValueOnly(vis)) + Loc.F(", {0} to type a hex code", Keys.Ok);
             if (vis is DurationSettingVisual) return Keys.RoleThen("duration", ValueOnly(vis));
-            if (vis is HitWindowSettingVisual) return Keys.RoleThen("hit window", ValueOnly(vis)) + ", " + Keys.Ok + " to type";
-            if (vis is IPv4SettingVisual) return Keys.RoleThen("IP address", ValueOnly(vis)) + ", " + Keys.Ok + " to type";
-            if (vis is DMXChannelsSettingVisual) return Keys.RoleThen("channel list", ValueOnly(vis)) + ", " + Keys.Ok + " to type";
+            if (vis is HitWindowSettingVisual) return Keys.RoleThen("hit window", ValueOnly(vis)) + Loc.F(", {0} to type", Keys.Ok);
+            if (vis is IPv4SettingVisual) return Keys.RoleThen("IP address", ValueOnly(vis)) + Loc.F(", {0} to type", Keys.Ok);
+            if (vis is DMXChannelsSettingVisual) return Keys.RoleThen("channel list", ValueOnly(vis)) + Loc.F(", {0} to type", Keys.Ok);
             if (vis is FileInfoSettingVisual)
-                return Keys.RoleThen("image file", ValueOnly(vis)) + ", " + Keys.Ok + " to browse" + (Keys.Current == Keys.Device.Keyboard ? ", Delete to remove" : "");
+                return Keys.RoleThen("image file", ValueOnly(vis)) + Loc.F(", {0} to browse", Keys.Ok) + (Keys.Current == Keys.Device.Keyboard ? Loc.T(", Delete to remove") : "");
             return Describer.PrettifyName(vis.GetType().Name.Replace("SettingVisual", ""));
         }
 
@@ -131,7 +131,7 @@ namespace YargAccess
             if (vis is ToggleSettingVisual)
             {
                 var t = FieldVal(vis, "_toggle") as Toggle;
-                return t != null && t.isOn ? "checked" : "not checked";
+                return t != null && t.isOn ? Loc.T("checked") : Loc.T("not checked");
             }
             if (vis is SliderSettingVisual) return SliderText(vis);
             if (vis is DropdownSettingVisual) return DropdownValue(vis);
@@ -146,8 +146,8 @@ namespace YargAccess
             {
                 var dyn = FieldVal(vis, "_dynamicContainer") as GameObject;
                 if (dyn != null && dyn.activeSelf)
-                    return "dynamic, from " + SpokenDuration(FieldText(FieldVal(vis, "_minField") as Component)) +
-                           " to " + SpokenDuration(FieldText(FieldVal(vis, "_maxField") as Component));
+                    return Loc.F("dynamic, from {0} to {1}", SpokenDuration(FieldText(FieldVal(vis, "_minField") as Component)),
+                           SpokenDuration(FieldText(FieldVal(vis, "_maxField") as Component)));
                 return SpokenDuration(FieldText(FieldVal(vis, "_constantField") as Component));
             }
             if (vis is IPv4SettingVisual) return FieldText(FieldVal(vis, "_inputField") as Component);
@@ -173,19 +173,19 @@ namespace YargAccess
             var s = "#" + hex;
             Color c;
             if (ColorUtility.TryParseHtmlString("#" + hex, out c))
-                s += ", red " + Mathf.RoundToInt(c.r * 255) + ", green " + Mathf.RoundToInt(c.g * 255) + ", blue " + Mathf.RoundToInt(c.b * 255);
+                s += Loc.F(", red {0}, green {1}, blue {2}", Mathf.RoundToInt(c.r * 255), Mathf.RoundToInt(c.g * 255), Mathf.RoundToInt(c.b * 255));
             var op = FieldVal(vis, "_opacityField") as TMP_InputField;
-            if (op != null && op.gameObject.activeSelf) s += ", opacity " + TextUtil.Clean(op.text) + " percent";
+            if (op != null && op.gameObject.activeSelf) s += Loc.F(", opacity {0} percent", TextUtil.Clean(op.text));
             return s;
         }
 
         static string SpokenDuration(string t)
         {
             if (string.IsNullOrEmpty(t)) return "";
-            if (t.EndsWith(" ms")) return t.Substring(0, t.Length - 3) + " milliseconds";
-            if (t.EndsWith(" s")) return t.Substring(0, t.Length - 2) + " seconds";
-            if (t.EndsWith(" m")) return t.Substring(0, t.Length - 2) + " minutes";
-            if (t.EndsWith(" h")) return t.Substring(0, t.Length - 2) + " hours";
+            if (t.EndsWith(" ms")) return Loc.F("{0} milliseconds", t.Substring(0, t.Length - 3));
+            if (t.EndsWith(" s")) return Loc.F("{0} seconds", t.Substring(0, t.Length - 2));
+            if (t.EndsWith(" m")) return Loc.F("{0} minutes", t.Substring(0, t.Length - 2));
+            if (t.EndsWith(" h")) return Loc.F("{0} hours", t.Substring(0, t.Length - 2));
             return t;
         }
 
@@ -214,9 +214,9 @@ namespace YargAccess
             Action after = null;
             if (vis is ColorSettingVisual)
             {
-                fields.Add(Pair(InputOf(FieldVal(vis, "_inputField")), name + " hex code"));
+                fields.Add(Pair(InputOf(FieldVal(vis, "_inputField")), Loc.F("{0} hex code", name)));
                 var op = FieldVal(vis, "_opacityField") as TMP_InputField;
-                if (op != null && op.gameObject.activeSelf) fields.Add(Pair(op, name + " opacity percent"));
+                if (op != null && op.gameObject.activeSelf) fields.Add(Pair(op, Loc.F("{0} opacity percent", name)));
                 after = () => { Call(vis, "OnTextFieldChange"); if (op != null && op.gameObject.activeSelf) Call(vis, "OnOpacityFieldChange"); };
             }
             else if (vis is IPv4SettingVisual || vis is IntSettingVisual || vis is DurationSettingVisual)
@@ -229,8 +229,8 @@ namespace YargAccess
                 var dyn = FieldVal(vis, "_dynamicContainer") as GameObject;
                 if (dyn != null && dyn.activeSelf)
                 {
-                    fields.Add(Pair(InputOf(FieldVal(vis, "_minField")), name + " minimum"));
-                    fields.Add(Pair(InputOf(FieldVal(vis, "_maxField")), name + " maximum"));
+                    fields.Add(Pair(InputOf(FieldVal(vis, "_minField")), Loc.F("{0} minimum", name)));
+                    fields.Add(Pair(InputOf(FieldVal(vis, "_maxField")), Loc.F("{0} maximum", name)));
                 }
                 else fields.Add(Pair(InputOf(FieldVal(vis, "_constantField")), name));
             }
@@ -241,7 +241,7 @@ namespace YargAccess
                     for (int i = 0; i < arr.Length; i++)
                     {
                         if (arr[i] == null) continue;
-                        fields.Add(Pair(arr[i], name + " channel " + (i + 1) + " of " + arr.Length));
+                        fields.Add(Pair(arr[i], Loc.F("{0} channel {1} of {2}", name, i + 1, arr.Length)));
                     }
                 after = () =>
                 {

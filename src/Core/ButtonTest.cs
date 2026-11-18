@@ -27,15 +27,23 @@ namespace YargAccess
         static int _lastFret;
         static bool _starPower;
 
-        static readonly string[] FretNames = { "Open", "Green", "Red", "Yellow", "Blue", "Orange" };
+        static readonly string[] FretNames = { Loc.T("Open"), Loc.T("Green"), Loc.T("Red"), Loc.T("Yellow"), Loc.T("Blue"), Loc.T("Orange") };
 
         static readonly HashSet<string> _told = new HashSet<string>();
 
         static void Tell(string key, string full, string brief)
         {
-            Captions.SayIn("Practice The Buttons", () => IsOpen, _told.Add(key) ? full : brief, true);
+            Captions.SayIn(Loc.T("Practice The Buttons"), () => IsOpen, _told.Add(key) ? full : brief, true);
         }
-        static readonly string[] Places = { "", "far left, the lowest", "left", "centre", "right", "far right, the highest" };
+        static readonly string[] Places = { "", Loc.T("far left, the lowest"), Loc.T("left"), Loc.T("centre"), Loc.T("right"), Loc.T("far right, the highest") };
+
+        // "A and B and C", one key per pair so the word order can change.
+        static string And(IEnumerable<string> names)
+        {
+            string all = null;
+            foreach (var n in names) all = all == null ? n : Loc.F("{0} and {1}", all, n);
+            return all ?? "";
+        }
 
         // No human profile is connected (none at all, or only bots): Practice The Buttons then uses a
         // temporary practice profile (user, 2026-11-17).
@@ -61,12 +69,12 @@ namespace YargAccess
                     var gm = p.Profile.GameMode;
                     if (gm == GameMode.FourLaneDrums || gm == GameMode.FiveLaneDrums || gm == GameMode.FiveFretGuitar || gm == GameMode.ProKeys || gm == GameMode.Vocals)
                         return null;
-                    return "No sounds yet for " + gm + ". Practice The Buttons works with five-fret, drums, pro keys and vocals profiles.";
+                    return Loc.F("No sounds yet for {0}. Practice The Buttons works with five-fret, drums, pro keys and vocals profiles.", gm);
                 }
             }
             catch { }
-            return "No profile is connected. Practice The Buttons uses your connected profile's buttons: connect one in Profiles first. "
-                + "The Practice button in each instrument tutorial works without one.";
+            return Loc.T("No profile is connected. Practice The Buttons uses your connected profile's buttons: connect one in Profiles first. "
+                + "The Practice button in each instrument tutorial works without one.");
         }
 
         public static void OpenForProfile()
@@ -94,7 +102,7 @@ namespace YargAccess
                     VocalButtonTest.Open();
                     return;
                 default:
-                    Captions.Say("No sounds yet for " + mode + ". Practice The Buttons works with five-fret, drums, pro keys and vocals profiles.", true);
+                    Captions.Say(Loc.F("No sounds yet for {0}. Practice The Buttons works with five-fret, drums, pro keys and vocals profiles.", mode), true);
                     return;
             }
         }
@@ -113,11 +121,10 @@ namespace YargAccess
             if (GuidedPractice.Active) return;
             string how;
             if (Keys.Current == Keys.Device.Keyboard && !_keyboardProfile)
-                how = "On the keyboard: 1 to 5 for the frets, Up and Down to strum, Backspace for star power";
-            else how = _subscribed.Count > 0 ? "Use your profile's five-fret buttons" : "Use the keyboard: 1 to 5 for the frets, Up and Down to strum, Backspace for star power";
-            string done = Keys.Finish + " to finish";
-            Captions.SayIn("Practice The Buttons", () => IsOpen, "Try the buttons. Press a fret, strum, or press star power to hear its sound and what it does in a song. "
-                + how + ". " + done + ".", true);
+                how = Loc.T("On the keyboard: 1 to 5 for the frets, Up and Down to strum, Backspace for star power");
+            else how = _subscribed.Count > 0 ? Loc.T("Use your profile's five-fret buttons") : Loc.T("Use the keyboard: 1 to 5 for the frets, Up and Down to strum, Backspace for star power");
+            Captions.SayIn(Loc.T("Practice The Buttons"), () => IsOpen, Loc.F("Try the buttons. Press a fret, strum, or press star power to hear its sound and what it does in a song. "
+                + "{0}. {1} to finish.", how, Keys.Finish), true);
         }
 
         public static void Close()
@@ -129,7 +136,7 @@ namespace YargAccess
             CuePlayer.Stop(_channel);
             _starPower = false;
             CueBank.Mirror = false;
-            Tutorials.TestClosed("Done trying the buttons.");
+            Tutorials.TestClosed(Loc.T("Done trying the buttons."));
         }
 
         static void Subscribe()
@@ -254,11 +261,11 @@ namespace YargAccess
                 if (wasTop && to > 0)
                 {
                     _lastFret = to;
-                    if (GuidedPractice.Pressed("lift:" + to, "a pull-off to " + FretNames[to])) return;
+                    if (GuidedPractice.Pressed("lift:" + to, Loc.F("a pull-off to {0}", FretNames[to]))) return;
                     Play(CueBank.PlayNote(to, CueBank.Kind.PullOff));
                     Sparkle();
-                    Tell("lift", "Lifting " + FretNames[f] + " with " + FretNames[to] + " held, no strum: a pull-off. The note slides down to "
-                        + FretNames[to].ToLowerInvariant() + ".", "Pull-off to " + FretNames[to]);
+                    Tell("lift", Loc.F("Lifting {0} with {1} held, no strum: a pull-off. The note slides down to {2}.",
+                        FretNames[f], FretNames[to], FretNames[to].ToLowerInvariant()), Loc.F("Pull-off to {0}", FretNames[to]));
                 }
                 return;
             }
@@ -272,14 +279,14 @@ namespace YargAccess
                 Sparkle();
             }
             string kind = pull
-                ? "a pull-off, because it is lower than " + FretNames[_lastFret].ToLowerInvariant() + ". The note slides down into place"
+                ? Loc.F("a pull-off, because it is lower than {0}. The note slides down into place", FretNames[_lastFret].ToLowerInvariant())
                 : (_lastFret > 0 && _lastFret < f
-                    ? "a hammer-on, because it is higher than " + FretNames[_lastFret].ToLowerInvariant() + ". The note slides up into place"
-                    : "a hammer-on. The note slides up into place");
+                    ? Loc.F("a hammer-on, because it is higher than {0}. The note slides up into place", FretNames[_lastFret].ToLowerInvariant())
+                    : Loc.T("a hammer-on. The note slides up into place"));
             _lastFret = f;
-            if (GuidedPractice.Pressed("fret:" + f, "the " + FretNames[f] + " fret with no strum")) return;
-            Tell("fret" + f + (pull ? "p" : "h"), FretNames[f] + " fret, " + Places[f] + ". Pressing it without a strum sounds like " + kind + ".",
-                FretNames[f] + ", " + (pull ? "pull-off" : "hammer-on"));
+            if (GuidedPractice.Pressed("fret:" + f, Loc.F("the {0} fret with no strum", FretNames[f]))) return;
+            Tell("fret" + f + (pull ? "p" : "h"), Loc.F("{0} fret, {1}. Pressing it without a strum sounds like {2}.", FretNames[f], Places[f], kind),
+                FretNames[f] + ", " + (pull ? Loc.T("pull-off") : Loc.T("hammer-on")));
         }
 
         static void Strum()
@@ -290,10 +297,10 @@ namespace YargAccess
             if (frets.Count == 0)
             {
                 _lastFret = 0;
-                if (GuidedPractice.Pressed("strum:", "an open strum, with no fret held")) return;
+                if (GuidedPractice.Pressed("strum:", Loc.T("an open strum, with no fret held"))) return;
                 _channel = CueBank.PlayNote(0, CueBank.Kind.Strum);
                 Sparkle();
-                Tell("open", "Strum with no fret held: an open note, the low sound in the centre.", "Open note");
+                Tell("open", Loc.T("Strum with no fret held: an open note, the low sound in the centre."), Loc.T("Open note"));
                 return;
             }
             _lastFret = frets[frets.Count - 1];
@@ -305,27 +312,27 @@ namespace YargAccess
                 Sparkle();
                 if (frets.Count > 1) _chord.Add(CueBank.Play("chord"));
             }
-            if (GuidedPractice.Pressed("strum:" + string.Join("+", frets.ConvertAll(x => x.ToString()).ToArray()), "a strum with " + string.Join(" and ", names.ToArray()))) return;
+            if (GuidedPractice.Pressed("strum:" + string.Join("+", frets.ConvertAll(x => x.ToString()).ToArray()), Loc.F("a strum with {0}", And(names)))) return;
             if (frets.Count > 1)
             {
-                var chord = string.Join(" and ", names.ToArray());
-                Tell("chord", "Strum, " + chord + ": a chord. A chord's notes play together with the chord sound.", "Chord, " + chord);
+                var chord = And(names);
+                Tell("chord", Loc.F("Strum, {0}: a chord. A chord's notes play together with the chord sound.", chord), Loc.F("Chord, {0}", chord));
             }
-            else Tell("strum", "Strum, " + names[0] + ": a strummed note. Strum when the hit bar sound ends.",
-                "Strum, " + names[0]);
+            else Tell("strum", Loc.F("Strum, {0}: a strummed note. Strum when the hit bar sound ends.", names[0]),
+                Loc.F("Strum, {0}", names[0]));
         }
 
         static void StarPower()
         {
-            if (GuidedPractice.Pressed("sp", "star power")) return;
+            if (GuidedPractice.Pressed("sp", Loc.T("star power"))) return;
             _starPower = !_starPower;
             Play(CueBank.Play(_starPower ? "yarg_spdeploy" : "yarg_sprelease"));
             if (_starPower)
-                Tell("star", "Star power notes on: every note now plays as a star power note. "
+                Tell("star", Loc.T("Star power notes on: every note now plays as a star power note. "
                     + "In a song, star power notes make a phrase; hit every one to fill a quarter of the bar. "
-                    + "Once the bar is half full this button activates star power and your points double until the bar runs out. Press it again here to turn star power notes off.",
-                    "Star power notes on.");
-            else Captions.SayIn("Practice The Buttons", () => IsOpen, "Star power notes off.", true);
+                    + "Once the bar is half full this button activates star power and your points double until the bar runs out. Press it again here to turn star power notes off."),
+                    Loc.T("Star power notes on."));
+            else Captions.SayIn(Loc.T("Practice The Buttons"), () => IsOpen, Loc.T("Star power notes off."), true);
         }
 
         static void Whammy()
@@ -334,7 +341,7 @@ namespace YargAccess
             float now = Time.unscaledTime;
             if (now - _whammyAt < 2f) return;
             _whammyAt = now;
-            Tell("whammy", "Whammy. Bend a held note. On a held star power note it adds to the star power bar.", "Whammy");
+            Tell("whammy", Loc.T("Whammy. Bend a held note. On a held star power note it adds to the star power bar."), Loc.T("Whammy"));
         }
     }
 }

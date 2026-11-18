@@ -71,8 +71,8 @@ namespace YargAccess
                         _last = txt;
                         if (txt.Length > 2 && txt != "Text goes here")
                         {
-                            if (state == AudioWaiting) txt = "Press " + TapKey() + " when you are ready, then press it on every click you hear. " + Keys.Back + " to stop.";
-                            if (state == AudioDone) txt = txt.Replace("Press back to exit.", "").Trim() + " Press " + Keys.Back + " to return to the start screen.";
+                            if (state == AudioWaiting) txt = Loc.F("Press {0} when you are ready, then press it on every click you hear. {1} to stop.", TapKey(), Keys.Back);
+                            if (state == AudioDone) txt = StripBackToExit(txt) + " " + Loc.F("Press {0} to return to the start screen.", Keys.Back);
                             MenuAnnouncer.Say(txt);
                         }
                     }
@@ -90,7 +90,7 @@ namespace YargAccess
             var cal = Find();
             if (cal == null) return;
             Menu.OnEnter("Calibrator");
-            if (State(cal) == Starting) AnnounceStart(); else MenuAnnouncer.SayItem("Calibrating");
+            if (State(cal) == Starting) AnnounceStart(); else MenuAnnouncer.SayItem(Loc.T("Calibrating"));
         }
 
         static void AnnounceStart()
@@ -113,9 +113,24 @@ namespace YargAccess
             }
             catch { }
             int ms = CurrentCalibration();
-            MenuAnnouncer.Focused((string.IsNullOrEmpty(text) ? "Calibrate Audio" : text) +
-                (ms != int.MinValue ? ". Current audio calibration " + ms + " milliseconds" : "") +
-                ". Press " + Keys.Ok + " to start audio calibration, " + Keys.Back + " to go back.", true);
+            MenuAnnouncer.Focused((string.IsNullOrEmpty(text) ? Loc.T("Calibrate Audio") : text) +
+                (ms != int.MinValue ? ". " + Loc.F("Current audio calibration {0} milliseconds", ms) : "") +
+                ". " + Loc.F("Press {0} to start audio calibration, {1} to go back.", Keys.Ok, Keys.Back), true);
+        }
+
+        // YARG ends its result line with "Press back to exit." (hard-coded English after a calibration,
+        // its own translation in Menu.Calibrator.NotEnoughData): both are taken off.
+        static string StripBackToExit(string txt)
+        {
+            txt = txt.Replace("Press back to exit.", "");
+            try
+            {
+                var lines = YARG.Localization.Localize.Key("Menu.Calibrator.NotEnoughData").Split('\n');
+                var tail = TextUtil.Clean(lines[lines.Length - 1]);
+                if (lines.Length > 1 && !string.IsNullOrEmpty(tail)) txt = txt.Replace(tail, "");
+            }
+            catch { }
+            return txt.Trim();
         }
 
         static int CurrentCalibration()
@@ -129,7 +144,7 @@ namespace YargAccess
             return cal != null ? State(cal) : -1;
         }
 
-        static string TapKey() { return Keys.Current == Keys.Device.Keyboard ? "Space or Enter" : "any button"; }
+        static string TapKey() { return Keys.Current == Keys.Device.Keyboard ? Loc.T("Space or Enter") : Loc.T("any button"); }
 
         public static bool Confirm()
         {

@@ -71,7 +71,7 @@ namespace YargAccess
                     bool better = !All().TryGetValue(key, out old) || now.Score > old.Score;
                     if (better) { All()[key] = now; changed = true; }
                     var b = better ? now : old;
-                    _lastSong.Add((better ? "Listen and Repeat, new best: " : "Listen and Repeat best: ") + Describe(b, prof.CurrentDifficulty));
+                    _lastSong.Add(better ? Loc.F("Listen and Repeat, new best: {0}", Describe(b, prof.CurrentDifficulty)) : Loc.F("Listen and Repeat best: {0}", Describe(b, prof.CurrentDifficulty)));
                 }
                 if (changed) Save();
             }
@@ -100,15 +100,21 @@ namespace YargAccess
                     if (All().TryGetValue(Key(prof.Id, e.Hash.ToString(), prof.CurrentInstrument, d, ModSettings.CallLength), out b) && (best == null || b.Score > best.Score))
                     { best = b; bestDiff = d; }
                 }
-                return best == null ? null : "Listen and Repeat: " + Describe(best, bestDiff);
+                return best == null ? null : Loc.F("Listen and Repeat: {0}", Describe(best, bestDiff));
             }
             catch (Exception ex) { ModLog.Warn("ListenRepeatScores.ForSong", ex); return null; }
         }
 
         static string Describe(Best b, Difficulty d)
         {
-            return b.Stars + (b.Stars == 1 ? " star" : " stars") + ", " + b.Score.ToString("N0", CultureInfo.CurrentCulture) + " on " + d + ", " + b.Percent + "%"
-                + (b.Fc ? ", full combo" : "");
+            string score = b.Score.ToString("N0", CultureInfo.CurrentCulture);
+            // The difficulty in YARG's words when YARG isn't in English (English keeps the enum name as before).
+            string diff = d.ToString();
+            if (!Loc.English) { try { diff = YARG.Localization.Localize.ToLocalizedName(d); } catch { } }
+            string line = b.Stars == 1
+                ? Loc.F("{0} star, {1} on {2}, {3}%", b.Stars, score, diff, b.Percent)
+                : Loc.F("{0} stars, {1} on {2}, {3}%", b.Stars, score, diff, b.Percent);
+            return b.Fc ? Loc.F("{0}, full combo", line) : line;
         }
     }
 }

@@ -35,9 +35,9 @@ namespace YargAccess
             Subscribe();
             if (GuidedPractice.Active) return;
             string how = Keys.Current == Keys.Device.Keyboard || _subscribed.Count == 0
-                ? "On the computer keyboard, Backspace is Hit and Space is star power, unless your profile binds them elsewhere"
-                : "Use your profile's Hit and star power buttons; tapping the microphone also counts as Hit";
-            Captions.SayIn("Practice The Buttons", () => IsOpen, "Try the vocals buttons. Press a button to hear its sound in a song and what it does. " + how + ". With a microphone, sing and the note you hold is named. " + Keys.Finish + " to finish.", true);
+                ? Loc.T("On the computer keyboard, Backspace is Hit and Space is star power, unless your profile binds them elsewhere")
+                : Loc.T("Use your profile's Hit and star power buttons; tapping the microphone also counts as Hit");
+            Captions.SayIn(Loc.T("Practice The Buttons"), () => IsOpen, Loc.F("Try the vocals buttons. Press a button to hear its sound in a song and what it does. {0}. With a microphone, sing and the note you hold is named. {1} to finish.", how, Keys.Finish), true);
         }
 
         public static void Close()
@@ -46,7 +46,7 @@ namespace YargAccess
             IsOpen = false;
             Unsubscribe();
             _inputs.Clear();
-            Tutorials.TestClosed("Done trying the buttons.");
+            Tutorials.TestClosed(Loc.T("Done trying the buttons."));
         }
 
         static readonly GameInputProcessed Handler = (ref GameInput input) => { if (IsOpen) _inputs.Enqueue(input); };
@@ -144,7 +144,7 @@ namespace YargAccess
                             else SungNote(frame.PitchAsMidiNote);
                             continue;
                         }
-                        if (frame.IsHit) GuidedPractice.Pressed("mic", "a tap on the microphone");
+                        if (frame.IsHit) GuidedPractice.Pressed("mic", Loc.T("a tap on the microphone"));
                         else GuidedPractice.Sung(frame.PitchAsMidiNote);
                     }
                 }
@@ -159,7 +159,7 @@ namespace YargAccess
             return true;
         }
 
-        static readonly string[] NoteNames = { "C", "C sharp", "D", "E flat", "E", "F", "F sharp", "G", "A flat", "A", "B flat", "B" };
+        static readonly string[] NoteNames = { Loc.T("C"), Loc.T("C sharp"), Loc.T("D"), Loc.T("E flat"), Loc.T("E"), Loc.T("F"), Loc.T("F sharp"), Loc.T("G"), Loc.T("A flat"), Loc.T("A"), Loc.T("B flat"), Loc.T("B") };
         static int _heldNote = -1, _saidNote = -1;
         static float _heldSince, _saidAt;
 
@@ -173,25 +173,25 @@ namespace YargAccess
             if (now - _heldSince < 0.35f || (note == _saidNote && now - _saidAt < 2f) || now - _saidAt < 0.6f) return;
             _saidNote = note;
             _saidAt = now;
-            Captions.SayIn("Practice The Buttons", () => IsOpen, "Singing " + NoteNames[note], true);
+            Captions.SayIn(Loc.T("Practice The Buttons"), () => IsOpen, Loc.F("Singing {0}", NoteNames[note]), true);
         }
 
         static void Hit()
         {
-            if (GuidedPractice.Pressed("hit", "Hit")) return;
+            if (GuidedPractice.Pressed("hit", Loc.T("Hit"))) return;
             CueBank.Play("vocalperc", 1f);
-            if (_toldHit) { Captions.SayIn("Practice The Buttons", () => IsOpen, "Hit", true); return; }
+            if (_toldHit) { Captions.SayIn(Loc.T("Practice The Buttons"), () => IsOpen, Loc.T("Hit"), true); return; }
             _toldHit = true;
-            Captions.SayIn("Practice The Buttons", () => IsOpen, "Hit. Plays percussion notes, such as a tambourine or cowbell: press it as soon as you hear this hard double knock in a song. Tapping the microphone counts too", true);
+            Captions.SayIn(Loc.T("Practice The Buttons"), () => IsOpen, Loc.T("Hit. Plays percussion notes, such as a tambourine or cowbell: press it as soon as you hear this hard double knock in a song. Tapping the microphone counts too"), true);
         }
 
         static void Star()
         {
-            if (GuidedPractice.Pressed("sp", "star power")) return;
+            if (GuidedPractice.Pressed("sp", Loc.T("star power"))) return;
             CueBank.Play("spready", 0.8f);
-            if (_toldStar) { Captions.SayIn("Practice The Buttons", () => IsOpen, "Star power", true); return; }
+            if (_toldStar) { Captions.SayIn(Loc.T("Practice The Buttons"), () => IsOpen, Loc.T("Star power"), true); return; }
             _toldStar = true;
-            Captions.SayIn("Practice The Buttons", () => IsOpen, "Star power. Turns star power on once it is ready, which this sparkle tells you in a song. It stays ready until you use it", true);
+            Captions.SayIn(Loc.T("Practice The Buttons"), () => IsOpen, Loc.T("Star power. Turns star power on once it is ready, which this sparkle tells you in a song. It stays ready until you use it"), true);
         }
     }
 }

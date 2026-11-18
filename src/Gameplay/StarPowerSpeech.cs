@@ -24,7 +24,7 @@ namespace YargAccess
             if (_last == active && now - _lastAt < 1f) return;
             _last = active;
             _lastAt = now;
-            Captions.Say(active ? "Star power on" : "Star power off", false);
+            Captions.Say(active ? Loc.T("Star power on") : Loc.T("Star power off"), false);
         }
     }
 }
