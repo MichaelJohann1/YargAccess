@@ -1,0 +1,58 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <RootNamespace>YargAccess</RootNamespace>
+    <AssemblyName>YargAccess</AssemblyName>
+    <LangVersion>latest</LangVersion>
+    <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <!-- Build output stays at the repo root: bin\Release\YargAccess.dll -->
+    <OutputPath>..\bin\$(Configuration)\</OutputPath>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <NoWarn>CS0436;NU1701</NoWarn>
+  </PropertyGroup>
+
+  <!-- YARG (MelonLoader, Mono). Override at the CLI for a different install:
+       dotnet build -p:GameDir="C:\path\to\YARG\installation" -->
+  <PropertyGroup>
+    <GameDir Condition="'$(GameDir)' == ''">$(LOCALAPPDATA)\YARC\YARG Installs\yarg-access-stable\installation</GameDir>
+    <ManagedDir>$(GameDir)\YARG_Data\Managed</ManagedDir>
+    <MelonLoaderDir>$(GameDir)\MelonLoader\net35</MelonLoaderDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- MelonLoader + bundled Harmony -->
+    <Reference Include="MelonLoader"><HintPath>$(MelonLoaderDir)\MelonLoader.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="0Harmony"><HintPath>$(MelonLoaderDir)\0Harmony.dll</HintPath><Private>false</Private></Reference>
+
+    <!-- Unity engine modules -->
+    <Reference Include="UnityEngine"><HintPath>$(ManagedDir)\UnityEngine.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityEngine.CoreModule"><HintPath>$(ManagedDir)\UnityEngine.CoreModule.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityEngine.UIModule"><HintPath>$(ManagedDir)\UnityEngine.UIModule.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityEngine.UI"><HintPath>$(ManagedDir)\UnityEngine.UI.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityEngine.InputLegacyModule"><HintPath>$(ManagedDir)\UnityEngine.InputLegacyModule.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityEngine.IMGUIModule"><HintPath>$(ManagedDir)\UnityEngine.IMGUIModule.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityEngine.TextRenderingModule"><HintPath>$(ManagedDir)\UnityEngine.TextRenderingModule.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityEngine.UIElementsModule" Condition="Exists('$(ManagedDir)\UnityEngine.UIElementsModule.dll')"><HintPath>$(ManagedDir)\UnityEngine.UIElementsModule.dll</HintPath><Private>false</Private></Reference>
+
+    <!-- TextMeshPro (YARG renders menu text via TMP) -->
+    <Reference Include="Unity.TextMeshPro"><HintPath>$(ManagedDir)\Unity.TextMeshPro.dll</HintPath><Private>false</Private></Reference>
+
+    <!-- New Input System (YARG ships com.unity.inputsystem) -->
+    <Reference Include="Unity.InputSystem" Condition="Exists('$(ManagedDir)\Unity.InputSystem.dll')"><HintPath>$(ManagedDir)\Unity.InputSystem.dll</HintPath><Private>false</Private></Reference>
+
+    <!-- BASS audio. YARG already ships and initializes ManagedBass, so the mod plays its own
+         accessibility cues on the device YARG opened - it never calls Bass.Init itself. -->
+    <Reference Include="DOTween"><HintPath>$(ManagedDir)\DOTween.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="SimpleFileBrowser.Runtime"><HintPath>$(ManagedDir)\SimpleFileBrowser.Runtime.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="ManagedBass"><HintPath>$(ManagedDir)\ManagedBass.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="Minis"><HintPath>$(ManagedDir)\Minis.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="PlasticBand"><HintPath>$(ManagedDir)\PlasticBand.dll</HintPath><Private>false</Private></Reference>
+
+    <!-- Game code + engine package -->
+    <Reference Include="Assembly-CSharp"><HintPath>$(ManagedDir)\Assembly-CSharp.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="Assembly-CSharp-firstpass" Condition="Exists('$(ManagedDir)\Assembly-CSharp-firstpass.dll')"><HintPath>$(ManagedDir)\Assembly-CSharp-firstpass.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="YARG.Core.Package" Condition="Exists('$(ManagedDir)\YARG.Core.Package.dll')"><HintPath>$(ManagedDir)\YARG.Core.Package.dll</HintPath><Private>false</Private></Reference>
+  </ItemGroup>
+</Project>

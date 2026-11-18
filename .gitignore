@@ -1,0 +1,37 @@
+# Build output
+bin/
+obj/
+src/bin/
+src/obj/
+dist/
+*.user
+.vs/
+
+# Separate repo (MichaelJohann1/YargAccessLauncher)
+launcher/
+
+# Local research clones and audit transcripts
+.research/
+
+# Binaries and packages: the speech DLLs and release zips belong in releases only
+*.dll
+*.pdb
+*.zip
+
+# Logs, local tool and editor settings, OS files
+*.log
+.claude/settings.local.json
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Developer notes and AI session files: kept on the developer's machine, not published
+docs/
+history.md
+CLAUDE.md
+AGENTS.md
+.claude/
+tools/audit-*.py
+!lib/*.dll
