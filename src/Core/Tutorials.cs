@@ -186,8 +186,9 @@ namespace YargAccess
                 .Replace("{songdelete}", P("Delete deletes the song you are on.", "LT deletes the song you are on.",
                     "Hold Select and strum down to delete the song you are on."))
                 .Replace("{side}", P("Left and Right", "D-pad Left and Right", "D-pad Left and Right"))
+                .Replace("{playwithreplay}", P("5", "The first item of the LT list", "Orange"))
                 .Replace("{historytabs}", P("Tab and Shift+Tab switch between them.",
-                    "RB switches between them, and so does the last item of the LT list.",
+                    "LB and RB switch between them, and so does the last item of the LT list.",
                     "The last item of the list that Select and strum down opens switches between them."))
                 .Replace("{starpowerkey}", P("On the computer keyboard, star power is Backspace on guitar, bass and keys, and Space on vocals.",
                     "Your star power button is in your profile's binds.",
@@ -887,7 +888,7 @@ namespace YargAccess
                     "YARG saves a replay of every song you finish: each button you pressed and when. Watching it plays the song again exactly as you played it, with the same note sounds and hit and miss sounds, at the speed you played. "
                     + "{ok} on an entry watches its replay. A replay needs the same chart: if the song was deleted or changed, YARG says the song is unavailable or the replay can't be played.")
                 .Page("Other ways to use an entry",
-                    "{orange} is Play With Replay: you play the song yourself while the replay's players play alongside you, as if they were in the band. Pick your part and difficulty first, as for any song. "
+                    "{playwithreplay} is Play With Replay: you play the song yourself while the replay's players play alongside you, as if they were in the band. Pick your part and difficulty first, as for any song. "
                     + "Only player one has note sounds: you, or the first bot when only bots play along. The replay's players play without them, so you hear the song and your own part. "
                     + "{blue} plays the song yourself, alone, in your Play Style, as from the song library. "
                     + "{yellow} is YARG's own Analyze: it replays the entry and checks it still gives the same score with this version of the game. The result is only written to YARG's log file; nothing is shown or said.")

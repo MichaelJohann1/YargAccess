@@ -153,7 +153,9 @@ namespace YargAccess
             // Just short of the end: at the end YARG stops the replay (EndSong) and it can't be resumed.
             t = Math.Max(0, Math.Min(t, gm.SongLength - 1.0));
             Silence();
-            _setTime.Invoke(rc, new object[] { t });
+            Audio.CuePlayer.ReplaySeeking = true;
+            try { _setTime.Invoke(rc, new object[] { t }); }
+            finally { Audio.CuePlayer.ReplaySeeking = false; }
             Speech.Say(Clock(t) + (gm.Paused ? ", paused" : ""), true);
         }
 
@@ -164,7 +166,10 @@ namespace YargAccess
             float target = (float) Math.Round((gm.SongSpeed + by) * 10f) / 10f;
             if (target < 0.1f || target > 4f) { Speech.Say("Speed " + Pct(gm.SongSpeed) + ", the limit", true); return; }
             Silence();
-            rc.AdjustSpeed(target - gm.SongSpeed);
+            // AdjustSpeed seeks to the current time too (ReplayController.SetSpeed reseeks).
+            Audio.CuePlayer.ReplaySeeking = true;
+            try { rc.AdjustSpeed(target - gm.SongSpeed); }
+            finally { Audio.CuePlayer.ReplaySeeking = false; }
             Speech.Say("Speed " + Pct(gm.SongSpeed), true);
         }
 

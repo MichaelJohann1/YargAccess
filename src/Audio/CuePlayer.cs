@@ -36,11 +36,17 @@ namespace YargAccess.Audio
             }
         }
 
+        // Set by ReplayControls around its seek and speed calls (YARG's own replay bar is mouse-only).
+        internal static bool ReplaySeeking;
+
         public static int Play(int sampleHandle, float pan = 0f, float volume = 1f)
         {
             try
             {
                 if (sampleHandle == 0 || !Ready) return 0;
+                // A replay seek (or speed change) re-runs every input up to the new time in one call, which
+                // fires the hit, miss and other engine sounds for all of it at once (user, 2026-11-17).
+                if (ReplaySeeking) return 0;
 
                 int channel = Bass.SampleGetChannel(sampleHandle);
                 if (channel == 0)

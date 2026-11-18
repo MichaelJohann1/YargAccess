@@ -237,9 +237,13 @@ namespace YargAccess
                 }
                 else if (!paused && !TextFieldFocused() && !CustomNavActive())
                 {
-                    ColoredKey(gp.leftShoulder, "Orange", _gpOrange);
-                    // History: LB is Play With Replay (Orange), so RB alone switches its two tabs.
-                    if (gp.rightShoulder.wasPressedThisFrame && HistoryNavigator.IsActive && !FileBrowserNavigator.IsActive) TabForward();
+                    // History: LB and RB switch its two tabs (user, 2026-11-17); Play With Replay, LB (Orange)
+                    // elsewhere, is in the LT list there.
+                    if (HistoryNavigator.IsActive && !FileBrowserNavigator.IsActive)
+                    {
+                        if (gp.leftShoulder.wasPressedThisFrame || gp.rightShoulder.wasPressedThisFrame) ToggleHistoryTab();
+                    }
+                    else ColoredKey(gp.leftShoulder, "Orange", _gpOrange);
                 }
                 if (!paused)
                 {
@@ -683,6 +687,14 @@ namespace YargAccess
             if (!st.fired) ColoredAction(action);
             st.fired = false;
         }
+
+        // History has two tabs; SwitchTab stops at the ends, so go the way that leaves the current one.
+        public static void ToggleHistoryTab()
+        {
+            if (HistoryNavigator.IsImportTab()) TabBackward(); else TabForward();
+        }
+
+        public static void PlayWithReplay() { ColoredAction("Orange"); }
 
         static void ColoredAction(string action) { ColoredAction(action, false); }
 

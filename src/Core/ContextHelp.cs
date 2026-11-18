@@ -197,7 +197,6 @@ namespace YargAccess
                 L(Ok(), "activate a button or flip a checkbox");
                 L(BackKey(), "close the dialog");
                 AddReviewKeys(L);
-                L(HelpKey(), HelpWhat());
                 return lines;
             }
 
@@ -211,7 +210,6 @@ namespace YargAccess
                 else if (cal == 2) { L(tap, "press on every click"); L(BackKey(), "stop"); }
                 else L(BackKey(), "return to the start screen");
                 AddReviewKeys(L);
-                L(HelpKey(), HelpWhat());
                 return lines;
             }
 
@@ -223,7 +221,6 @@ namespace YargAccess
                 L(Ok(), "open a folder, choose a file, or choose this folder");
                 L(BackKey(), "the folder above; at the top of a drive, the drives and places list; there, cancel");
                 AddReviewKeys(L);
-                L(HelpKey(), HelpWhat());
                 return lines;
             }
 
@@ -245,7 +242,6 @@ namespace YargAccess
                 L(Side(), "switch between players in a band");
                 AddSchemeColors(L, false);
                 AddReviewKeys(L);
-                L(HelpKey(), HelpWhat());
                 return lines;
             }
 
@@ -257,7 +253,6 @@ namespace YargAccess
                 L(Ok(), "the first press sets the first section, a second press on the last section starts");
                 L(kb ? "Backspace" : BackKey(), "clear the first section, or leave practice if none is set");
                 AddReviewKeys(L);
-                L(HelpKey(), HelpWhat());
                 return lines;
             }
 
@@ -279,7 +274,6 @@ namespace YargAccess
                 L(kb ? "Backspace" : BackKey(), "go back, or resume from the first pause menu");
                 L(kb ? "Escape" : "Start", "resume the song");
                 AddReviewKeys(L);
-                L(HelpKey(), HelpWhat());
                 return lines;
             }
 
@@ -303,7 +297,6 @@ namespace YargAccess
                 lines.Add("The menu binds end with the text review actions: Add New there binds your own button, or a pair, hold one and press another");
                 L(BackKey(), "go back");
                 AddReviewKeys(L);
-                L(HelpKey(), HelpWhat());
                 return lines;
             }
 
@@ -331,12 +324,12 @@ namespace YargAccess
                     L(Move(), "choose a profile");
                     L(Ok(), "on a connected profile, edit its binds; on a disconnected one, connect it; on the toolbar, do the action");
                     L(Tabs(), "move through the actions for the selected profile");
-                    lines.Add("The actions are " + string.Join(", ", ProfilesNavigator.Actions().ToArray()));
-                    L(Side(), "on Instrument, change the instrument");
+                    var actions = ProfilesNavigator.Actions();
+                    lines.Add("The actions are " + string.Join(", ", actions.ToArray()));
+                    if (actions.Contains("Instrument")) L(Side(), "on Instrument, change the instrument");
                     L(BackKey(), "go back");
                 }
                 AddReviewKeys(L);
-                L(HelpKey(), HelpWhat());
                 return lines;
             }
 
@@ -350,7 +343,6 @@ namespace YargAccess
                 L(Tabs(), "switch tabs");
                 L(BackKey(), "go back");
                 AddReviewKeys(L);
-                L(HelpKey(), HelpWhat());
                 return lines;
             }
 
@@ -375,17 +367,29 @@ namespace YargAccess
             bool mod = ModDriven();
             L(Move(), "move");
 
+            // History writes its own lines for the keys the mod changes there, so YARG's names for them are not
+            // read as well (user, 2026-11-17: Enter, Left / Right and the colours were each said twice).
+            bool history = HistoryNavigator.IsActive && OverlayName() == null;
+
             var cur = CurrentSetting();
-            if (cur != null && SettingsAccess.IsAdjustable(cur)) L(Side(), "change the value");
+            if (history) L(Side(), "jump to the previous or next day");
+            else if (cur != null && SettingsAccess.IsAdjustable(cur)) L(Side(), "change the value");
             else if (CurrentIsButtonRow()) L(Side(), "choose a button in this row");
             else
             {
                 var left = SchemeName(scheme, MenuAction.Left);
                 if (left != null && !InputDriver.SettingsOpen()) L(Side(), left);
             }
-            if (HasTabs()) L(Tabs(), "switch tabs");
+            // A guitar's Yellow and Orange are Analyze and Play With Replay in History; its list switches tabs there.
+            if (HasTabs() && !(history && _dev == Device.Guitar)) L(Tabs(), history ? "switch between the History and Import tabs" : "switch tabs");
 
-            if (cur != null && SettingsAccess.IsEditable(cur))
+            if (history)
+            {
+                L(mod ? Ok() : ColorKey(MenuAction.Green), "watch the replay as it was played");
+                L(ColorKey(MenuAction.Blue), "play this song yourself, in your Play Style");
+                if (_dev != Device.Gamepad) L(ColorKey(MenuAction.Orange), "Play With Replay: play along with the replay, your part in your Play Style");
+            }
+            else if (cur != null && SettingsAccess.IsEditable(cur))
                 L(Ok(), kb ? "type a value, or browse for a file" : "open the on-screen keyboard to type a value");
             else
                 L(mod ? Ok() : ColorKey(MenuAction.Green), SchemeName(scheme, MenuAction.Green) ?? "activate");
@@ -394,26 +398,32 @@ namespace YargAccess
 
             if (SettingsExtras.IsActive) lines.Add("At the top of the list are Scan Songs, to rescan, and Add New Folder");
             if (Menu.CurrentName == "Music Library" && OverlayName() == null)
-                lines.Add(kb ? "Delete deletes the song you are on, after asking" : (_dev == Device.Guitar ? "Select and strum down" : "LT") + " deletes the song you are on, after asking");
-                lines.Add("A song is read as its name, artist, stars and favourite. Its details, the instruments with their difficulty, album, year, genre, length, charter, source and rating, are in the text review: " + ReviewKeysShort());
-            if (HistoryNavigator.IsActive && OverlayName() == null)
             {
-                L(ColorKey(MenuAction.Blue), "play this song yourself, in your Play Style");
-                L(Side(), "jump to the previous or next day");
-                if (kb) lines.Add("Home and End go to the first and last entry");
-                if (kb) lines.Add("E exports the selected entry's replay as a file, and Delete deletes the entry after asking");
-                else lines.Add((_dev == Device.Guitar ? "Select and strum down" : "LT") + " opens a list for the entry: Export Replay and Delete Entry");
-                lines.Add("Enter watches the replay as it was played. Play With Replay plays along with it, your part in your Play Style. Each entry reads everything: stars, part, score, hits and misses, play style and when. Up from the first entry on the Import tab reaches Import Replay. While a replay plays, the keys control it (seek, speed, pause) and F1 lists them. The History and Replays tutorial explains replays.");
+                L(kb ? "Delete" : _dev == Device.Guitar ? "Select and strum down" : "LT", "delete the song you are on, after asking");
+                lines.Add("The text review holds the song's details: the instruments with their difficulty, album, year, genre, length, charter, source and rating");
+            }
+            if (history)
+            {
+                if (kb)
+                {
+                    L("Home and End", "first and last entry");
+                    L("E", "export the entry's replay as a file");
+                    L("Delete", "delete the entry, after asking");
+                }
+                else if (_dev == Device.Gamepad) L("LT", "a list for the entry: Play With Replay, Export Replay and Delete Entry");
+
+                else L("Select and strum down", "a list for the entry: Export Replay, Delete Entry, and switching between the History and Import tabs");
+                lines.Add("Up from the first entry on the Import tab reaches Import Replay");
+                lines.Add("While a replay plays, its own keys seek, change speed and pause, and " + HelpKey() + " lists them. The History and Replays tutorial explains replays");
             }
             if (DifficultySelectExtras.IsActive) lines.Add("Below the last row is the song speed. " + Side() + " change it");
 
-            L(mod ? BackKey() : ColorKey(MenuAction.Red), "go back");
+            if (Menu.CurrentName != "Main") L(mod ? BackKey() : ColorKey(MenuAction.Red), "go back");
             AddMusicKeys(L);
             return lines;
         }
 
         static bool kb() { return _dev == Device.Keyboard; }
-        static string HelpWhat() { return kb() ? "this help" : "a press opens this help"; }
 
         static void AddSchemeColors(Action<string, string> L, bool skipGreenRed)
         {
@@ -425,6 +435,10 @@ namespace YargAccess
                 var a = e.Action;
                 if (a == MenuAction.Up || a == MenuAction.Down || a == MenuAction.Left || a == MenuAction.Right) continue;
                 if (skipGreenRed && a == MenuAction.Red) continue;
+                // On the keyboard Backspace is the mod's Back, so YARG's Select action can't be reached from it.
+                if (a == MenuAction.Select && kb()) continue;
+                // History lists its own Blue and Orange (Build); on a pad LB switches tabs there instead.
+                if ((a == MenuAction.Blue || a == MenuAction.Orange) && HistoryNavigator.IsActive) continue;
                 if (!seen.Add(a)) continue;
                 var tap = SafeName(e);
                 string hold = e.HasHoldHandler ? SafeName(e, true) : null;
@@ -484,7 +498,6 @@ namespace YargAccess
                     break;
             }
             AddReviewKeys(L);
-            L(HelpKey(), HelpWhat());
         }
 
         static void AddReviewKeys(Action<string, string> L)

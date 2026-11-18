@@ -70,12 +70,15 @@ namespace YargAccess
                 d.AddDialogButton(T("Back"), MenuData.Colors.CancelButton, () => dm.ClearDialog());
                 if (row != null)
                 {
+                    // On a pad LB switches tabs in History, so Play With Replay (LB, Orange, elsewhere) is here.
+                    if (InputDriver.LastDevice == Keys.Device.Gamepad)
+                        d.AddListButton("Play With Replay", () => { dm.ClearDialog(); InputDriver.PlayWithReplay(); }, false);
                     d.AddListButton("Export Replay", () => { dm.ClearDialog(); HistoryNavigator.ExportSelected(); }, false);
                     d.AddListButton(import ? "Remove From This List" : "Delete Entry", () => { dm.ClearDialog(); AskEntryDelete(); }, false);
                 }
                 // A guitar has no free tab buttons in History (its Yellow and Orange are Analyze and Play With Replay).
-                d.AddListButton(tab, () => { dm.ClearDialog(); InputDriver.TabForward(); }, false);
-                Tutorials.FocusNext(d, row != null ? "Export Replay" : tab);
+                d.AddListButton(tab, () => { dm.ClearDialog(); InputDriver.ToggleHistoryTab(); }, false);
+                Tutorials.FocusNext(d, row == null ? tab : InputDriver.LastDevice == Keys.Device.Gamepad ? "Play With Replay" : "Export Replay");
             }
             catch (Exception ex) { ModLog.Warn("EntryActions.HistoryList", ex); }
         }

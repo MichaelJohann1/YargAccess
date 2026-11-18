@@ -25,6 +25,8 @@ namespace YargAccess
                 var line = (l ?? "").Trim().TrimEnd('.');
                 if (line.Length == 0) continue;
                 if (title == null && _lines.Count == 0 && line.IndexOf(": ", StringComparison.Ordinal) < 0) { title = line; continue; }
+                // The same line twice (a key YARG names and the mod names too) is read once.
+                if (_lines.Exists(x => string.Equals(x, line, StringComparison.OrdinalIgnoreCase))) continue;
                 _lines.Add(line);
             }
             bool inSong = GameplayContext.InGameplay;
