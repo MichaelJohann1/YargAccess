@@ -61,6 +61,9 @@ namespace YargAccess
 
         static string Text(string label) => ModSettings.TextKey + label;
 
+        // One page made of several lines that are keys of their own, so each keeps its translation.
+        static string J(params string[] parts) => string.Join(" ", parts);
+
         // The label a dialog button made with Text(label) shows, to find it by: the mod's localization of the key.
         static string Shown(string label)
         {
@@ -597,81 +600,87 @@ namespace YargAccess
         {
             var list = new List<Tutorial>();
 
-            list.Add(new Tutorial { Name = Loc.T("How YargAccess Works") }
+            // Getting Started holds what How YargAccess Works, Songs and Folders, How These Games Work, Play Styles,
+            // Profiles and Controllers and Playing Songs said, cleaned up into one walk from the first start to the
+            // first song: songs, profiles, how a song works, play styles, the library, then playing with others
+            // (user, 2026-11-20). Pages made of J(...) parts keep the old lines' translations.
+            list.Add(new Tutorial { Name = Loc.T("Getting Started") }
                 .Page(Loc.T("Welcome"),
                     Loc.T("YargAccess makes YARG playable by ear. Menus are spoken, and during a song the notes are played to you as sounds, so you know what to play. "
-                    + "These tutorials explain each game mode, how YARG scores you, and how to set up a profile. "
+                    + "This tutorial takes you from the first start to your first song: getting songs, setting up a profile, how a song works, the two play styles and the song library. "
                     + "Each page is read one sentence at a time: {move} go through the sentences again, {ok} goes to the next page, {side} turn pages, and {back} goes back to the list."))
-                .Page(Loc.T("Your first song"),
-                    Loc.T("To play your first song: get some songs, as the next page explains. Then open Profiles on the main menu, choose Add Profile, and press {ok} on the new profile to connect it to your keyboard, controller or guitar. "
-                    + "In Profile Settings, set Instrument Select to the kind of controller you play. "
-                    + "Back on the main menu, choose Quickplay, pick a song, then your part and difficulty, and the song starts. "
-                    + "{pause} pauses it, and Back To Library in the pause menu leaves the song. The Profiles and Controllers and Playing Songs tutorials explain each step."))
-                .Page(Loc.T("Getting songs"),
-                    Loc.T("YARG comes with no songs, and its menus are silent until you have some, because the menu music comes from your songs. "
-                    + "The YARG Access launcher gets them for you: its DLC tab has YARG's official setlists, and its Download songs through Chorus tab finds single songs made by players. "
-                    + "Songs you already have go in a folder of your own, which you add in YARG's Settings. The Songs and Folders tutorial explains how."))
                 .Page(Loc.T("Moving around"),
                     Loc.T("These pages name the buttons of the {device}, the last thing you pressed. To hear the buttons of another keyboard, controller or guitar, use that device to move back to this page. "
                     + "{move} move. {ok} selects. {back} goes back. {tabs} switch tabs. {adjust} change a value, such as a slider or a list. "
                     + "A drum kit or MIDI keyboard moves through the menus with the menu buttons bound on its profile."))
-                .Page(Loc.T("Help and reading"),
-                    Loc.T("Two things help while you learn. {help} {review}"))
-                .Page(Loc.T("Extras"),
-                    Loc.T("{music} {whatsnew}"))
-                .Page(Loc.T("Playing by ear"),
-                    Loc.T("There are two play styles: Listen and Repeat, the default, plays a few notes and then you play them back; Play What You Hear plays every note just before you hit it. "
-                    + "You have {style} on, and the instrument tutorials describe that one. The Play Styles tutorial explains both."))
-                .Page(Loc.T("During a song"),
-                    Loc.T("Beat ticks play a soft tick on every beat and a stronger one on the first beat of each bar, so you can keep time. "
-                    + "{pause} pauses the song. YARG's most important pop-ups, Star Power Ready, Full Combo and New High Score, are spoken; Speech During Songs on the YargAccess tab in Settings can speak all of them, or none. "
-                    + "Settings is on the main menu; {tabs} reach its YargAccess tab.")));
-
-            list.Add(new Tutorial { Name = Loc.T("Songs and Folders") }
+                .Page(Loc.T("Help and other keys"),
+                    J(Loc.T("Two things help while you learn. {help} {review}"),
+                    Loc.T("{music} {whatsnew}")))
+                .Page(Loc.T("Your first song"),
+                    Loc.T("Four steps get you to your first song. First, get some songs. Second, set up a profile for your keyboard, controller or guitar. "
+                    + "Third, learn what happens in a song and which play style you want. "
+                    + "Last, choose Quickplay on the main menu, pick a song, then your part and difficulty, and the song starts. "
+                    + "The pages that follow take these steps in order."))
+                .Page(Loc.T("Getting songs"),
+                    Loc.T("YARG comes with no songs, and its menus are silent until you have some, because the menu music comes from your songs. "
+                    + "The YARG Access launcher gets them for you: its DLC tab has YARG's official setlists, and its Download songs through Chorus tab finds single songs made by players. "
+                    + "Songs you already have, such as songs from Clone Hero or ones a friend gave you, go in a song folder that you add in YARG's Settings."))
+                .Page(Loc.T("Songs from the launcher"),
+                    Loc.T("Setlists from the launcher's DLC tab go in the launcher's content folder, where YARG finds them on its own. They are not in YARG's song folders list, and removing a song folder never removes them. "
+                    + "Songs from the Chorus tab are saved in the launcher's Chorus folder. A download made while YARG is closed adds that folder to YARG's song folders if it is missing. "
+                    + "You can change the folder, or turn the adding off, on the launcher's Settings tab. "
+                    + "If you remove the Chorus folder in YARG, its songs leave the library until the next download adds it back, or until you add it yourself."))
                 .Page(Loc.T("Song folders"),
-                    Loc.T("YARG looks for songs in the song folders listed in its Settings, on the Songs tab, and in any folder inside them. "
+                    J(Loc.T("YARG looks for songs in the song folders listed in its Settings, on the Songs tab, and in any folder inside them. "
                     + "The folder controls sit above the first setting: from the first setting, move up. "
-                    + "First come Add New Folder, Scan Songs, and Errors Found when YARG could not read some songs. Below them, each song folder has three items: its path, Browse, and Remove folder."))
-                .Page(Loc.T("Adding a folder"),
+                    + "First come Add New Folder, Scan Songs, and Errors Found when YARG could not read some songs. Below them, each song folder has three items: its path, Browse, and Remove folder."),
                     Loc.T("Choose Add New Folder. A new row is added with no folder chosen yet, and Browse on that row is selected. "
                     + "Choose Browse to open the Windows folder picker, which your screen reader reads. Pick the folder that holds your songs and choose Select Folder. "
-                    + "Then choose Scan Songs."))
-                .Page(Loc.T("Scanning"),
-                    Loc.T("YARG only finds new or changed songs when it scans. Choose Scan Songs after adding a folder, after copying songs into one, or after the launcher downloads a song while YARG is open. "
-                    + "YARG also scans each time it starts. A long scan says Scanning songs, and at the end you hear how many songs are in the library."))
-                .Page(Loc.T("Removing a folder"),
+                    + "Then choose Scan Songs.")))
+                .Page(Loc.T("Scanning and removing"),
+                    J(Loc.T("YARG only finds new or changed songs when it scans. Choose Scan Songs after adding a folder, after copying songs into one, or after the launcher downloads a song while YARG is open. "
+                    + "YARG also scans each time it starts. A long scan says Scanning songs, and at the end you hear how many songs are in the library."),
                     Loc.T("Remove folder takes a folder off the list. A folder with a path asks first; choose Remove to confirm, or Cancel. "
-                    + "Nothing is deleted from your computer: the songs simply leave the library at the next scan. To get them back, add the folder again and scan."))
-                .Page(Loc.T("The launcher or the game"),
-                    Loc.T("The YARG Access launcher and YARG both put songs in the library, in different ways. "
-                    + "DLC setlists from the launcher's DLC tab go in the launcher's content folder, where YARG finds them on its own. They are not in the song folders list, and removing a song folder never removes them. "
-                    + "Songs from the launcher's Chorus tab are saved in its Chorus folder, which the launcher adds to YARG's song folders whenever it is missing from them, as long as YARG is closed while you download. You can change that folder, or turn the adding off, on the launcher's Settings tab. "
-                    + "If you remove the Chorus folder in YARG, its songs leave the library; the next download through the launcher adds it back, or you can add it yourself. "
-                    + "Add New Folder in YARG is for songs you already have anywhere else, such as songs from Clone Hero or ones you copied from a friend.")));
-
-            list.Add(new Tutorial { Name = Loc.T("How These Games Work") }
-                .Page(Loc.T("Profiles and game modes"),
-                    Loc.T("If you have never played Guitar Hero, Rock Band, Clone Hero or YARG, this tutorial explains what happens in a song. "
-                    + "In YARG you play as a profile: it holds your name and the controller you use. "
-                    + "Each profile has a game mode, the kind of controller it plays, and that decides which parts of a song it can play. The next page lists them."))
+                    + "Nothing is deleted from your computer: the songs simply leave the library at the next scan. To get them back, add the folder again and scan.")))
+                .Page(Loc.T("Profiles"),
+                    J(Loc.T("A profile is one player: a name, a game mode, the part you like to play, a difficulty, the buttons you use and a few settings. "
+                    + "YARG needs at least one connected profile before you can play, and each connected profile is one player in the band. "
+                    + "Open Profiles from the main menu."),
+                    Loc.T("{move} move through your profiles; each reads its name, its part and whether it is connected. "
+                    + "{tabs} move through the toolbar. Add Profile makes a new profile, ready to connect, and Add Bot makes a bot. "
+                    + "The toolbar changes with the profile you are on: a connected profile has more items than one that is not.")))
+                .Page(Loc.T("Connecting"),
+                    Loc.T("{ok} on a profile that is not connected connects it, and so does Connect on the toolbar. YARG then lists your devices: "
+                    + "choose the keyboard, controller, guitar, drum kit, MIDI keyboard or microphone it uses. "
+                    + "Disconnect frees the profile. Add Device and Remove Device change its devices later, and Devices lists them. "
+                    + "A new device starts with YARG's default buttons, so you only need the binding editor if you want different ones."))
                 .Page(Loc.T("The game modes"),
+                    J(Loc.T("Each profile has a game mode: the kind of controller it plays. The game mode decides which parts of a song the profile can play."),
                     Loc.T("Five-fret guitar: a guitar controller with five coloured frets and a strum bar, for guitar, bass, rhythm guitar, co-op guitar and five-lane keys. "
                     + "Four-lane drums: four pads and a kick pedal, and pro drums adds three cymbals. "
                     + "Five-lane drums: three pads, two cymbals and a kick. "
                     + "Pro keys: a 25-key piano keyboard, usually a MIDI keyboard. "
                     + "Vocals: a microphone, for one singer, or up to three singing harmonies. "
-                    + "Six-fret guitar and pro guitar are listed too, but YARG cannot play them yet. {playkeys}"))
+                    + "Six-fret guitar and pro guitar are listed too, but YARG cannot play them yet. {playkeys}")))
+                .Page(Loc.T("Choosing a game mode"),
+                    J(Loc.T("To set the game mode, connect the profile, then open Profile Settings on the toolbar. The game mode is the Instrument Select setting: {adjust} change it. "
+                    + "Careful: YARG calls the game mode Instrument Select, and calls the part just Instrument; they are different settings."),
+                    Loc.T("Within a game mode you can play more than one part: guitar or bass, for example. Instrument on the toolbar picks the part you prefer, with {adjust}. "
+                    + "Before each song, the difficulty screen asks for your part and difficulty. The profile remembers the difficulty; the part starts at your Instrument choice each time, when the song has it.")))
+                .Page(Loc.T("Binding buttons"),
+                    J(Loc.T("{ok} on a connected profile, or Edit Binds on the toolbar, opens the binding editor. Its Overview tab has Quick Bind, which asks you to press each pad or button in turn. "
+                    + "Its Binds tab starts with a game mode list: pick the mode whose buttons you want to change. Then come the actions with their buttons. "
+                    + "Add New waits for you to press the button you want; pressing {ok} twice on a button removes it."),
+                    Loc.T("Practice The Buttons, at the end of the Tutorials list, plays each button's sound in a song and says what it does, so you can check your binds without a song. "
+                    + "It uses your connected profile. With no profile connected, or only bots, it asks for a game mode and then a device, and makes a practice profile with YARG's default buttons that is removed when you finish. "
+                    + "For vocals it asks which microphone to use, or none. With a microphone, a tap on it counts as Hit, and when you sing the note you hold is named. "
+                    + "The practice at the end of each instrument tutorial also asks for the device, and always for the microphone.")))
                 .Page(Loc.T("The highway"),
+                    J(Loc.T("The next pages explain what happens in a song, for anyone who has never played Guitar Hero, Rock Band, Clone Hero or YARG."),
                     Loc.T("Each player has a highway: a track that runs from the back of the screen to the front, with one lane for each fret, pad or key. "
                     + "Notes appear far away and travel down their lanes towards you. Across the near end is the hit line, which YARG calls the strike line, and you play a note at the moment it reaches that line. "
                     + "YARG's default rules give you 70 milliseconds either side of that moment. Lines across the highway mark the beats and the bars of the song. "
-                    + "The notes written for one part of a song are called its chart."))
-                .Page(Loc.T("The highway by ear"),
-                    Loc.T("YargAccess plays each note's sound a short time before it reaches the hit line, the Look-ahead, so you know the note before it arrives. "
-                    + "On guitar, bass and keys a rising hit bar sound follows and ends on the moment to play; on drums, hit as soon as you hear the sound. "
-                    + "The beat ticks follow the beat lines."),
-                    Loc.T("With Listen and Repeat, the play style you have on, YargAccess plays a few notes with their sounds, then you play the same notes back in the same rhythm as the highway brings them to the hit line. "
-                    + "The beat ticks follow the beat lines."))
+                    + "The notes written for one part of a song are called its chart.")))
                 .Page(Loc.T("Guitar and bass"),
                     Loc.T("On five-fret guitar and bass, hold the fret or frets for the note and strum: flick the strum bar up or down. A chord is several frets at once, and an open note is a strum with no fret held. "
                     + "A sustain, or held note, is a note with a long tail: keep holding its fret until the tail ends; the longer you hold, the more points. "
@@ -680,47 +689,102 @@ namespace YargAccess
                     Loc.T("On drums, hit the pad for each lane in time, and the kick pedal for the kick notes. Pro drums also tells toms and cymbals apart. A roll is one pad hit as fast as you can; a swell is two pads in turn. "
                     + "Five-lane keys work like the five frets, with no strum; pro keys uses 25 real piano keys. "
                     + "On vocals you sing into a microphone. YARG scores your pitch and timing, not the words, and any octave counts. The song is split into phrases, and each phrase gets a rating when it ends."))
-                .Page(Loc.T("Star power"),
-                    Loc.T("Some groups of notes are star power phrases. Hit every note of one to fill part of the star power bar, then turn star power on to double your points for a while. The Star Power tutorial explains it."))
-                .Page(Loc.T("Solos"),
-                    Loc.T("Some songs mark a solo section. Hit 60 percent of its notes or more and you earn a bonus when the solo ends. The more of its notes you hit, the bigger the bonus."))
-                .Page(Loc.T("Rock meter and failing"),
+                .Page(Loc.T("Star power, solos and failing"),
+                    J(Loc.T("Some groups of notes are star power phrases. Hit every note of one to fill part of the star power bar, then turn star power on to double your points for a while. The Star Power tutorial explains it."),
+                    Loc.T("Some songs mark a solo section. Hit 60 percent of its notes or more and you earn a bonus when the solo ends. The more of its notes you hit, the bigger the bonus."),
                     Loc.T("The rock meter rises while you play well and falls when you miss. If it runs out, the song fails. YARG then offers to restart, or to carry on with No Fail turned on; with No Fail the score is not saved. "
                     + "No Fail then stays on for later songs until you turn it off. "
-                    + "No Fail is in Settings, General tab: On stops failing, and No Meter also hides the meter. The Easy and Casual rock meter presets in Profile Settings make failing less likely; Hard and Unfair make it more likely."))
-                .Page(Loc.T("Playing with others"),
-                    Loc.T("Several players can play one song together on one computer, each with their own profile and device. Their scores add up to a band score, and each player's star power raises the score of the others too. "
-                    + "YargAccess does not support co-op: it is made for one person playing. Only player one gets note sounds: the first human in the band, or the first bot when no human plays. "
-                    + "Everyone else, human or bot, plays without them: with you on guitar and a bot on drums, you hear only the guitar sounds. "
-                    + "The Difficulties, Scoring and Stars, and Star Power tutorials explain those parts of a song.")));
-
-            list.Add(new Tutorial { Id = "Play Styles", Name = Loc.T("Play Styles") }
+                    + "No Fail is in Settings, General tab: On stops failing, and No Meter also hides the meter. The Easy and Casual rock meter presets in Profile Settings make failing less likely; Hard and Unfair make it more likely.")))
                 .Page(Loc.T("Two ways to play"),
-                    Loc.T("YargAccess has two play styles. Play Style on the YargAccess tab in Settings picks one, and the change starts with the next song. You have {style} on. "
-                    + "Listen and Repeat, the default, plays a short pattern of notes, then you play it back. "
-                    + "Play What You Hear plays every note of the chart just before you hit it: harder, and the song as charted. "
-                    + "The tutorials follow your Play Style: their pages and their practice use the one you have on. Change Play Style and they change with it."))
+                    Loc.T("YargAccess turns the highway into sound in one of two play styles. Play Style on the YargAccess tab in Settings picks one, and a change starts with the next song. You have {style} on. "
+                    + "Listen and Repeat, the default, plays a few bars of the part, then you play those bars back. "
+                    + "Play What You Hear plays every note of the chart just before you hit it: harder, and you play the song as charted. "
+                    + "In both, beat ticks follow the beat lines: a soft tick on every beat and a stronger one on the first beat of each bar. "
+                    + "The other tutorials follow your Play Style, in their pages and in their practice."))
                 .Page(Loc.T("Play What You Hear"),
-                    Loc.T("Each note plays its sound a short time before it reaches the hit bar, the Look-ahead: you have it at {lookahead} milliseconds on guitar, bass and keys, and {drumlookahead} on drums. "
-                    + "Look-ahead and Drums Look-ahead on the YargAccess tab change it. Play each note as soon as you hear it; you play every note of the song."))
-                .Page(Loc.T("Listen and Repeat: listen"),
-                    Loc.T("A falling sound means listen. Then a few notes play with their normal sounds, in the song's rhythm, over the music. You don't play these."))
-                .Page(Loc.T("Listen and Repeat: your turn"),
-                    Loc.T("A rising sound ends where your turn starts. Play the same notes in the same rhythm, in time with the song. "
-                    + "Each note you hit plays the hit sound; a miss plays the miss sound. On guitar, bass and keys a click marks each note's moment."))
+                    Loc.T("Each note plays its sound a short time before it reaches the hit line. That time is the Look-ahead: you have {lookahead} milliseconds on guitar, bass and keys, and {drumlookahead} on drums. "
+                    + "On guitar, bass and keys a rising hit bar sound follows and ends at the moment to play. On drums, hit as soon as you hear the sound. "
+                    + "Look-ahead and Drums Look-ahead on the YargAccess tab change the time. You play every note of the song."))
+                .Page(Loc.T("Listen and Repeat"),
+                    J(Loc.T("A falling sound means listen. From the next bar line, a few bars of notes play with their normal sounds, in the song's rhythm, over the music. You don't play these."),
+                    Loc.T("A rising sound ends where your turn starts, on the bar line right after the pattern. Play the same notes in the same rhythm, in time with the song. "
+                    + "Each note you hit plays the hit sound; a miss plays the miss sound. On guitar, bass and keys a click marks each note's moment."),
+                    Loc.T("If the music covers the pattern, turn on Duck Music During Listen on the YargAccess tab: the song gets quieter while a pattern plays.")))
                 .Page(Loc.T("Pattern length and scores"),
-                    Loc.T("Call Length sets how many notes each pattern has: 2, 4 or 8; a chord counts as one note. "
-                    + "Your Listen and Repeat best is kept apart and read after your normal best in the song details, which the text review keys read in the song library. Replays play back the same way."))
+                    J(Loc.T("Call Length sets how many bars each pattern lasts: 1, 2 or 4, and 2 is recommended. Your turn is the same number of bars, so a busy part has more notes to remember than a sparse one. "
+                    + "Your Listen and Repeat best is kept apart and read after your normal best in the song details, which the text review keys read in the song library. Replays play back the same way."),
+                    Loc.T("On vocals only percussion notes use Listen and Repeat. You sing the whole part as usual in both play styles."),
+                    Loc.T("In practice mode, which the Practice Mode tutorial explains, a section is stretched to start where its pattern is played to you and to end after you have played it back.")))
                 .Page(Loc.T("Limits of Listen and Repeat"),
-                    Loc.T("The notes where a pattern plays are taken out of the chart, so you play only part of the song: on busy charts about 40 percent of the notes, "
-                    + "for example 159 of 410 on Sweet Victory, Hard guitar. Fewer notes means fewer points, so your score is lower than a full play of the same song, "
+                    Loc.T("The notes in the bars where a pattern plays are taken out of the chart, so you play about half of the notes, "
+                    + "for example 213 of 410 on Sweet Victory, Hard guitar. Fewer notes means fewer points, so your score is lower than a full play of the same song, "
                     + "and it can't be compared with scores played the whole way through. "
                     + "A full combo needs every note of the chart, so full combos are only possible with Play What You Hear. "
                     + "With Listen and Repeat, YARG shows no Full Combo and none is saved with the score."))
+                .Page(Loc.T("The song library"),
+                    J(Loc.T("Quickplay on the main menu opens the song library. {move} move through the songs; each reads its name, artist, stars and whether it is a favourite. "
+                    + "{ok} picks a song, then you choose your instrument and difficulty."),
+                    Loc.T("A setlist is a queue of songs played one after another. {hold1} to add a song to it. {colours}. "
+                    + "The text review keys read a song's full details: instruments, album, year, length and charter. "
+                    + "{songdelete} It asks first; the song's files go to the Recycle Bin and your scores for it stay in History. A song inside a pack file with other songs can't be deleted on its own.")))
+                .Page(Loc.T("During a song"),
+                    Loc.T("{pause} pauses the song. The pause menu has Resume, Restart, Practice, Save Replay, Settings and Back To Library; Back To Library ends the song without a score. "
+                    + "YARG's most important pop-ups, Star Power Ready, Full Combo and New High Score, are spoken; Speech During Songs on the YargAccess tab in Settings can speak all of them, or none. "
+                    + "After the song the score screen reads your results."))
+                .Page(Loc.T("Playing with others"),
+                    Loc.T("Several players can play one song together on one computer, each with their own profile and device. Their scores add up to a band score, and each player's star power raises the score of the others too. "
+                    + "YargAccess is made for one person playing and does not support co-op: only player one, the first human in the band, gets note sounds. "
+                    + "With you on guitar and a bot on drums, you hear only the guitar sounds."))
+                .Page(Loc.T("Bots and profile options"),
+                    Loc.T("A bot plays a part by itself; Add Bot in Profiles makes one. When only bots play, the first bot gets the note sounds, so a bot alone lets you listen to a whole part. "
+                    + "YARG never saves a bot's score; the score screen after the song shows it, and Left and Right there move between the players. "
+                    + "In Profiles, Rename changes a profile's name, Move Player Up and Move Player Down change the order of the players, and Delete Profile asks you to press {ok} again before it deletes. "
+                    + "The Difficulties, Scoring and Stars, and Star Power tutorials go further into how a song is scored.")));
+
+            list.Add(new Tutorial { Name = Loc.T("Settings") }
+                .Page(Loc.T("The YargAccess tab"),
+                    Loc.T("Settings on the main menu has YARG's tabs, General, Songs, Sound, Graphics and Presets, then YargAccess and All Settings. {tabs} switch tabs. "
+                    + "The YargAccess tab holds the mod's own settings. Each one reads its description when you reach it. "
+                    + "{adjust} change a value, {ok} turns a checkbox on or off, and every change is saved at once."))
+                .Page(Loc.T("Play Style and Call Length"),
+                    Loc.T("Play Style picks Listen and Repeat or Play What You Hear; the change starts with the next song. You have {style} on. The Getting Started tutorial explains both. "
+                    + "Call Length sets how many bars each Listen and Repeat pattern lasts: 1, 2 or 4, and 2 is recommended. Your turn is the same number of bars right after it. "
+                    + "Duck Music During Listen makes the song quieter while a pattern plays, so its notes stand out, and Ducking Amount sets how much quieter. It is off at first."))
+                .Page(Loc.T("Look-ahead"),
+                    Loc.T("With Play What You Hear, each note's sound plays a little before you must hit it. Look-ahead sets how long before, on guitar, bass and keys: you have {lookahead} milliseconds. "
+                    + "Drums Look-ahead does the same on drums: you have {drumlookahead}. "
+                    + "If your hits keep coming late, raise it; if they come early, lower it. 300 milliseconds is recommended for guitar, and 200 for drums, which have no fret to reach."))
                 .Page(Loc.T("Vocals"),
-                    Loc.T("On vocals only percussion notes use Listen and Repeat. You sing the whole part as usual in both play styles."))
-                .Page(Loc.T("Practice mode"),
-                    Loc.T("In practice mode, which the Practice Mode tutorial explains, a section is stretched to start where its pattern is played to you and to end after you have played it back.")));
+                    Loc.T("Pitch Guide plays a soft tone at each new note's pitch just before you sing it. "
+                    + "Pitch Feedback plays a repeating sweep while you are too far off the note to score: rising means sing higher, falling means sing lower, and silence means you are on pitch. "
+                    + "Both are on until you turn them off, and Pitch Feedback needs a microphone on your profile."))
+                .Page(Loc.T("Beats and repeated notes"),
+                    Loc.T("Beat Ticks plays a soft tick on every beat and a stronger one on the first beat of each bar, in every mode. "
+                    + "Cue Repeated Notes is off at first: a run of the same fret or chord plays only its first note and holds its tone through the run. "
+                    + "Turn it on to hear every note. Drums always play every note."))
+                .Page(Loc.T("Speech"),
+                    Loc.T("Speech During Songs picks which of YARG's pop-ups are spoken in a song. All reads note streaks, Hot Start and the rest. "
+                    + "Important only, the default, reads Star Power Ready, Full Combo, New High Score and star power on and off. Off reads nothing. "
+                    + "Read Position In Lists says where you are, such as 3 of 10. Read Control Types says what each item is, such as button or slider. "
+                    + "Announce Menu Music names each song the menu music starts."))
+                .Page(Loc.T("Volumes"),
+                    Loc.T("Accessibility Cues Master Volume sets the volume of all the mod's sounds together. "
+                    + "Below it come four pages: Five-Fret Volumes, Drum Volumes, Vocal Volumes and Shared Volumes. {ok} opens one, and each has a slider for every sound. "
+                    + "Changing a slider plays its sound, so you hear the new level. "
+                    + "Sound Glossary, at the end of the Tutorials list, plays every sound and says what it means."))
+                .Page(Loc.T("Profile Settings for playing"),
+                    Loc.T("Each profile has its own settings: open Profile Settings on the Profiles toolbar of a connected profile. Lefty Flip mirrors the lanes for left-handed players, and the note sounds move with them. "
+                    + "Engine Preset sets the hit rules: Default has a 70 millisecond window either side of each note; Casual keeps that window but forgives extra fret presses and early hammer-ons; Precision narrows the window in fast passages, down to 20 milliseconds; and Solo Taps lets solos be played without strumming. "
+                    + "Rock Meter Preset sets how quickly you fail: Casual, Easy, Normal, Hard or Unfair. Input Calibration corrects this profile's timing in milliseconds."))
+                .Page(Loc.T("Settings for the picture"),
+                    Loc.T("Note Speed, Highway Length, Theme, Color Profile, Camera Preset, Highway Preset and Range Disable change only what is drawn; the sounds stay the same. "
+                    + "On drums, Activation picks which hit at the end of a fill turns star power on: Rightmost Note, the rightmost pad of the fill's last note, or All Notes, any pad of it. Use Cymbal Models and Open Lane Display Type change only the picture too. "
+                    + "The drum lane order editor can only be used with a mouse. Each value of the picture settings has its own description in the menu."))
+                .Page(Loc.T("YARG settings to know"),
+                    Loc.T("A few of YARG's own settings matter most when you play by ear. "
+                    + "On the General tab, Open Calibrator measures the delay of your speakers or headphones: press a button on each tick you hear, and YARG sets its timing so your hits land where you mean them. Run it with the speakers or headphones you play on. "
+                    + "The Sound tab has YARG's volumes; turn the music down if the note sounds are hard to hear over it. "
+                    + "No Fail, on the General tab, stops songs from failing while you learn, but scores played with it are not saved.")));
 
             list.Add(new Tutorial { Name = Loc.T("Five-Fret Guitar and Bass"), Practice = "fivefret" }
                 .Page(Loc.T("The frets"),
@@ -860,63 +924,6 @@ namespace YargAccess
                     Loc.T("While star power runs, your multiplier doubles. YargAccess says Star power on, then Star power off when the bar runs out. "
                     + "Miss a note in a phrase and that phrase is lost: a falling slide plays.")));
 
-            list.Add(new Tutorial { Id = "Profiles and Controllers", Name = Loc.T("Profiles and Controllers") }
-                .Page(Loc.T("Profiles"),
-                    Loc.T("A profile is one player: a name, a game mode, the part you like to play, a difficulty, the buttons you use and a few settings. "
-                    + "YARG needs at least one connected profile before you can play, and each connected profile is one player in the band. "
-                    + "Open Profiles from the main menu."))
-                .Page(Loc.T("Making a profile"),
-                    Loc.T("{move} move through your profiles; each reads its name, its part and whether it is connected. "
-                    + "{tabs} move through the toolbar. Add Profile makes a new profile, ready to connect, and Add Bot makes a bot. "
-                    + "The toolbar changes with the profile you are on: a connected profile has more items than one that is not."))
-                .Page(Loc.T("Connecting"),
-                    Loc.T("{ok} on a profile that is not connected connects it, and so does Connect on the toolbar. YARG then lists your devices: "
-                    + "choose the keyboard, controller, guitar, drum kit, MIDI keyboard or microphone it uses. "
-                    + "Disconnect frees the profile. Add Device and Remove Device change its devices later, and Devices lists them. "
-                    + "A new device starts with YARG's default buttons, so you only need the binding editor to change them. The binding editor and trying your buttons come later in this tutorial."))
-                .Page(Loc.T("Choosing a game mode"),
-                    Loc.T("The game mode decides what the profile plays: five-fret guitar, which also covers bass, rhythm and five-lane keys; four-lane drums, which includes pro drums; five-lane drums; pro keys; or vocals. "
-                    + "Connect the profile, then open Profile Settings on the toolbar. The game mode is the Instrument Select setting: {adjust} change it. "
-                    + "Careful: YARG calls the game mode Instrument Select, and calls the part just Instrument; they are different settings. "
-                    + "Six-fret guitar and pro guitar are in the list, but YARG cannot play them yet."))
-                .Page(Loc.T("Part and difficulty"),
-                    Loc.T("Within a game mode you can play more than one part: guitar or bass, for example. Instrument on the toolbar picks the part you prefer, with {adjust}. "
-                    + "Before each song, the difficulty screen asks for your part and difficulty. The profile remembers the difficulty; the part starts at your Instrument choice each time, when the song has it."))
-                .Page(Loc.T("Binding buttons"),
-                    Loc.T("{ok} on a connected profile, or Edit Binds on the toolbar, opens the binding editor. Its Overview tab has Quick Bind, which asks you to press each pad or button in turn. "
-                    + "Its Binds tab starts with a game mode list: pick the mode whose buttons you want to change. Then come the actions with their buttons. "
-                    + "Add New waits for you to press the button you want; pressing {ok} twice on a button removes it."))
-                .Page(Loc.T("Trying your buttons"),
-                    Loc.T("Practice The Buttons, at the end of the Tutorials list, plays each button's sound in a song and says what it does, so you can check your binds without a song. "
-                    + "It uses your connected profile. With no profile connected, or only bots, it asks for a game mode and then a device, and makes a practice profile with YARG's default buttons that is removed when you finish. "
-                    + "For vocals it asks which microphone to use, or none. With a microphone, a tap on it counts as Hit, and when you sing the note you hold is named. "
-                    + "The practice at the end of each instrument tutorial also asks for the device, and always for the microphone."))
-                .Page(Loc.T("Settings for playing"),
-                    Loc.T("This page and the next are for later, once you have played a few songs. Profile Settings also has the settings that change how you play. Lefty Flip mirrors the lanes for left-handed players, and the note sounds move with them. "
-                    + "Engine Preset sets the hit rules: Default has a 70 millisecond window either side of each note; Casual keeps that window but forgives extra fret presses and early hammer-ons; Precision narrows the window in fast passages, down to 20 milliseconds; and Solo Taps lets solos be played without strumming. "
-                    + "Rock Meter Preset sets how quickly you fail: Casual, Easy, Normal, Hard or Unfair. Input Calibration corrects this profile's timing in milliseconds."))
-                .Page(Loc.T("Settings for the picture"),
-                    Loc.T("Note Speed, Highway Length, Theme, Color Profile, Camera Preset, Highway Preset and Range Disable change only what is drawn; the sounds stay the same. "
-                    + "On drums, Activation picks which hit at the end of a fill turns star power on: Rightmost Note, the rightmost pad of the fill's last note, or All Notes, any pad of it. Use Cymbal Models and Open Lane Display Type change only the picture too. "
-                    + "The drum lane order editor can only be used with a mouse. Each value of the picture settings has its own description in the menu."))
-                .Page(Loc.T("Bots and more"),
-                    Loc.T("A bot plays a part by itself. If only bots play, the first bot gets the note sounds, so a bot alone lets you listen to a whole part. With you in the band, only you get note sounds. "
-                    + "YARG never saves a bot's score; the score screen after the song shows it, and Left and Right there move between the players. "
-                    + "Rename changes a profile's name. Move Player Up and Move Player Down change the order of the players. "
-                    + "Delete Profile asks you to press {ok} again before it deletes.")));
-
-            list.Add(new Tutorial { Id = "Playing Songs", Name = Loc.T("Playing Songs") }
-                .Page(Loc.T("The song library"),
-                    Loc.T("Quickplay on the main menu opens the song library. {move} move through the songs; each reads its name, artist, stars and whether it is a favourite. "
-                    + "{ok} picks a song, then you choose your instrument and difficulty."))
-                .Page(Loc.T("Setlists and more"),
-                    Loc.T("A setlist is a queue of songs played one after another. {hold1} to add a song to it. {colours}. "
-                    + "The text review keys read a song's full details: instruments, album, year, length and charter. "
-                    + "{songdelete} It asks first; the song's files go to the Recycle Bin and your scores for it stay in History. A song inside a pack file with other songs can't be deleted on its own."))
-                .Page(Loc.T("Pause and results"),
-                    Loc.T("{pause} pauses the song. The pause menu has Resume, Restart, Practice, Save Replay, Settings and Back To Library; Back To Library ends the song without a score. "
-                    + "After the song the score screen reads your results.")));
-
             list.Add(new Tutorial { Name = Loc.T("History and Replays") }
                 .Page(Loc.T("The History menu"),
                     Loc.T("History on the main menu lists every song you have finished, newest first, in groups: Today, Yesterday, This Week, This Month, Last Three Months, This Year and More Than A Year. "
@@ -957,14 +964,6 @@ namespace YargAccess
                     + "F8 restarts the section. F9 turns section announcements on or off. F1 lists these keys. "
                     + "The note sounds keep their Look-ahead in real time, so a slow song stays playable.")));
 
-            // Basics, then profiles (needed before any song), then the instruments, then reference (user, 2026-11-05).
-            var profiles = list.Find(x => x.Id == "Profiles and Controllers");
-            list.Remove(profiles);
-            list.Insert(list.FindIndex(x => x.Id == "Play Styles") + 1, profiles);
-            // A first song needs the library next (user, 2026-11-17: tutorials for a first-time player).
-            var playing = list.Find(x => x.Id == "Playing Songs");
-            list.Remove(playing);
-            list.Insert(list.IndexOf(profiles) + 1, playing);
             return list;
         }
     }

@@ -8,9 +8,10 @@ using YargAccess.Audio;
 
 namespace YargAccess
 {
-    // Listen and Repeat: the chart's notes are split into groups. Each group plays its notes as a call,
-    // shifted earlier by whole beats so the rhythm is the song's, and the notes that fall where the call
-    // plays are taken out of the chart. The player then plays the group back at its real time.
+    // Listen and Repeat: the chart is split into windows of Call Length bars (1, 2 or 4; 8 until 2026-11-20). The notes of one
+    // window play as a call in the window before it, whole bars earlier so the rhythm is the song's, and
+    // the chart's notes in that listen window are taken out. The player then plays the window back at its
+    // real time. Listen and answer both start on a bar line.
     public static class ListenRepeat
     {
         public class Group
@@ -176,7 +177,7 @@ namespace YargAccess
             Own(profile, size, g0);
             Remove(track, keep);
             int lost = DropEmptyStarPower(track);
-            MelonLogger.Msg("ListenRepeat: " + track.Instrument + " " + track.Difficulty + ", " + (_groups.Count - g0) + " groups of up to " + size
+            MelonLogger.Msg("ListenRepeat: " + track.Instrument + " " + track.Difficulty + ", " + (_groups.Count - g0) + " groups of " + SizeText(size) + " bars"
                 + ", " + track.Notes.Count + " of " + n + " notes kept" + (lost > 0 ? ", " + lost + " star power phrases left with no notes taken out" : ""));
             return _groups.Count > g0;
         }
@@ -214,12 +215,137 @@ namespace YargAccess
                 ph.PhraseParentNote.ChildNotes.RemoveAll(c => drop.Contains(c));
                 if (ph.IsEmpty) part.NotePhrases.RemoveAt(i);
             }
-            MelonLogger.Msg("ListenRepeat: vocal percussion, " + (_groups.Count - g0) + " groups of up to " + size + ", " + (n - drop.Count) + " of " + n + " notes kept");
+            MelonLogger.Msg("ListenRepeat: vocal percussion, " + (_groups.Count - g0) + " groups of " + SizeText(size) + " bars, " + (n - drop.Count) + " of " + n + " notes kept");
         }
 
-        // Groups notes and returns each kept note's call, or null for a note taken out.
-        // Fixed notes (big rock endings) are never grouped or taken out.
+        // A size of NoteGroups or more is an old replay's note count (NoteGroups + 2, 4 or 8): until
+        // 2026-11-20 a group was that many notes. Replays saved before then are cut the old way.
+        public const int NoteGroups = 100;
+
+        // Returns each kept note's call, or null for a note taken out.
         static Mark[] Plan(uint[] ticks, uint[] ends, double[] times, bool[] fixedNotes, SyncTrack sync, int size)
+        {
+            if (size >= NoteGroups) return PlanNotes(ticks, ends, times, fixedNotes, sync, size - NoteGroups);
+            var marks = PlanBars(ticks, ends, fixedNotes, sync, size);
+            _groups.Sort((a, b) => a.CallStart.CompareTo(b.CallStart));
+            return marks;
+        }
+
+        // Groups by bars (user, 2026-11-20: a pattern that starts and ends mid-bar is hard to follow).
+        // The listen is `size` whole bars starting on a bar line; the answer is the next `size` bars, so
+        // both start on a bar line. The answer's notes play in the listen bars, the same distance into the
+        // bar (whole bars earlier, in ticks, so tempo changes keep the rhythm), and the chart's own notes
+        // in the listen bars are taken out. Then the next listen starts after the answer. A rest of a
+        // whole window or more starts the next listen where the notes come back.
+        // Fixed notes (big rock endings) are never grouped or taken out.
+        static Mark[] PlanBars(uint[] ticks, uint[] ends, bool[] fixedNotes, SyncTrack sync, int size)
+        {
+            int n = ticks.Length;
+            var marks = new Mark[n];
+            uint last = 0;
+            for (int i = 0; i < n; i++) last = Math.Max(last, Math.Max(ticks[i], ends[i]));
+            var bars = BarTicks(sync, n > 0 ? ticks[0] : 0, last, 2 * size + 2);
+            int minAnswer = size;
+            int k = 0;
+            while (k < n)
+            {
+                if (fixedNotes[k]) { k++; continue; }
+                int s = Math.Max(BarOf(bars, ticks[k]), minAnswer);
+                if (s + size >= bars.Count) break;
+                uint callStart = bars[s - size], start = bars[s], end = bars[s + size];
+                uint shift = start - callStart;
+                // Notes before the answer fall in the listen bars: taken out.
+                int j = k;
+                while (j < n && ticks[j] < start) j++;
+                var members = new List<int>();
+                uint realEnd = end - 1;
+                for (; j < n && ticks[j] < end; j++)
+                {
+                    if (fixedNotes[j]) continue;
+                    // A shorter listen bar (a time signature change) can't hold this note's call: taken out.
+                    if (ticks[j] - shift >= start) continue;
+                    members.Add(j);
+                    realEnd = Math.Max(realEnd, ends[j]);
+                }
+                // The next listen starts on the first bar line after the answer, or after a held note that
+                // runs past it.
+                minAnswer = BarOf(bars, realEnd) + 1 + size;
+                k = j;
+                if (members.Count == 0) continue;
+                var g = new Group
+                {
+                    CallStartTick = callStart,
+                    StartTick = start,
+                    CallStart = sync.TickToTime(callStart),
+                    CallEnd = sync.TickToTime(start),
+                    Start = sync.TickToTime(start),
+                    EndTick = realEnd,
+                    End = sync.TickToTime(realEnd),
+                };
+                foreach (int m in members) marks[m] = new Mark { Call = sync.TickToTime(ticks[m] - shift), Group = g };
+                _groups.Add(g);
+            }
+            return marks;
+        }
+
+        // The tick of every bar line from before the first note to `extra` bars past the last tick: the
+        // chart's measure lines, else bars worked out from its time signatures, and past the end the last
+        // bar's length repeated.
+        static List<uint> BarTicks(SyncTrack sync, uint first, uint last, int extra)
+        {
+            var bars = new List<uint>();
+            try
+            {
+                foreach (var b in sync.Beatlines)
+                    if (b.Type == BeatlineType.Measure && (bars.Count == 0 || b.Tick > bars[bars.Count - 1])) bars.Add(b.Tick);
+            }
+            catch { bars.Clear(); }
+            uint res = sync.Resolution > 0 ? sync.Resolution : 480;
+            if (bars.Count < 2)
+            {
+                bars.Clear();
+                var ts = sync.TimeSignatures;
+                for (int i = 0; ts != null && i < ts.Count; i++)
+                {
+                    uint len = BarLength(ts[i].Numerator, ts[i].Denominator, res);
+                    uint stop = i + 1 < ts.Count ? ts[i + 1].Tick : last + 1;
+                    for (uint t = ts[i].Tick; t < stop; t += len)
+                        if (bars.Count == 0 || t > bars[bars.Count - 1]) bars.Add(t);
+                }
+                if (bars.Count == 0) bars.Add(0);
+                if (bars.Count < 2) bars.Add(bars[0] + 4 * res);
+            }
+            while (bars[0] > first)
+            {
+                uint len = bars[1] - bars[0];
+                bars.Insert(0, bars[0] > len ? bars[0] - len : 0);
+            }
+            uint lastLen = bars[bars.Count - 1] - bars[bars.Count - 2];
+            int lastBar = BarOf(bars, last);
+            while (bars.Count <= lastBar + extra + 1) bars.Add(bars[bars.Count - 1] + lastLen);
+            return bars;
+        }
+
+        static uint BarLength(uint numerator, uint denominator, uint res)
+        {
+            if (numerator == 0 || denominator == 0) return 4 * res;
+            return Math.Max(1u, (uint) Math.Round(4.0 * res * numerator / denominator));
+        }
+
+        // The bar a tick falls in: the last bar line at or before it.
+        static int BarOf(List<uint> bars, uint tick)
+        {
+            int lo = 0, hi = bars.Count - 1;
+            while (lo < hi)
+            {
+                int mid = (lo + hi + 1) / 2;
+                if (bars[mid] <= tick) lo = mid; else hi = mid - 1;
+            }
+            return lo;
+        }
+
+        // The grouping used until 2026-11-20, kept for replays saved with it: groups of `size` notes.
+        static Mark[] PlanNotes(uint[] ticks, uint[] ends, double[] times, bool[] fixedNotes, SyncTrack sync, int size)
         {
             int n = ticks.Length;
             uint res = sync.Resolution;
@@ -352,12 +478,14 @@ namespace YargAccess
             {
                 // First line: the run's size (what the History menu reads). Then one line per profile, live
                 // players first, so a replay with players on different settings is cut the way each one played.
-                var sb = new System.Text.StringBuilder("ListenAndRepeat " + SongCallLength);
+                // "ListenAndRepeatBars" since 2026-11-20 (sizes in bars); "ListenAndRepeat" before (notes).
+                // A replay player cut by notes (Play With Replay on an old replay) is written with an n.
+                var sb = new System.Text.StringBuilder("ListenAndRepeatBars " + SizeText(SongCallLength));
                 for (int pass = 0; pass < 2; pass++)
                     foreach (var kv in _sizes)
                     {
                         var prof = kv.Key as YARG.Core.Game.YargProfile;
-                        if (prof != null && IsLive(prof) == (pass == 0)) sb.Append("\n" + prof.Id + " " + kv.Value);
+                        if (prof != null && IsLive(prof) == (pass == 0)) sb.Append("\n" + prof.Id + " " + SizeText(kv.Value));
                     }
                 File.WriteAllText(replayPath + ".yargaccess", sb.ToString());
             }
@@ -372,22 +500,39 @@ namespace YargAccess
                 if (!File.Exists(path)) return 0;
                 var lines = File.ReadAllText(path).Replace("\r", "").Trim().Split('\n');
                 var parts = lines[0].Trim().Split(' ');
-                int size;
-                if (parts.Length != 2 || parts[0] != "ListenAndRepeat" || !int.TryParse(parts[1], out size)) return 0;
+                if (parts.Length != 2 || (parts[0] != "ListenAndRepeat" && parts[0] != "ListenAndRepeatBars")) return 0;
+                bool notes = parts[0] == "ListenAndRepeat";
+                int size = ParseSize(parts[1], notes);
+                if (size <= 0) return 0;
                 if (profile != null)
                 {
                     string id = profile.Id.ToString();
                     for (int i = 1; i < lines.Length; i++)
                     {
                         var p = lines[i].Trim().Split(' ');
-                        int own;
-                        if (p.Length == 2 && p[0] == id && int.TryParse(p[1], out own)) return own;
+                        if (p.Length == 2 && p[0] == id) return ParseSize(p[1], notes);
                     }
                 }
                 return size;
             }
             catch { return 0; }
         }
+
+        // A size as a replay file writes it: bars as a number, an old note count with an n.
+        static string SizeText(int size) => size >= NoteGroups ? (size - NoteGroups) + "n" : size.ToString();
+
+        static int ParseSize(string s, bool notes)
+        {
+            if (s.EndsWith("n")) { notes = true; s = s.Substring(0, s.Length - 1); }
+            int v;
+            if (!int.TryParse(s, out v) || v <= 0) return 0;
+            return notes ? v + NoteGroups : v;
+        }
+
+        // How a run's size is read out: "4 bars", or an old replay's "4 notes".
+        public static string SizeName(int size) => size >= NoteGroups
+            ? Loc.F("{0} notes", size - NoteGroups)
+            : size == 1 ? Loc.T("1 bar") : Loc.F("{0} bars", size);
 
         // Listen and your-turn swells.
         static int _mi, _ti;
@@ -488,10 +633,48 @@ namespace YargAccess
                     if (_answers[_ti].Start > now) CueBank.Play("yourturn", 0.7f);
                     _ti++;
                 }
-
+                Duck(gm, now, speed);
             }
             catch (Exception ex) { ModLog.Warn("ListenRepeat.Tick", ex); }
         }
+
+        // Duck Music During Listen (user, 2026-11-20): the song's mixer goes down by Ducking Amount while a
+        // call plays and back up for the answer, with a short ramp on each side. YARG keeps the mixer at 1.0
+        // and fades it only when a song fails or Auto Calibrate Video changes on pause, so nothing is
+        // touched while paused or failed, and the mixer is only set when the level changes.
+        const double DuckRamp = 0.25;
+        static readonly System.Reflection.FieldInfo _mixerField =
+            HarmonyLib.AccessTools.Field(typeof(YARG.Gameplay.GameManager), "_mixer");
+        static object _duckMixer;
+        static double _duckApplied = 1.0;
+
+        static void Duck(YARG.Gameplay.GameManager gm, double now, double speed)
+        {
+            if (gm.Paused || gm.PlayerHasFailed || _mixerField == null) return;
+            var mixer = _mixerField.GetValue(gm) as YARG.Core.Audio.StemMixer;
+            if (mixer == null) return;
+            if (!ReferenceEquals(mixer, _duckMixer)) { _duckMixer = mixer; _duckApplied = 1.0; }
+            double depth = 0;
+            if (ModSettings.DuckMusic != null && ModSettings.DuckMusic.Value)
+            {
+                double ramp = DuckRamp * speed;
+                foreach (var g in _calls)
+                {
+                    if (g.CallStart - ramp > now) break;
+                    if (g.CallEnd <= now) continue;
+                    // Fully down at the call's start, fully up at the answer's start.
+                    double d = Math.Min((now - (g.CallStart - ramp)) / ramp, (g.CallEnd - now) / ramp);
+                    depth = Math.Max(depth, Math.Min(1.0, d));
+                }
+            }
+            double amount = ModSettings.DuckAmount != null ? ModSettings.DuckAmount.Value / 100.0 : 0.5;
+            double level = 1.0 - amount * depth;
+            if (Math.Abs(level - _duckApplied) < 0.002) return;
+            _duckApplied = level;
+            mixer.SetVolume(level);
+        }
+
+        public static double DuckLevel => _duckApplied;
 
     }
 }

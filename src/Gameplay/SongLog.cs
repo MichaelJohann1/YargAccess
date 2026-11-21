@@ -34,6 +34,7 @@ namespace YargAccess
             lines.Add("Mod settings: " + Try(() =>
                 "Play Style " + (ModSettings.ListenAndRepeat ? "Listen and Repeat" : "Play What You Hear")
                 + ", Call Length " + ModSettings.CallLengthSetting.Value
+                + ", Duck Music " + (ModSettings.DuckMusic.Value ? ModSettings.DuckAmount.Value + "%" : "off")
                 + ", Look-ahead " + Math.Round(ModSettings.LookAheadSeconds * 1000) + " ms"
                 + ", Drums Look-ahead " + Math.Round(ModSettings.DrumLookAheadSeconds * 1000) + " ms"
                 + ", Beat Ticks " + OnOff(ModSettings.BeatTicks.Value)

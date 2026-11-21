@@ -45,6 +45,8 @@ namespace YargAccess
         public static NamedDropdown SoundPreview { get; private set; }
         public static NamedDropdown PlayStyle { get; private set; }
         public static NamedDropdown CallLengthSetting { get; private set; }
+        public static ToggleSetting DuckMusic { get; private set; }
+        public static SliderSetting DuckAmount { get; private set; }
         public static NamedDropdown LookAhead { get; private set; }
         public static NamedDropdown DrumLookAhead { get; private set; }
 
@@ -54,7 +56,7 @@ namespace YargAccess
             get
             {
                 int n;
-                return CallLengthSetting != null && int.TryParse(CallLengthSetting.Value, out n) && n > 0 ? n : 4;
+                return CallLengthSetting != null && int.TryParse(CallLengthSetting.Value, out n) && n > 0 ? n : 2;
             }
         }
         public static ToggleSetting CueRepeats { get; private set; }
@@ -122,18 +124,32 @@ namespace YargAccess
             PlayStyle.Add("repeat", Loc.T("Listen and Repeat"));
             PlayStyle.Add("hear", Loc.T("Play What You Hear"));
             Register("PlayStyle", Loc.T("Play Style"),
-                Loc.T("Listen and Repeat: a few notes play, then you play them back in the same rhythm. The notes where a pattern plays are taken out, so you play about 40 percent of a busy chart: "
+                Loc.T("Listen and Repeat: a few bars play, then you play them back in the same rhythm. The notes in the bars where a pattern plays are taken out, so you play about half of a chart: "
                 + "your score is lower than a full play and can't be compared with one, its best scores are kept apart, and there are no full combos. "
                 + "Play What You Hear: every note of the chart plays its sound a Look-ahead before you hit it; harder, the song as charted, and full combos count. Starts with the next song."), PlayStyle);
 
-            var callLength = _category.CreateEntry("CallLength", "4");
-            if (callLength.Value != "2" && callLength.Value != "4" && callLength.Value != "8") callLength.Value = "4";
+            var callLength = _category.CreateEntry("CallLength", "2");
+            // Bars since 2026-11-20 (notes before); the saved value is 1, 2 or 4 (8 was removed and 1 added on 2026-11-20, user). A value saved while
+            // it counted notes is reset once to the new default, 2 bars (user, 2026-11-20).
+            var inBars = _category.CreateEntry("CallLengthBars", false);
+            if (!inBars.Value) { callLength.Value = "2"; inBars.Value = true; }
+            if (callLength.Value != "1" && callLength.Value != "2" && callLength.Value != "4") callLength.Value = "2";
             CallLengthSetting = new NamedDropdown(callLength.Value, v => { callLength.Value = v; Save(); });
-            CallLengthSetting.Add("2", Loc.T("2 notes"));
-            CallLengthSetting.Add("4", Loc.T("4 notes, recommended"));
-            CallLengthSetting.Add("8", Loc.T("8 notes"));
+            CallLengthSetting.Add("1", Loc.T("1 bar"));
+            CallLengthSetting.Add("2", Loc.T("2 bars, recommended"));
+            CallLengthSetting.Add("4", Loc.T("4 bars"));
             Register("CallLength", Loc.T("Call Length"),
-                Loc.T("Listen and Repeat: how many notes each pattern has. A chord counts as one note. Sparse parts make shorter patterns."), CallLengthSetting);
+                Loc.T("Listen and Repeat: how many bars each pattern lasts. A pattern starts on a bar line, and your turn is the same number of bars right after it."), CallLengthSetting);
+
+            var duck = _category.CreateEntry("DuckMusic", false);
+            DuckMusic = new ToggleSetting(duck.Value, v => { duck.Value = v; Save(); });
+            Register("DuckMusic", Loc.T("Duck Music During Listen"),
+                Loc.T("Listen and Repeat: the song plays quieter while a pattern plays, so its notes are easier to hear, and comes back up for your turn."), DuckMusic);
+
+            var duckAmount = _category.CreateEntry("DuckAmount", 50f);
+            DuckAmount = new SliderSetting(Clamp100(duckAmount.Value), 0f, 100f, v => { duckAmount.Value = v; Save(); });
+            Register("DuckAmount", Loc.T("Ducking Amount"),
+                Loc.T("How much quieter the song gets while a pattern plays, when Duck Music During Listen is on. 100% silences it."), DuckAmount);
 
             var ahead = _category.CreateEntry("LookAheadMs", "300");
             string[] times = { "150", "200", "250", "300", "350", "400", "500" };

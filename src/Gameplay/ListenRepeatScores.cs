@@ -17,8 +17,11 @@ namespace YargAccess
         static Dictionary<string, Best> _all;
         static readonly List<string> _lastSong = new List<string>();
 
+        // Bests from before 2026-11-20 end in a note count ("|4"); bar groups end in "b" ("|4b"), so the two
+        // are never compared.
         static string Key(Guid profile, string hash, Instrument inst, Difficulty diff, int length)
-            => profile + "|" + hash + "|" + inst + "|" + diff + "|" + length;
+            => profile + "|" + hash + "|" + inst + "|" + diff + "|"
+               + (length >= ListenRepeat.NoteGroups ? (length - ListenRepeat.NoteGroups).ToString() : length + "b");
 
         static Dictionary<string, Best> All()
         {

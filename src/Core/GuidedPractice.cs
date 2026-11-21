@@ -744,8 +744,8 @@ namespace YargAccess
         static string SpeedText()
         {
             if (_lr && _mode != "vocals")
-                return Loc.T("Songs move at different speeds, counted in beats a minute, from about 60 to over 200. A call keeps the song's rhythm and plays a few beats before your turn, "
-                    + "so in a slow song its notes are spread out and in a fast song they come close together. Call Length on the YargAccess tab sets how many notes a call has: 2, 4 or 8.")
+                return Loc.T("Songs move at different speeds, counted in beats a minute, from about 60 to over 200. A call keeps the song's rhythm and plays in the bars just before your turn, "
+                    + "so in a slow song its notes are spread out and in a fast song they come close together. Call Length on the YargAccess tab sets how many bars a call lasts: 1, 2 or 4.")
                     + (_mode != "drums" ? " " + Loc.T("A click marks each note of your turn.") : "");
             string lead = _mode == "drums" ? Loc.T("Drums Look-ahead") : Loc.T("Look-ahead");
             switch (_mode)

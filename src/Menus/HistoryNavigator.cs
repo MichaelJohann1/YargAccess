@@ -139,7 +139,7 @@ namespace YargAccess
             string path = ReplayPath(record, entry);
             if (path == null) return null;
             int size;
-            return ListenRepeat.ReplayIsListenRepeat(path, out size) ? Loc.F("Listen and Repeat {0}", size) : Loc.T("Play What You Hear");
+            return ListenRepeat.ReplayIsListenRepeat(path, out size) ? Loc.F("Listen and Repeat, {0}", ListenRepeat.SizeName(size)) : Loc.T("Play What You Hear");
         }
 
         static string Part(PlayerScoreRecord p) => Playability.InstrumentName(p.Instrument) + " " + SongDetails.DifficultyName(p.Difficulty);

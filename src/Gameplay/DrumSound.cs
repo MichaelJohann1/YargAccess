@@ -195,8 +195,16 @@ namespace YargAccess
                 {
                     var info = m.Invoke(_player, new object[] { pad });
                     int p = (int) info.GetType().GetProperty("Position").GetValue(info, null);
+                    // YARG answers -1 for a pad that has no lane on this highway.
+                    if (p < 0) continue;
                     pos[pad] = p;
                     if (!distinct.Contains(p)) distinct.Add(p);
+                }
+                // Fewer than two lanes would put every pad in the centre: keep the fixed pans instead.
+                if (distinct.Count < 2)
+                {
+                    MelonLogger.Msg("DrumSound: highway gave " + distinct.Count + " lane positions, using the fixed pans");
+                    return;
                 }
                 distinct.Sort();
                 var pans = new float[10];
