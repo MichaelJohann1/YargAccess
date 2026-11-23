@@ -317,8 +317,8 @@ namespace YargAccess
         static string _mainLabel;
         static bool _pressing;
 
-        // Enter on a sentence of a tutorial page presses its main button (Next, Practice or Done), as
-        // Enter did before the page text could be read sentence by sentence.
+        // Enter on a sentence of a tutorial page presses its main button (Next, Practice or Done), so
+        // reading the page sentence by sentence does not change what Enter does.
         public static bool PressMain()
         {
             if (_pressing || _pageDialog == null || !_pageDialog.gameObject.activeInHierarchy || _mainLabel == null) return false;
@@ -352,7 +352,7 @@ namespace YargAccess
         {
             var tut = All[t];
             var choices = PracticeDevices.Choices(tut.Practice);
-            // The microphone is always asked (user, 2026-11-17), with No Microphone to only listen.
+            // The microphone is always asked, with No Microphone to only listen.
             if (choices.Count > 1 || tut.Practice == "vocals") { ChooseDevice(t, p, choices); return; }
             // One fitting device: use it, whichever device opened the practice.
             RunPractice(t, p, choices.Count == 1 ? choices[0] : null);
@@ -362,7 +362,7 @@ namespace YargAccess
         static readonly Dictionary<string, bool> _kitCymbals = new Dictionary<string, bool>();
 
         // A four-lane or MIDI kit may have no cymbals (Rock Band 1 and 2 kits): ask once, and without
-        // cymbals the practice leaves out the cymbal steps (user, 2026-11-17). The computer keyboard and
+        // cymbals the practice leaves out the cymbal steps. The computer keyboard and
         // five-lane kits are not asked.
         static bool MayLackCymbals(PracticeDevices.Choice choice)
         {
@@ -600,10 +600,9 @@ namespace YargAccess
         {
             var list = new List<Tutorial>();
 
-            // Getting Started holds what How YargAccess Works, Songs and Folders, How These Games Work, Play Styles,
-            // Profiles and Controllers and Playing Songs said, cleaned up into one walk from the first start to the
-            // first song: songs, profiles, how a song works, play styles, the library, then playing with others
-            // (user, 2026-11-20). Pages made of J(...) parts keep the old lines' translations.
+            // Getting Started is one walk from the first start to the first song: songs, profiles, how a song
+            // works, play styles, the library, then playing with others. Pages made of J(...) parts join lines
+            // that are keys of their own, so they keep their existing translations.
             list.Add(new Tutorial { Name = Loc.T("Getting Started") }
                 .Page(Loc.T("Welcome"),
                     Loc.T("YargAccess makes YARG playable by ear. Menus are spoken, and during a song the notes are played to you as sounds, so you know what to play. "

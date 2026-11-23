@@ -9,7 +9,7 @@ using YARG.Gameplay.HUD;
 
 namespace YargAccess
 {
-    // Keys for watching a replay (2026-11-15). YARG's own replay bar (play / pause, time, speed, timeline) is
+    // Keys for watching a replay. YARG's own replay bar (play / pause, time, speed, timeline) is
     // mouse-only; these drive the same ReplayController methods. Only while a replay is being watched
     // (GameManager.IsReplay: not Play With Replay) and its menu is closed: nobody is playing, so every
     // device is free.
@@ -20,8 +20,8 @@ namespace YargAccess
     //   Guitar: Green play / pause, Yellow / Blue 5 s, strum up / down speed, Orange where you are,
     //     Red or Start replay menu, Select keys.
     // Start (and Escape) while the replay is paused with no menu (a pause from these keys, or the replay's
-    // end) opens the replay menu: YARG would resume instead, which at the end does nothing
-    // (ReplayStartPatch), so a controller could not leave a finished replay before.
+    // end) opens the replay menu (ReplayStartPatch). YARG would resume instead, which at the end does
+    // nothing, so a controller could not leave a finished replay.
     public static class ReplayControls
     {
         const BindingFlags BF = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public;
@@ -221,7 +221,7 @@ namespace YargAccess.Patches
 {
     // Start (YARG's GameManager.OnNavigationEvent, the mod's UnboundStartPause) and Escape call SetPaused.
     // While a watched replay is paused with no menu, SetPaused(false) would resume, and at the replay's end
-    // resuming does nothing (EndSong pauses it again), so a controller had no way out. Open the menu instead.
+    // resuming does nothing (EndSong pauses it again), so a controller would have no way out. Open the menu instead.
     [HarmonyPatch(typeof(YARG.Gameplay.GameManager), "SetPaused")]
     static class ReplayStartPatch
     {

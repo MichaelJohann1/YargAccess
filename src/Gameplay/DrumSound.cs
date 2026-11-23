@@ -302,7 +302,7 @@ namespace YargAccess
                     if (c.IsStarPowerActivator) e.Activator = true;
                     if (e.Pads.Contains(c.Pad)) continue;
                     e.Pads.Add(c.Pad);
-                    // Ghost: soft with a whisper. Accent: loud with a crack (user, 2026-11-14: tell them apart clearly).
+                    // Ghost: soft with a whisper. Accent: loud with a crack, so the two are easy to tell apart.
                     e.Volumes.Add(c.IsGhost ? 0.35f : c.IsAccent ? 1f : 0.75f);
                     e.Marks.Add(c.IsGhost ? 1 : c.IsAccent ? 2 : 0);
                     if (c.Pad >= 0 && c.Pad < 30) e.Mask |= 1 << c.Pad;
@@ -323,8 +323,8 @@ namespace YargAccess
                 _fills.Sort((a, b) => a.Start.CompareTo(b.Start));
             }
             catch (Exception ex) { ModLog.Warn("DrumSound fills", ex); }
-            // Every drum note plays its own pads (user, 2026-11-14): no held runs and no "same again" tick, so a
-            // repeating rhythm is heard as it is; busy on Expert, which is the part to learn.
+            // Every drum note plays its own pads, repeats included, so a repeating rhythm is heard as it is.
+            // That is busy on Expert, but it is the part to learn.
             Schedule();
         }
 

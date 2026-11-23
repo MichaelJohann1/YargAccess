@@ -46,7 +46,7 @@ namespace YargAccess
         }
 
         // No human profile is connected (none at all, or only bots): Practice The Buttons then uses a
-        // temporary practice profile (user, 2026-11-17).
+        // temporary practice profile.
         public static bool NoHumanProfile()
         {
             try

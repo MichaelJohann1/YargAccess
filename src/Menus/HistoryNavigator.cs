@@ -13,11 +13,11 @@ using YARG.Scores;
 
 namespace YargAccess
 {
-    // The History menu (user, 2026-11-14: more detail, better to move through, play in the chosen Play Style).
-    // Each row says everything: stars, part, percent, score, hits and misses (every player and the band score
-    // when there are several), play style, speed, bots, and the date and time. Nothing is left for the text review. Left / Right jump between the day groups, Home / End to the first and last
-    // entry. Blue (4) plays the song yourself, in your Play Style. Enter still watches the replay as it was
-    // played, and Orange plays along with it (your part in your Play Style, see ListenRepeat.RunCallLength).
+    // The History menu. Each row says everything: stars, part, percent, score, hits and misses (every player
+    // and the band score when there are several), play style, speed, bots, and the date and time, so nothing
+    // is left for the text review. Left / Right jump between the day groups, Home / End to the first and last
+    // entry. Blue (4) plays the song yourself, in your Play Style. Enter watches the replay as it was played,
+    // and Orange plays along with it (your part in your Play Style, see ListenRepeat.RunCallLength).
     public static class HistoryNavigator
     {
         const BindingFlags BF = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
@@ -34,9 +34,9 @@ namespace YargAccess
 
         public static bool IsActive => Menu() != null && !DialogNavigator.IsActive;
 
-        // ---- Row text ----
+        // Row text
 
-        // The spoken part after "song, artist" (full is no longer used: it is all spoken).
+        // The spoken part after "song, artist" (full stays null: it is all spoken).
         public static bool Describe(object view, out string spoken, out string full)
         {
             spoken = full = null;
@@ -60,7 +60,7 @@ namespace YargAccess
                 float speed = record != null ? record.SongSpeed : entry != null ? entry.SongSpeed : 1f;
                 string style = Style(record, entry);
 
-                // Everything is in the spoken row (user, 2026-11-14: not behind the text review).
+                // Everything is in the spoken row, not behind the text review.
                 var said = new List<string>();
                 var humans = new List<PlayerScoreRecord>();
                 if (players != null) foreach (var p in players) if (p != null && !p.IsReplay) humans.Add(p);
@@ -170,7 +170,7 @@ namespace YargAccess
             return Loc.F("{0} at {1}", d.ToString(d.Year == DateTime.Today.Year ? "d MMMM" : "d MMMM yyyy", CultureInfo.CurrentCulture), time);
         }
 
-        // ---- Moving ----
+        // Moving
 
         static IList Rows(HistoryMenu m)
         {
@@ -233,9 +233,9 @@ namespace YargAccess
             return true;
         }
 
-        // ---- Export Replay / Import Replay ----
+        // Export Replay / Import Replay
         // YARG's header button (Export Replay on the History tab, Import Replay on the Import tab) has no
-        // NavigatableBehaviour, so it was mouse-only. Up from the first entry steps onto it, Down steps back,
+        // NavigatableBehaviour, so it is mouse-only in YARG. Up from the first entry steps onto it, Down steps back,
         // Enter presses it.
         static bool _onButton;
 
@@ -385,7 +385,7 @@ namespace YargAccess
             MenuAnnouncer.Focused(string.IsNullOrEmpty(where) ? result + "." : result + ". " + where, true);
         }
 
-        // ---- For EntryActions ----
+        // For EntryActions
 
         internal static ReplayViewType SelectedRow()
         {
@@ -440,7 +440,7 @@ namespace YargAccess
             catch (Exception ex) { ModLog.Warn("HistoryNavigator.Refresh", ex); MenuAnnouncer.SayShown(result); }
         }
 
-        // ---- Playing ----
+        // Playing
 
         // Blue: play the selected entry's song yourself, as from the library, in your Play Style.
         public static bool Colour(string action)

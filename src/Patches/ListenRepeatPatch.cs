@@ -31,7 +31,7 @@ namespace YargAccess.Patches
         {
             try
             {
-                if (__instance == null || track == null) return; // bots too (user, 2026-11-14)
+                if (__instance == null || track == null) return; // bots too
                 object seen;
                 if (_done.TryGetValue(track, out seen)) return;
                 _done.Add(track, track);
@@ -137,7 +137,7 @@ namespace YargAccess.Patches
 
     // The score card tags Full Combo by its own check (every note in one streak), not by the flag
     // ListenRepeat clears, so a Listen and Repeat player's card gets the tag it would have had
-    // otherwise: High Score, or Cleared / Completed (user, 2026-11-14).
+    // otherwise: High Score, or Cleared / Completed.
     [HarmonyPatch]
     static class ListenRepeatScoreCardPatch
     {

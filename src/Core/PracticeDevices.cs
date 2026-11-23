@@ -152,7 +152,7 @@ namespace YargAccess
         }
 
         // The other ports of the same MIDI keyboard or kit: a key press can arrive on any of them, so the
-        // practice and the button tests read them all (user, 2026-11-14: key presses were not registered).
+        // practice and the button tests read them all, or presses on the other ports are missed.
         public static List<Minis.MidiDevice> MidiSiblings(InputDevice d)
         {
             var list = new List<Minis.MidiDevice>();
@@ -181,7 +181,7 @@ namespace YargAccess
         }
 
 
-        // A tutorial practice runs on its own profile (user, 2026-11-13): made when the practice starts, with
+        // A tutorial practice runs on its own profile: made when the practice starts, with
         // the practice device and YARG's default binds, never saved on purpose, and removed when the practice
         // ends. The user's own profiles are not changed. A profile left behind (the game closed mid-practice
         // after YARG saved) is removed at the next start by its fixed Id.

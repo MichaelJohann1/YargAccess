@@ -17,7 +17,7 @@ namespace YargAccess
         public static bool IsOpen { get; private set; }
 
         // firstIsTitle: the first line is the help's title (ContextHelp says so, since a translated title may
-        // hold ": " too); null keeps the old rule, a first line with no ": " is the title.
+        // hold ": " too); with null, a first line with no ": " is the title.
         public static void Open(List<string> lines, string device, bool? firstIsTitle = null)
         {
             _lines.Clear();

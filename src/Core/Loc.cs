@@ -5,7 +5,7 @@ using System.Reflection;
 
 namespace YargAccess
 {
-    // The mod's own text in YARG's language (user, 2026-11-17). YARG takes its language only from the
+    // The mod's own text in YARG's language. YARG takes its language only from the
     // -lang command line argument (CommandLineArgs, LocalizationManager.Initialize), which the YARG Access
     // launcher passes from its Settings tab; the mod reads the same argument, so its text matches YARG's.
     //

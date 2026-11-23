@@ -149,8 +149,7 @@ namespace YargAccess.Audio
             return null;
         }
 
-        // Note and pad sounds are always in the song key's pentatonic scale; with no key, A minor
-        // (the unpitched Tone Style was removed, user 2026-11-14).
+        // Note and pad sounds are always in the song key's pentatonic scale; with no key, A minor.
         public static void SetKey(int tonic, bool minor)
         {
             if (_loaded && tonic == _tonic && minor == _minor) return;

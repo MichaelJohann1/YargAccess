@@ -19,7 +19,7 @@ namespace YargAccess
         static bool _init;
 
         // YARG's menu music player only goes forward, to a random song, and keeps no history. The mod keeps
-        // the songs it played so Previous can go back and Next can walk forward again (user, 2026-11-14).
+        // the songs it played so Previous can go back and Next can walk forward again.
         const int MaxHistory = 50;
         static readonly List<SongEntry> _history = new List<SongEntry>();
         static int _pos = -1;

@@ -10,7 +10,7 @@ namespace YargAccess
 {
     // Speaks through NVDA's controller client with nvdaController_speakText, the same path NVDA uses for its
     // own messages, so the lines show in NVDA's Speech History add-on (speakSsml bypasses the function the
-    // add-on patches; used until 2026-11-15).
+    // add-on patches).
     //
     // The client can't say when NVDA stops talking, so the mod listens for it: a worker thread reads the
     // Windows audio peak meter of every audio session that belongs to an NVDA process (nvda*.exe) on every

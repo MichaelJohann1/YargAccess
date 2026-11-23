@@ -375,7 +375,7 @@ namespace YargAccess
             L(Move(), Loc.T("move"));
 
             // History writes its own lines for the keys the mod changes there, so YARG's names for them are not
-            // read as well (user, 2026-11-17: Enter, Left / Right and the colours were each said twice).
+            // read as well. Otherwise Enter, Left / Right and the colours would each be said twice.
             bool history = HistoryNavigator.IsActive && OverlayName() == null;
 
             var cur = CurrentSetting();
@@ -432,8 +432,8 @@ namespace YargAccess
 
         static bool kb() { return _dev == Device.Keyboard; }
 
-        // Whether Build's first line is the help's title (HelpList no longer guesses it from ": ", which a
-        // translated title can hold).
+        // Whether Build's first line is the help's title. HelpList can't tell from ": ", which a
+        // translated title can hold.
         static bool _firstIsTitle;
 
         // ProfilesNavigator.Actions() gives English names (it switches on them); this is how they are read.

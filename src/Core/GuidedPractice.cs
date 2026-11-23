@@ -43,7 +43,7 @@ namespace YargAccess
         const double PatternShift = 2.5, PatternWindow = 0.2, Swell = 0.4;
         // A press within HitWindow of the note counts (YARG's own window is 0.07 s either side). Further off
         // it is a miss that says how early or late, and the try plays again: a press that is called late never
-        // passes (user, 2026-11-14). A second miss in a row plays the note right first.
+        // passes. A second miss in a row plays the note right first.
         const double HitWindow = 0.1;
         static int _fails;
         static double[] _expect;
@@ -53,7 +53,7 @@ namespace YargAccess
 
         class Pending { public float At, Gap, QuietFrom = -1f; public bool AfterSpeech; public Action Run; }
 
-        // Pause between the end of speech and a demo sound (user, 2026-11-05).
+        // Pause between the end of speech and a demo sound.
         const float SoundGap = 2f;
 
         static readonly List<Step> _steps = new List<Step>();
@@ -347,7 +347,7 @@ namespace YargAccess
             AfterSpeech(0.35f, () => { if (serial == _serial) Retry(s, serial, demo); }, SoundGap);
         }
 
-        // ---- Rolls and swells ----
+        // Rolls and swells
 
         static readonly Dictionary<string, int> _rollHits = new Dictionary<string, int>();
 
@@ -589,7 +589,7 @@ namespace YargAccess
             };
         }
 
-        // ---- Sung passages (user, 2026-11-14): a scale or a short tune, sung note by note. ----
+        // Sung passages: a scale or a short tune, sung note by note.
         const double SingTolerance = 1.5;
         static float _melStart, _lastSweep;
         static readonly List<KeyValuePair<float, float>> _samples = new List<KeyValuePair<float, float>>();
@@ -702,7 +702,7 @@ namespace YargAccess
                     if (Math.Abs(d) <= SingTolerance) { on++; if (float.IsNaN(firstOn)) firstOn = p.Key; }
                     else if (float.IsNaN(firstOn)) before++;
                 }
-                // The first note has more leeway (user, 2026-11-14): the voice is still finding the pitch.
+                // The first note has more leeway: the voice is still finding the pitch.
                 bool ok = heard >= 3 && on >= heard * (i == 0 ? 0.25 : 0.4);
                 double late = float.IsNaN(firstOn) ? 0 : firstOn - a;
                 if (ok && late <= (i == 0 ? 0.6 : 0.3)) { good++; continue; }
@@ -799,7 +799,7 @@ namespace YargAccess
             return all ?? "";
         }
 
-        // Button names on the practice device, from the tutorial profile's binds (user, 2026-11-13).
+        // Button names on the practice device, from the tutorial profile's binds.
         static string Btn(GameMode gm, int action) => PracticeDevices.ButtonName(gm, action);
 
         static string OnDevice(string text) => text == null || PracticeDevices.DeviceKind == null ? null : Loc.F("On your {0}, {1}", PracticeDevices.DeviceKind, text);

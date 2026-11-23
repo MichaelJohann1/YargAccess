@@ -8,7 +8,7 @@ using YargAccess.Audio;
 
 namespace YargAccess
 {
-    // Listen and Repeat: the chart is split into windows of Call Length bars (1, 2 or 4; 8 until 2026-11-20). The notes of one
+    // Listen and Repeat: the chart is split into windows of Call Length bars (1, 2 or 4). The notes of one
     // window play as a call in the window before it, whole bars earlier so the rhythm is the song's, and
     // the chart's notes in that listen window are taken out. The player then plays the window back at its
     // real time. Listen and answer both start on a bar line.
@@ -79,8 +79,7 @@ namespace YargAccess
         }
 
         // Returns the group size to use for this run, or 0 for the whole chart. A replay's players use the
-        // replay's saved setting; with Play With Replay the live players use the current Play Style (user,
-        // 2026-11-14).
+        // replay's saved setting; with Play With Replay the live players use the current Play Style.
         static int RunCallLength(YARG.Core.Game.YargProfile profile)
         {
             try
@@ -218,8 +217,8 @@ namespace YargAccess
             MelonLogger.Msg("ListenRepeat: vocal percussion, " + (_groups.Count - g0) + " groups of " + SizeText(size) + " bars, " + (n - drop.Count) + " of " + n + " notes kept");
         }
 
-        // A size of NoteGroups or more is an old replay's note count (NoteGroups + 2, 4 or 8): until
-        // 2026-11-20 a group was that many notes. Replays saved before then are cut the old way.
+        // A size of NoteGroups or more is an old replay's note count (NoteGroups + 2, 4 or 8). Those
+        // replays grouped by that many notes and are cut the same way.
         public const int NoteGroups = 100;
 
         // Returns each kept note's call, or null for a note taken out.
@@ -231,7 +230,7 @@ namespace YargAccess
             return marks;
         }
 
-        // Groups by bars (user, 2026-11-20: a pattern that starts and ends mid-bar is hard to follow).
+        // Groups by bars, since a pattern that starts and ends mid-bar is hard to follow.
         // The listen is `size` whole bars starting on a bar line; the answer is the next `size` bars, so
         // both start on a bar line. The answer's notes play in the listen bars, the same distance into the
         // bar (whole bars earlier, in ticks, so tempo changes keep the rhythm), and the chart's own notes
@@ -344,7 +343,7 @@ namespace YargAccess
             return lo;
         }
 
-        // The grouping used until 2026-11-20, kept for replays saved with it: groups of `size` notes.
+        // The note grouping, kept for old replays saved with it: groups of `size` notes.
         static Mark[] PlanNotes(uint[] ticks, uint[] ends, double[] times, bool[] fixedNotes, SyncTrack sync, int size)
         {
             int n = ticks.Length;
@@ -426,7 +425,7 @@ namespace YargAccess
         }
 
         // A star power phrase whose notes were all taken out can't be earned, so it is taken out of the
-        // track's phrases too: YARG counts the phrases there for the score screen's total (user, 2026-11-14).
+        // track's phrases too: YARG counts the phrases there for the score screen's total.
         static int DropEmptyStarPower<TNote>(InstrumentDifficulty<TNote> track) where TNote : Note<TNote>
         {
             int lost = 0;
@@ -478,7 +477,7 @@ namespace YargAccess
             {
                 // First line: the run's size (what the History menu reads). Then one line per profile, live
                 // players first, so a replay with players on different settings is cut the way each one played.
-                // "ListenAndRepeatBars" since 2026-11-20 (sizes in bars); "ListenAndRepeat" before (notes).
+                // "ListenAndRepeatBars" holds sizes in bars; old replays have "ListenAndRepeat" with note counts.
                 // A replay player cut by notes (Play With Replay on an old replay) is written with an n.
                 var sb = new System.Text.StringBuilder("ListenAndRepeatBars " + SizeText(SongCallLength));
                 for (int pass = 0; pass < 2; pass++)
@@ -539,7 +538,7 @@ namespace YargAccess
         static double _lastTime = double.NaN;
 
         // A full combo needs every note of the chart, so a player whose part was cut never has one:
-        // no Full Combo pop-up or ring, and the score YARG saves is not marked full combo (user, 2026-11-05).
+        // no Full Combo pop-up or ring, and the score YARG saves is not marked full combo.
         // YARG sets IsFc back to true on a practice restart or a replay seek; this runs every frame.
         static readonly Dictionary<object, bool> _cutPlayers = new Dictionary<object, bool>(RefEq.Instance);
         static bool _percussionCut;
@@ -638,7 +637,7 @@ namespace YargAccess
             catch (Exception ex) { ModLog.Warn("ListenRepeat.Tick", ex); }
         }
 
-        // Duck Music During Listen (user, 2026-11-20): the song's mixer goes down by Ducking Amount while a
+        // Duck Music During Listen: the song's mixer goes down by Ducking Amount while a
         // call plays and back up for the answer, with a short ramp on each side. YARG keeps the mixer at 1.0
         // and fades it only when a song fails or Auto Calibrate Video changes on pause, so nothing is
         // touched while paused or failed, and the mixer is only set when the level changes.

@@ -6,7 +6,7 @@ using UnityEngine;
 namespace YargAccess
 {
     // YARG's main menu shows a "Message of the Day" panel (what is new in this version), drawn only. A key
-    // reads it (user, 2026-11-14): F2, RT on a controller, hold Select and strum up on a guitar. It works in
+    // reads it: F2, RT on a controller, hold Select and strum up on a guitar. It works in
     // every menu; the text is kept once the main menu has been seen.
     public static class WhatsNew
     {

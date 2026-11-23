@@ -3,7 +3,7 @@ using YARG.Player;
 
 namespace YargAccess
 {
-    // Whose part makes note sounds: one player only, player one (user, 2026-11-17). That is the first
+    // Whose part makes note sounds: one player only, player one. That is the first
     // live human in the band's order, else the first live bot, else (watching a replay) the replay's
     // first human, else its first bot. In Play With Replay the replay's players are never player one
     // while anyone plays live. The other players play without note sounds.

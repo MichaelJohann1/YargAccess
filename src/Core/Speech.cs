@@ -30,7 +30,7 @@ namespace YargAccess
         public static IReadOnlyList<string> History => _history;
 
         // Test mode (YARGACCESS_QUIET=1 in the environment): lines are recorded in History but not spoken,
-        // and Mod mutes all game audio. For testing while the user is busy with something else.
+        // and Mod mutes all game audio.
         public static readonly bool Quiet = Environment.GetEnvironmentVariable("YARGACCESS_QUIET") == "1";
 
         static float _quietAt, _nvdaCapAt;

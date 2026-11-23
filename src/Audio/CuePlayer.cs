@@ -45,7 +45,7 @@ namespace YargAccess.Audio
             {
                 if (sampleHandle == 0 || !Ready) return 0;
                 // A replay seek (or speed change) re-runs every input up to the new time in one call, which
-                // fires the hit, miss and other engine sounds for all of it at once (user, 2026-11-17).
+                // fires the hit, miss and other engine sounds for all of it at once.
                 if (ReplaySeeking) return 0;
 
                 int channel = Bass.SampleGetChannel(sampleHandle);

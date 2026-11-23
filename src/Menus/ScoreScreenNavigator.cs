@@ -116,7 +116,7 @@ namespace YargAccess
             Add(who, Tmp(card, "_instrument"));
             Add(who, Tmp(card, "_difficulty"));
             Add(who, Tmp(card, "_tagText"));
-            // Stars on the first line, every play style (user, 2026-11-14).
+            // Stars on the first line, every play style.
             var stars = Stars(card);
             if (!string.IsNullOrEmpty(stars)) who.Add(stars);
             if (who.Count > 0) _lines.Add(string.Join(", ", who.ToArray()));

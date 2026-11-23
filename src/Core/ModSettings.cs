@@ -129,8 +129,8 @@ namespace YargAccess
                 + "Play What You Hear: every note of the chart plays its sound a Look-ahead before you hit it; harder, the song as charted, and full combos count. Starts with the next song."), PlayStyle);
 
             var callLength = _category.CreateEntry("CallLength", "2");
-            // Bars since 2026-11-20 (notes before); the saved value is 1, 2 or 4 (8 was removed and 1 added on 2026-11-20, user). A value saved while
-            // it counted notes is reset once to the new default, 2 bars (user, 2026-11-20).
+            // The value is 1, 2 or 4 bars. A value saved when the length counted notes is reset once to
+            // the default, 2 bars.
             var inBars = _category.CreateEntry("CallLengthBars", false);
             if (!inBars.Value) { callLength.Value = "2"; inBars.Value = true; }
             if (callLength.Value != "1" && callLength.Value != "2" && callLength.Value != "4") callLength.Value = "2";
@@ -186,8 +186,7 @@ namespace YargAccess
             Register("CueRepeats", Loc.T("Cue Repeated Notes"),
                 Loc.T("On: every note plays its sound ahead. Off: a run of the same fret or chord plays only the first one and holds its tone through the run, so busy passages stay readable: keep the fret down and strum on the hit bar sounds. Drums always play every note."), CueRepeats);
 
-            // Hit Bar Sound is always on and the note sounds always match the song's key: the Hit Bar Sound
-            // toggle and the unpitched Tone Style were removed (user, 2026-11-14).
+            // Note sounds always match the song's key; A minor until a song sets one.
             Audio.CueBank.SetKey(9, true);
 
             _glossaryPage = new Page { TabName = GlossaryTabName, Title = Loc.T("Sound Glossary") };
@@ -276,7 +275,7 @@ namespace YargAccess
 
         static readonly HashSet<string> SharedCues = new HashSet<string> { "sweep", "click", "beat", "measure", "spstart", "spready", "spnote", "splevel", "splost", "hit", "miss", "overstrum", "listen", "yourturn" };
 
-        // The Listen and Repeat start and stop sounds, in every mode's glossary (user, 2026-11-14).
+        // The Listen and Repeat start and stop sounds, in every mode's glossary.
         static void AddListenRepeat(List<KeyValuePair<string, string>> items, string listenLine)
         {
             items.Add(new KeyValuePair<string, string>("listen", listenLine));

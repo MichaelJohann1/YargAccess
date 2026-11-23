@@ -419,7 +419,7 @@ namespace YargAccess
             if (gap < 0.11) foreach (var ch in _lastCue) CuePlayer.FadeOut(ch, 5);
             _lastCue.Clear();
 
-            // Beginner (user, 2026-11-14): a run of one fret does not hold its tone through the run;
+            // Beginner: a run of one fret does not hold its tone through the run;
             // each later note gets only the hit bar sound.
             bool each = ModSettings.CueRepeats.Value || e.HasCall || _beginner;
             double holdEnd = each ? e.End : e.RunEnd;

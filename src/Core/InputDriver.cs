@@ -229,7 +229,7 @@ namespace YargAccess
                 HelpButton(gp.selectButton, _viewHeld, ContextHelp.Device.Gamepad, gp);
                 if (ReviewAllowed()) ReviewStick(gp.rightStick.ReadValue());
                 // The bumpers act once per press (no hold-repeat, like Tab), and only where there are tabs or
-                // sections: RB in a menu without them moved to a hidden tab that LB, Orange there, could not leave.
+                // sections. In a menu without them RB would move to a hidden tab that LB could not leave.
                 if (TabTargetActive() || PracticeSectionNavigator.IsActive || paused)
                 {
                     if (gp.leftShoulder.wasPressedThisFrame) Bumper(-1, paused);
@@ -237,7 +237,7 @@ namespace YargAccess
                 }
                 else if (!paused && !TextFieldFocused() && !CustomNavActive())
                 {
-                    // History: LB and RB switch its two tabs (user, 2026-11-17); Play With Replay, LB (Orange)
+                    // History: LB and RB switch its two tabs; Play With Replay, LB (Orange)
                     // elsewhere, is in the LT list there.
                     if (HistoryNavigator.IsActive && !FileBrowserNavigator.IsActive)
                     {
@@ -358,7 +358,7 @@ namespace YargAccess
         }
 
         // Each guitar keeps its own held / repeat state: with a guitar and a bass connected, one shared state
-        // made a press on one look like a release on the other (Select opened help at once, holds fired as taps).
+        // would make a press on one look like a release on the other (Select would open help at once, holds would fire as taps).
         class GuitarState
         {
             public readonly Held Select = new Held(), Green = new Held(), Yellow = new Held(), Blue = new Held(), Orange = new Held();

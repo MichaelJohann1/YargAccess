@@ -17,7 +17,7 @@ namespace YargAccess
         static Dictionary<string, Best> _all;
         static readonly List<string> _lastSong = new List<string>();
 
-        // Bests from before 2026-11-20 end in a note count ("|4"); bar groups end in "b" ("|4b"), so the two
+        // Bests from the old note grouping end in a note count ("|4"); bar groups end in "b" ("|4b"), so the two
         // are never compared.
         static string Key(Guid profile, string hash, Instrument inst, Difficulty diff, int length)
             => profile + "|" + hash + "|" + inst + "|" + diff + "|"
@@ -111,7 +111,7 @@ namespace YargAccess
         static string Describe(Best b, Difficulty d)
         {
             string score = b.Score.ToString("N0", CultureInfo.CurrentCulture);
-            // The difficulty in YARG's words when YARG isn't in English (English keeps the enum name as before).
+            // The difficulty in YARG's words when YARG isn't in English (English keeps the enum name).
             string diff = d.ToString();
             if (!Loc.English) { try { diff = YARG.Localization.Localize.ToLocalizedName(d); } catch { } }
             string line = b.Stars == 1

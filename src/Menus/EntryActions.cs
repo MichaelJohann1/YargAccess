@@ -14,7 +14,7 @@ using YARG.Scores;
 
 namespace YargAccess
 {
-    // Exporting and deleting History entries, and deleting songs from the library (user, 2026-11-17).
+    // Exporting and deleting History entries, and deleting songs from the library.
     // Keyboard: E exports, Delete deletes. Gamepad LT / guitar Select + strum down: in History a list
     // (Export Replay, Delete Entry); in the library the delete confirmation. Every delete asks first;
     // files go to the Recycle Bin, a History entry's score record is removed for good.
@@ -53,7 +53,7 @@ namespace YargAccess
             return false;
         }
 
-        // ---- History ----
+        // History
 
         static void HistoryList()
         {
@@ -153,7 +153,7 @@ namespace YargAccess
             catch (Exception ex) { ModLog.Warn("EntryActions score cache", ex); }
         }
 
-        // ---- Songs ----
+        // Songs
 
         static void AskSongDelete(MusicLibraryMenu lib)
         {
@@ -236,7 +236,7 @@ namespace YargAccess
             YARG.Song.SongContainer.RequestContainerRefresh();
         }
 
-        // ---- Confirmation ----
+        // Confirmation
 
         // title and text arrive translated; button is the English label (a YargAccess.Text. key).
         internal static void Confirm(string title, string text, string button, Action yes)

@@ -202,7 +202,7 @@ namespace YargAccess
             return m == 1 ? Loc.F("{0} minute {1} seconds", m, ts.Seconds) : Loc.F("{0} minutes {1} seconds", m, ts.Seconds);
         }
 
-        // YARG's "hit/total" notes text as "hit of total notes"; anything else keeps its old wording.
+        // YARG's "hit/total" notes text as "hit of total notes"; anything else is left as it is.
         static string NotesLine(string notes)
         {
             var bits = notes.Split('/');

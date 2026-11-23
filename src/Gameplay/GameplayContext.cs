@@ -29,7 +29,7 @@ namespace YargAccess
         }
 
         // A replay stops at its end paused, with no menu and no score screen (GameManager.EndSong:
-        // Pause(showMenu: false)), which was silent. Said once per replay.
+        // Pause(showMenu: false)), so the mod says so, once per replay.
         static YARG.Gameplay.GameManager _endedReplay;
 
         public static void WatchReplayEnd()
@@ -54,13 +54,12 @@ namespace YargAccess
             get { try { var pm = PauseManager; return pm != null && pm.IsOpen; } catch { return false; } }
         }
 
-        // The clock cue sounds are timed on (2026-11-14). YARG keeps the music on SongTime = InputTime + audio
+        // The clock cue sounds are timed on. YARG keeps the music on SongTime = InputTime + audio
         // calibration (plus hardware latency when that setting is on), so the cues, played on the same BASS
         // device, come out in step with the song. A player's profile Input Calibration moves when YARG judges
         // their presses (BasePlayer.InputCalibration = -InputCalibrationSeconds is added to the input time), so
         // it moves their cues too: press as the cue tells you and the press lands on the note. Video
-        // calibration only moves the picture and is not used. The cues used VisualTime before, which took the
-        // video calibration and ignored the other two.
+        // calibration only moves the picture and is not used.
         public static double CueTime(YARG.Gameplay.GameManager gm, YARG.Gameplay.Player.BasePlayer p)
         {
             return gm.SongTime + (p != null ? p.InputCalibration : 0);
