@@ -761,6 +761,10 @@ namespace YargAccess
                     Loc.T("Beat Ticks plays a soft tick on every beat and a stronger one on the first beat of each bar, in every mode. "
                     + "Cue Repeated Notes is off at first: a run of the same fret or chord plays only its first note and holds its tone through the run. "
                     + "Turn it on to hear every note. Drums always play every note."))
+                .Page(Loc.T("Mono Sound"),
+                    Loc.T("Each lane's sound plays in its own place, from far left for the leftmost lane to far right for the rightmost. "
+                    + "If you hear with one ear or play on one speaker, turn on Mono Sound: every cue then plays in the centre, the same in both ears. "
+                    + "The lanes still sound different, since their pitch rises from left to right. YARG's own sounds and the song stay as they are."))
                 .Page(Loc.T("Speech"),
                     Loc.T("Speech During Songs picks which of YARG's pop-ups are spoken in a song. All reads note streaks, Hot Start and the rest. "
                     + "Important only, the default, reads Star Power Ready, Full Combo, New High Score and star power on and off. Off reads nothing. "

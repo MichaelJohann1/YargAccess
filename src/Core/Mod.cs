@@ -10,7 +10,7 @@ namespace YargAccess
 {
     public class Mod : MelonMod
     {
-        public const string Version = "0.1.1";
+        public const string Version = "0.1.2";
 
         public override void OnInitializeMelon()
         {

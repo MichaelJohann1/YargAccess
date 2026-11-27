@@ -232,9 +232,9 @@ namespace YargAccess
 
         // Groups by bars, since a pattern that starts and ends mid-bar is hard to follow.
         // The listen is `size` whole bars starting on a bar line; the answer is the next `size` bars, so
-        // both start on a bar line. The answer's notes play in the listen bars, the same distance into the
-        // bar (whole bars earlier, in ticks, so tempo changes keep the rhythm), and the chart's own notes
-        // in the listen bars are taken out. Then the next listen starts after the answer. A rest of a
+        // both start on a bar line, and each listen bar is as long as its answer bar (PickWindow). The
+        // answer's notes play in the listen bars, the same distance into the bar (in ticks, so tempo changes
+        // keep the rhythm), and the chart's own notes in the listen bars are taken out. Then the next listen starts after the answer. A rest of a
         // whole window or more starts the next listen where the notes come back.
         // Fixed notes (big rock endings) are never grouped or taken out.
         static Mark[] PlanBars(uint[] ticks, uint[] ends, bool[] fixedNotes, SyncTrack sync, int size)
@@ -244,31 +244,37 @@ namespace YargAccess
             uint last = 0;
             for (int i = 0; i < n; i++) last = Math.Max(last, Math.Max(ticks[i], ends[i]));
             var bars = BarTicks(sync, n > 0 ? ticks[0] : 0, last, 2 * size + 2);
-            int minAnswer = size;
+            uint res = sync.Resolution > 0 ? sync.Resolution : 480;
+            uint tol = Math.Max(1u, res / 8);
+            int free = 0; // the first bar the next listen may use
             int k = 0;
             while (k < n)
             {
                 if (fixedNotes[k]) { k++; continue; }
-                int s = Math.Max(BarOf(bars, ticks[k]), minAnswer);
-                if (s + size >= bars.Count) break;
-                uint callStart = bars[s - size], start = bars[s], end = bars[s + size];
-                uint shift = start - callStart;
+                int s, sz;
+                if (!PickWindow(bars, BarOf(bars, ticks[k]), free, size, tol, out s, out sz)) break;
+                uint callStart = bars[s - sz], start = bars[s], end = bars[s + sz];
                 // Notes before the answer fall in the listen bars: taken out.
                 int j = k;
                 while (j < n && ticks[j] < start) j++;
                 var members = new List<int>();
+                var callTicks = new List<uint>();
                 uint realEnd = end - 1;
                 for (; j < n && ticks[j] < end; j++)
                 {
                     if (fixedNotes[j]) continue;
-                    // A shorter listen bar (a time signature change) can't hold this note's call: taken out.
-                    if (ticks[j] - shift >= start) continue;
+                    // Each answer bar's notes play in the matching listen bar, the same distance into it.
+                    int b = BarOf(bars, ticks[j]) - s;
+                    uint ct = bars[s - sz + b] + (ticks[j] - bars[s + b]);
+                    // A listen bar a little shorter than its answer bar can't hold this note's call: taken out.
+                    if (ct >= bars[s - sz + b + 1]) continue;
                     members.Add(j);
+                    callTicks.Add(ct);
                     realEnd = Math.Max(realEnd, ends[j]);
                 }
                 // The next listen starts on the first bar line after the answer, or after a held note that
                 // runs past it.
-                minAnswer = BarOf(bars, realEnd) + 1 + size;
+                free = BarOf(bars, realEnd) + 1;
                 k = j;
                 if (members.Count == 0) continue;
                 var g = new Group
@@ -281,10 +287,36 @@ namespace YargAccess
                     EndTick = realEnd,
                     End = sync.TickToTime(realEnd),
                 };
-                foreach (int m in members) marks[m] = new Mark { Call = sync.TickToTime(ticks[m] - shift), Group = g };
+                for (int i = 0; i < members.Count; i++) marks[members[i]] = new Mark { Call = sync.TickToTime(callTicks[i]), Group = g };
                 _groups.Add(g);
             }
             return marks;
+        }
+
+        // The answer's first bar (s) and the window's length in bars (sz) for the next group, whose notes
+        // start in bar `from`. The listen is the sz bars just before the answer and must not start before
+        // bar `free`. Each listen bar must be as long as its answer bar, or a time signature change puts
+        // the call off the beat: at a change the window gets shorter, or starts a bar later (that bar's
+        // notes are then in the listen and taken out). Returns false when no window fits.
+        static bool PickWindow(List<uint> bars, int from, int free, int size, uint tol, out int s, out int sz)
+        {
+            for (; from + 1 < bars.Count; from++)
+            {
+                for (sz = size; sz >= 1; sz--)
+                {
+                    s = Math.Max(from, free + sz);
+                    if (s + sz >= bars.Count) continue;
+                    bool ok = true;
+                    for (int i = 0; i < sz && ok; i++)
+                    {
+                        uint a = bars[s - sz + i + 1] - bars[s - sz + i], b = bars[s + i + 1] - bars[s + i];
+                        ok = (a > b ? a - b : b - a) <= tol;
+                    }
+                    if (ok) return true;
+                }
+            }
+            s = sz = 0;
+            return false;
         }
 
         // The tick of every bar line from before the first note to `extra` bars past the last tick: the

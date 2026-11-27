@@ -39,6 +39,7 @@ namespace YargAccess
                 + ", Drums Look-ahead " + Math.Round(ModSettings.DrumLookAheadSeconds * 1000) + " ms"
                 + ", Beat Ticks " + OnOff(ModSettings.BeatTicks.Value)
                 + ", Cue Repeated Notes " + OnOff(ModSettings.CueRepeats.Value)
+                + ", Mono Sound " + OnOff(ModSettings.MonoCues.Value)
                 + ", Pitch Guide " + OnOff(ModSettings.PitchGuide.Value)
                 + ", Pitch Feedback " + OnOff(ModSettings.PitchFeedback.Value)
                 + ", Speech During Songs " + ModSettings.InSongSpeech.Value

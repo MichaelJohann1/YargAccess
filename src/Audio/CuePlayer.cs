@@ -55,6 +55,8 @@ namespace YargAccess.Audio
                     return 0;
                 }
 
+                // Mono Sound: every cue in the centre.
+                if (ModSettings.MonoCues != null && ModSettings.MonoCues.Value) pan = 0f;
                 Bass.ChannelSetAttribute(channel, ChannelAttribute.Pan, Clamp(pan, -1f, 1f));
                 Bass.ChannelSetAttribute(channel, ChannelAttribute.Volume, Clamp(volume, 0f, 1f));
                 if (!Bass.ChannelPlay(channel, false))

@@ -60,6 +60,7 @@ namespace YargAccess
             }
         }
         public static ToggleSetting CueRepeats { get; private set; }
+        public static ToggleSetting MonoCues { get; private set; }
         public static ToggleSetting BeatTicks { get; private set; }
         public static ToggleSetting PitchGuide { get; private set; }
         public static ToggleSetting PitchFeedback { get; private set; }
@@ -185,6 +186,11 @@ namespace YargAccess
             CueRepeats = new ToggleSetting(repeats.Value, v => { repeats.Value = v; Save(); });
             Register("CueRepeats", Loc.T("Cue Repeated Notes"),
                 Loc.T("On: every note plays its sound ahead. Off: a run of the same fret or chord plays only the first one and holds its tone through the run, so busy passages stay readable: keep the fret down and strum on the hit bar sounds. Drums always play every note."), CueRepeats);
+
+            var mono = _category.CreateEntry("MonoCues", false);
+            MonoCues = new ToggleSetting(mono.Value, v => { mono.Value = v; Save(); });
+            Register("MonoCues", Loc.T("Mono Sound"),
+                Loc.T("On: every accessibility cue plays in the centre, the same in both ears, for players who hear with one ear or play on one speaker. Lanes are still told apart by pitch, which rises from left to right. YARG's own sounds and the song are not changed."), MonoCues);
 
             // Note sounds always match the song's key; A minor until a song sets one.
             Audio.CueBank.SetKey(9, true);
