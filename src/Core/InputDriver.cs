@@ -512,7 +512,7 @@ namespace YargAccess
             if (GameplayContext.Paused) { var pg = GameplayContext.ActivePauseGroup(); if (pg != null && pg.Count > 0) pg.SelectPrevious(true); return; }
             if (ProfileInfoNavigator.IsActive) { ProfileInfoNavigator.Move(-1); return; }
             if (CreditsNavigator.IsActive) { CreditsNavigator.Move(-1); return; }
-            if (CalibratorAnnouncer.IsActive) { ContextHelp.Speak(); return; }
+            if (CalibratorAnnouncer.IsActive) { if (!CalibratorAnnouncer.Tapping) ContextHelp.Speak(); return; }
             if (InProfilesList()) { ProfilesNavigator.Move(-1); return; }
             if (SettingsExtras.IsActive && SettingsExtras.MoveUp()) return;
             if (HistoryNavigator.IsActive && HistoryNavigator.MoveUp()) return;
@@ -535,7 +535,7 @@ namespace YargAccess
             if (GameplayContext.Paused) { var pg = GameplayContext.ActivePauseGroup(); if (pg != null && pg.Count > 0) pg.SelectNext(true); return; }
             if (ProfileInfoNavigator.IsActive) { ProfileInfoNavigator.Move(+1); return; }
             if (CreditsNavigator.IsActive) { CreditsNavigator.Move(+1); return; }
-            if (CalibratorAnnouncer.IsActive) { ContextHelp.Speak(); return; }
+            if (CalibratorAnnouncer.IsActive) { if (!CalibratorAnnouncer.Tapping) ContextHelp.Speak(); return; }
             if (InProfilesList()) { ProfilesNavigator.Move(+1); return; }
             if (SettingsExtras.IsActive && SettingsExtras.MoveDown()) return;
             if (HistoryNavigator.IsActive && HistoryNavigator.MoveDown()) return;

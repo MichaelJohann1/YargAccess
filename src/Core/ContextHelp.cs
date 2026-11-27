@@ -209,7 +209,7 @@ namespace YargAccess
             if (cal >= 0)
             {
                 lines.Add(Loc.T("Audio calibrator"));
-                var tap = kb ? Loc.T("Space or Enter") : Ok();
+                var tap = CalibratorAnnouncer.TapKey();
                 if (cal == 0) { L(Ok(), Loc.T("start audio calibration: you will hear clicks")); L(BackKey(), Loc.T("return to Settings")); }
                 else if (cal == 1) { L(tap, Loc.T("press when you are ready, then on every click you hear")); L(BackKey(), Loc.T("stop")); }
                 else if (cal == 2) { L(tap, Loc.T("press on every click")); L(BackKey(), Loc.T("stop")); }

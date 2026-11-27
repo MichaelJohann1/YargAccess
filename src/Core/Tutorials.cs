@@ -171,6 +171,7 @@ namespace YargAccess
                 .Replace("{move}", Keys.UpDown)
                 .Replace("{ok}", Keys.Ok)
                 .Replace("{back}", P(Loc.T("Escape or Backspace"), "B", Loc.T("Red")))
+                .Replace("{tap}", P(Loc.T("press Space or Enter"), Loc.T("press A"), Loc.T("strum")))
                 .Replace("{tabs}", Keys.Tabs)
                 .Replace("{adjust}", Keys.LeftRight)
                 .Replace("{pause}", P(Loc.T("Escape"), "Start", "Start"))
@@ -606,7 +607,7 @@ namespace YargAccess
             list.Add(new Tutorial { Name = Loc.T("Getting Started") }
                 .Page(Loc.T("Welcome"),
                     Loc.T("YargAccess makes YARG playable by ear. Menus are spoken, and during a song the notes are played to you as sounds, so you know what to play. "
-                    + "This tutorial takes you from the first start to your first song: getting songs, setting up a profile, how a song works, the two play styles and the song library. "
+                    + "This tutorial takes you from the first start to your first song: getting songs, setting up a profile, how a song works, the two play styles, setting your timing and the song library. "
                     + "Each page is read one sentence at a time: {move} go through the sentences again, {ok} goes to the next page, {side} turn pages, and {back} goes back to the list."))
                 .Page(Loc.T("Moving around"),
                     Loc.T("These pages name the buttons of the {device}, the last thing you pressed. To hear the buttons of another keyboard, controller or guitar, use that device to move back to this page. "
@@ -616,8 +617,9 @@ namespace YargAccess
                     J(Loc.T("Two things help while you learn. {help} {review}"),
                     Loc.T("{music} {whatsnew}")))
                 .Page(Loc.T("Your first song"),
-                    Loc.T("Four steps get you to your first song. First, get some songs. Second, set up a profile for your keyboard, controller or guitar. "
+                    Loc.T("Five steps get you to your first song. First, get some songs. Second, set up a profile for your keyboard, controller or guitar. "
                     + "Third, learn what happens in a song and which play style you want. "
+                    + "Fourth, run YARG's calibrator so your timing matches your speakers or headphones. "
                     + "Last, choose Quickplay on the main menu, pick a song, then your part and difficulty, and the song starts. "
                     + "The pages that follow take these steps in order."))
                 .Page(Loc.T("Getting songs"),
@@ -720,6 +722,13 @@ namespace YargAccess
                     + "and it can't be compared with scores played the whole way through. "
                     + "A full combo needs every note of the chart, so full combos are only possible with Play What You Hear. "
                     + "With Listen and Repeat, YARG shows no Full Combo and none is saved with the score."))
+                .Page(Loc.T("Setting your timing"),
+                    Loc.T("Speakers and headphones play sound a little late, and Bluetooth headphones much later. YARG's calibrator measures that delay so your hits count when you mean them. "
+                    + "Run it once before your first song, with the speakers or headphones you play on, and again if you change them. "
+                    + "Open Settings on the main menu and choose Open Calibrator on the General tab. It reads your current audio calibration, and {ok} starts. "
+                    + "When you are ready, {tap} once, then again on every click you hear, in time, until the clicks stop. {back} stops early. "
+                    + "At the end you hear the new calibration in milliseconds, and YARG uses it from then on. If it says there was not enough data, start again and keep going until the last click. "
+                    + "{back} returns to the start screen, and {back} again leaves the calibrator."))
                 .Page(Loc.T("The song library"),
                     J(Loc.T("Quickplay on the main menu opens the song library. {move} move through the songs; each reads its name, artist, stars and whether it is a favourite. "
                     + "{ok} picks a song, then you choose your instrument and difficulty."),
@@ -785,9 +794,9 @@ namespace YargAccess
                     + "The drum lane order editor can only be used with a mouse. Each value of the picture settings has its own description in the menu."))
                 .Page(Loc.T("YARG settings to know"),
                     Loc.T("A few of YARG's own settings matter most when you play by ear. "
-                    + "On the General tab, Open Calibrator measures the delay of your speakers or headphones: press a button on each tick you hear, and YARG sets its timing so your hits land where you mean them. Run it with the speakers or headphones you play on. "
                     + "The Sound tab has YARG's volumes; turn the music down if the note sounds are hard to hear over it. "
-                    + "No Fail, on the General tab, stops songs from failing while you learn, but scores played with it are not saved.")));
+                    + "No Fail, on the General tab, stops songs from failing while you learn, but scores played with it are not saved. "
+                    + "Open Calibrator, also on the General tab, is explained in the Getting Started tutorial.")));
 
             list.Add(new Tutorial { Name = Loc.T("Five-Fret Guitar and Bass"), Practice = "fivefret" }
                 .Page(Loc.T("The frets"),

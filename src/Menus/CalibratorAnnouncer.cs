@@ -4,6 +4,7 @@ using System.Reflection;
 using MelonLoader;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.Controls;
 
 namespace YargAccess
 {
@@ -11,7 +12,7 @@ namespace YargAccess
     {
         const BindingFlags BF = BindingFlags.NonPublic | BindingFlags.Instance;
         static Type _type;
-        static FieldInfo _textField, _stateField, _timesField, _startField, _timeField, _playerField;
+        static FieldInfo _textField, _stateField, _timesField, _startField, _timeField, _playerField, _whammyField;
         static MethodInfo _updateForState;
         static string _last;
         static int _lastState = -1;
@@ -33,6 +34,7 @@ namespace YargAccess
                 _startField = _type.GetField("_startingStateContainer", BF);
                 _timeField = _type.GetField("_time", BF);
                 _playerField = _type.GetField("_player", BF);
+                _whammyField = _type.GetField("_wasWhammyEnabled", BF);
                 _updateForState = _type.GetMethod("UpdateForState", BF);
             }
             var cal = UnityEngine.Object.FindObjectOfType(_type) as MonoBehaviour;
@@ -72,7 +74,7 @@ namespace YargAccess
                         if (txt.Length > 2 && txt != "Text goes here")
                         {
                             if (state == AudioWaiting) txt = Loc.F("Press {0} when you are ready, then press it on every click you hear. {1} to stop.", TapKey(), Keys.Back);
-                            if (state == AudioDone) txt = StripBackToExit(txt) + " " + Loc.F("Press {0} to return to the start screen.", Keys.Back);
+                            if (state == AudioDone) txt = ResultText(txt) + " " + Loc.F("Press {0} to return to the start screen.", Keys.Back);
                             MenuAnnouncer.Say(txt);
                         }
                     }
@@ -118,6 +120,16 @@ namespace YargAccess
                 ". " + Loc.F("Press {0} to start audio calibration, {1} to go back.", Keys.Ok, Keys.Back), true);
         }
 
+        // YARG's success line ("Calibration set to 25ms!") is hard-coded English, so it is rebuilt from the
+        // saved value; its not-enough-data line is translated by YARG and is read as it is.
+        static string ResultText(string txt)
+        {
+            int ms = CurrentCalibration();
+            if (txt.StartsWith("Calibration set to", StringComparison.Ordinal) && ms != int.MinValue)
+                return Loc.F("Calibration set to {0} milliseconds.", ms);
+            return StripBackToExit(txt);
+        }
+
         // YARG ends its result line with "Press back to exit." (hard-coded English after a calibration,
         // its own translation in Menu.Calibrator.NotEnoughData): both are taken off.
         static string StripBackToExit(string txt)
@@ -144,7 +156,10 @@ namespace YargAccess
             return cal != null ? State(cal) : -1;
         }
 
-        static string TapKey() { return Keys.Current == Keys.Device.Keyboard ? Loc.T("Space or Enter") : Loc.T("any button"); }
+        // True while the clicks are wanted: waiting for the first press, or the clicks playing.
+        internal static bool Tapping { get { int p = Phase(); return p == AudioWaiting || p == Audio; } }
+
+        internal static string TapKey() { return Keys.Current == Keys.Device.Keyboard ? Loc.T("Space or Enter") : Loc.F("any button except {0}", Keys.Back); }
 
         public static bool Confirm()
         {
@@ -162,8 +177,20 @@ namespace YargAccess
         {
             var cal = Find();
             if (cal == null) return false;
+            int before = State(cal);
             try { _type.GetMethod("BackButton").Invoke(cal, null); }
             catch (Exception ex) { ModLog.Warn("CalibratorAnnouncer.Back", ex); }
+            // YARG turns Whammy FX off while the clicks play and only turns it back on when they finish;
+            // its own menu has no way out mid-way, the mod's Back does, so the setting is put back here.
+            if (before == AudioWaiting || before == Audio)
+            {
+                try
+                {
+                    if (_whammyField != null)
+                        YARG.Settings.SettingsManager.Settings.UseWhammyFx.Value = (bool)_whammyField.GetValue(cal);
+                }
+                catch (Exception ex) { ModLog.Warn("CalibratorAnnouncer.RestoreWhammy", ex); }
+            }
             return true;
         }
 
@@ -171,8 +198,8 @@ namespace YargAccess
         {
             if (state != AudioWaiting && state != Audio) return;
             var kb = Keyboard.current;
-            if (kb == null) return;
-            bool pressed = kb.spaceKey.wasPressedThisFrame || kb.enterKey.wasPressedThisFrame || kb.numpadEnterKey.wasPressedThisFrame;
+            bool pressed = (kb != null && (kb.spaceKey.wasPressedThisFrame || kb.enterKey.wasPressedThisFrame || kb.numpadEnterKey.wasPressedThisFrame))
+                || ControllerTap();
             if (!pressed) return;
             bool yargHandled = state != _snapState || Taps(cal) != _snapTaps;
             if (yargHandled) return;
@@ -193,6 +220,38 @@ namespace YargAccess
                 }
             }
             catch (Exception ex) { ModLog.Warn("CalibratorAnnouncer.ForwardTaps", ex); }
+        }
+        // YARG only hears controllers that are on a connected profile; the mod drives pads and guitars in
+        // every menu without one, so their presses are counted here too (YARG's own count wins, see
+        // ForwardTaps). The back button and View / Select (help) are not taps.
+        static readonly string[] GuitarTaps = { "greenFret", "yellowFret", "blueFret", "orangeFret", "strumUp", "strumDown", "startButton" };
+
+        static bool ControllerTap()
+        {
+            foreach (var dev in InputSystem.devices)
+            {
+                if (dev == null || dev is Keyboard || dev is Mouse) continue;
+                var gp = dev as Gamepad;
+                if (gp != null)
+                {
+                    bool sw = gp is UnityEngine.InputSystem.Switch.SwitchProControllerHID;
+                    var back = sw ? gp.buttonSouth : gp.buttonEast;
+                    var buttons = new ButtonControl[] { gp.buttonSouth, gp.buttonEast, gp.buttonWest, gp.buttonNorth, gp.leftShoulder, gp.rightShoulder,
+                        gp.leftTrigger, gp.rightTrigger, gp.dpad.up, gp.dpad.down, gp.dpad.left, gp.dpad.right, gp.startButton };
+                    foreach (var b in buttons)
+                        if (b != null && b != back && b.wasPressedThisFrame) return true;
+                    continue;
+                }
+                if (dev.GetType().Name.IndexOf("Guitar", StringComparison.OrdinalIgnoreCase) < 0) continue;
+                foreach (var n in GuitarTaps)
+                {
+                    var b = dev.TryGetChildControl<ButtonControl>(n);
+                    if (b != null && b.wasPressedThisFrame) return true;
+                }
+                var dp = dev.TryGetChildControl<DpadControl>("dpad");
+                if (dp != null && (dp.up.wasPressedThisFrame || dp.down.wasPressedThisFrame)) return true;
+            }
+            return false;
         }
     }
 }
