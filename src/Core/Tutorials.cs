@@ -355,7 +355,7 @@ namespace YargAccess
             var choices = PracticeDevices.Choices(tut.Practice);
             // The microphone is always asked, with No Microphone to only listen.
             if (choices.Count > 1 || tut.Practice == "vocals") { ChooseDevice(t, p, choices); return; }
-            // One fitting device: use it, whichever device opened the practice.
+            // One device (the computer keyboard alone): use it.
             RunPractice(t, p, choices.Count == 1 ? choices[0] : null);
         }
 
@@ -424,21 +424,13 @@ namespace YargAccess
                 string head, line;
                 switch (mode)
                 {
-                    case "drums":
-                        head = Loc.T("Choose a drum kit");
-                        line = trying ? Loc.T("Choose the drum kit to try.") : Loc.T("Choose the drum kit to practise on.");
-                        break;
-                    case "prokeys":
-                        head = Loc.T("Choose a keyboard");
-                        line = trying ? Loc.T("Choose the keyboard to try.") : Loc.T("Choose the keyboard to practise on.");
-                        break;
                     case "vocals":
                         head = Loc.T("Choose a microphone");
                         line = trying ? Loc.T("Choose the microphone to try.") : Loc.T("Choose the microphone to practise on.");
                         break;
                     default:
-                        head = Loc.T("Choose a guitar or controller");
-                        line = trying ? Loc.T("Choose the guitar or controller to try.") : Loc.T("Choose the guitar or controller to practise on.");
+                        head = Loc.T("Choose a device");
+                        line = trying ? Loc.T("Choose the device to try.") : Loc.T("Choose the device to practise on.");
                         break;
                 }
                 ClearQuietly();
@@ -675,7 +667,7 @@ namespace YargAccess
                     Loc.T("Practice The Buttons, at the end of the Tutorials list, plays each button's sound in a song and says what it does, so you can check your binds without a song. "
                     + "It uses your connected profile. With no profile connected, or only bots, it asks for a game mode and then a device, and makes a practice profile with YARG's default buttons that is removed when you finish. "
                     + "For vocals it asks which microphone to use, or none. With a microphone, a tap on it counts as Hit, and when you sing the note you hold is named. "
-                    + "The practice at the end of each instrument tutorial also asks for the device, and always for the microphone.")))
+                    + "When more than one device could be played on, the computer keyboard included, Practice The Buttons and the practice at the end of each instrument tutorial ask which one to use. They always ask for the microphone.")))
                 .Page(Loc.T("The highway"),
                     J(Loc.T("The next pages explain what happens in a song, for anyone who has never played Guitar Hero, Rock Band, Clone Hero or YARG."),
                     Loc.T("Each player has a highway: a track that runs from the back of the screen to the front, with one lane for each fret, pad or key. "

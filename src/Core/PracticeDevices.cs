@@ -23,6 +23,8 @@ namespace YargAccess
             public int MicId;
             public string MicName;
             public YargPlayer Player;
+            // The computer keyboard: the practice reads its keys directly, with no practice profile.
+            public bool Keyboard;
         }
 
         // Set by the device picker; the next Ensure uses it once.
@@ -31,7 +33,9 @@ namespace YargAccess
         // The microphone the vocals practice listens to, when one was picked.
         public static string MicInUse;
 
-        // Every device that fits the mode: those on connected players of that mode, then unused ones.
+        // Every device that fits the mode: those on connected players of that mode, then unused ones, and
+        // the computer keyboard (with the profile that has it, or last). The kind of device pressed last
+        // comes first, so the picker starts on it.
         public static List<Choice> Choices(string mode)
         {
             var list = new List<Choice>();
@@ -52,12 +56,21 @@ namespace YargAccess
                     return list;
                 }
                 var seen = new HashSet<InputDevice>();
+                bool keyboard = false;
                 foreach (var p in PlayerContainer.Players)
                 {
-                    if (p == null || p.Profile == null || p.Profile.IsBot || p.Bindings == null || !Plays(p, mode)) continue;
+                    if (p == null || p.Profile == null || p.Profile.IsBot || p.Bindings == null) continue;
                     foreach (var d in p.Bindings.InputDevices)
-                        if (FitsPractice(d, mode) && seen.Add(d))
+                    {
+                        if (d is Keyboard)
+                        {
+                            if (!keyboard) list.Add(new Choice { Name = Loc.F("Computer keyboard, on {0}", p.Profile.Name), Keyboard = true, Player = p });
+                            keyboard = true;
+                            continue;
+                        }
+                        if (Plays(p, mode) && FitsPractice(d, mode) && seen.Add(d))
                             list.Add(new Choice { Name = Loc.F("{0}, {1}, on {2}", Cap(Kind(d)), d.displayName, p.Profile.Name), Device = d, Player = p });
+                    }
                 }
                 var free = new List<InputDevice>();
                 foreach (var d in InputSystem.devices)
@@ -72,9 +85,24 @@ namespace YargAccess
                         if (d is Minis.MidiDevice) { if (named.Add(MidiBase(d))) list.Add(new Choice { Name = Cap(Kind(d)) + ", " + MidiBase(d), Device = d }); }
                         else list.Add(new Choice { Name = Cap(Kind(d)) + ", " + d.displayName, Device = d });
                     }
+                if (!keyboard && UnityEngine.InputSystem.Keyboard.current != null)
+                    list.Add(new Choice { Name = Loc.T("Computer keyboard"), Keyboard = true });
+                int last = list.FindIndex(UsedLast);
+                if (last > 0) { var c = list[last]; list.RemoveAt(last); list.Insert(0, c); }
             }
             catch (Exception ex) { ModLog.Warn("PracticeDevices.Choices", ex); }
             return list;
+        }
+
+        static bool UsedLast(Choice c)
+        {
+            switch (Keys.Current)
+            {
+                case Keys.Device.Keyboard: return c.Keyboard;
+                case Keys.Device.Gamepad: return c.Device is Gamepad;
+                case Keys.Device.Guitar: return c.Device is FiveFretGuitar;
+                default: return false;
+            }
         }
 
         static string Cap(string s) => string.IsNullOrEmpty(s) ? s : char.ToUpperInvariant(s[0]) + s.Substring(1);
@@ -213,6 +241,8 @@ namespace YargAccess
             try
             {
                 if (mode == "vocals") return EnsureVocals(chosen, trying);
+                if (chosen != null && chosen.Keyboard)
+                    return (trying ? Loc.T("Trying the buttons on the computer keyboard.") : Loc.T("Practising on the computer keyboard.")) + " ";
                 var d = chosen != null && chosen.Device != null ? chosen.Device : Find(mode);
                 if (d == null)
                     return (trying
